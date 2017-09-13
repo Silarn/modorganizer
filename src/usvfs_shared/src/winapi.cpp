@@ -18,16 +18,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "winapi.h"
-#include "stringutils.h"
-#include "stringcast.h"
-#include "logging.h"
-#include "ntdll_declarations.h"
-#include "unicodestring.h"
-#include "scopeguard.h"
+#include "usvfs_shared/winapi.h"
+#include "usvfs_shared/stringutils.h"
+#include "usvfs_shared/stringcast.h"
+#include "usvfs_shared/logging.h"
+#include "usvfs_shared/ntdll_declarations.h"
+#include "usvfs_shared/unicodestring.h"
+#include "usvfs_shared/scopeguard.h"
 #include <Psapi.h>
 #include <algorithm>
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
 #include <fmt/format.h>
 
 

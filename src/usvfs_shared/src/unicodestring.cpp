@@ -18,13 +18,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "unicodestring.h"
-#include "windows_error.h"
-#include "stringutils.h"
-#include "stringcast.h"
-#include "logging.h"
+#include "usvfs_shared/unicodestring.h"
+#include "usvfs_shared/windows_error.h"
+#include "usvfs_shared/stringutils.h"
+#include "usvfs_shared/stringcast.h"
+#include "usvfs_shared/logging.h"
 #include <fmt/format.h>
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
 
 
 namespace ush = usvfs::shared;

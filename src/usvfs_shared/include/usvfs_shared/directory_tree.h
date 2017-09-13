@@ -20,15 +20,15 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include "wildcard.h"
-#include "shared_memory.h"
-#include "scopeguard.h"
-#include "logging.h"
-#include "stringutils.h"
+#include "usvfs_shared/wildcard.h"
+#include "usvfs_shared/shared_memory.h"
+#include "usvfs_shared/scopeguard.h"
+#include "usvfs_shared/logging.h"
+#include "usvfs_shared/stringutils.h"
 #include <boost/predef.h>
 #include <boost/lexical_cast.hpp>
 #include <boost/format.hpp>
-#include "exceptionex.h"
+#include "usvfs_shared/exceptionex.h"
 #include <boost/interprocess/containers/string.hpp>
 #include <boost/interprocess/containers/map.hpp>
 #include <boost/interprocess/containers/vector.hpp>
@@ -47,7 +47,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 #include <cstdint>
 #include <codecvt>
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
 
 #if 1
 namespace fs = boost::filesystem;

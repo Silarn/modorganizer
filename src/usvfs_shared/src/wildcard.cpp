@@ -18,9 +18,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "wildcard.h"
-#include "windows_sane.h"
-#include "logging.h"
+#include "usvfs_shared/wildcard.h"
+#include "usvfs_shared/windows_sane.h"
+#include "usvfs_shared/logging.h"
 #include <string>
 #include <cstring>
 

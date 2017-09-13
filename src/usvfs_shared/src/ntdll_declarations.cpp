@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "ntdll_declarations.h"
+#include "usvfs_shared/ntdll_declarations.h"
 #include <cassert>
 
 #define LOAD_EXT(mod, name) name = reinterpret_cast<name ## _type>(::GetProcAddress(mod, #name)); assert(name != nullptr)

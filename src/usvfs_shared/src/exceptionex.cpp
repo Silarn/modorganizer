@@ -18,9 +18,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "exceptionex.h"
-#include "winapi.h"
-#include <spdlog.h>
+#include "usvfs_shared/exceptionex.h"
+#include "usvfs_shared/winapi.h"
+#include <spdlog/spdlog.h>
 
 void logExtInfo(const std::exception &e, LogLevel logLevel) {
   std::string content;

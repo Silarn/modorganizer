@@ -18,8 +18,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "logging.h"
-#include "stringcast.h"
+#include "usvfs_shared/logging.h"
+#include "usvfs_shared/stringcast.h"
 
 
 namespace ush = usvfs::shared;

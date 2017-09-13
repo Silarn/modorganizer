@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "directory_tree.h"
+#include "usvfs_shared/directory_tree.h"
 
 fs::path::iterator usvfs::shared::nextIter(const fs::path::iterator &iter,
                                            const fs::path::iterator &end) {

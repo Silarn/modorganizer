@@ -20,13 +20,13 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include "logging.h"
-#include "windows_sane.h"
-#include "shared_memory.h"
+#include "usvfs_shared/logging.h"
+#include "usvfs_shared/windows_sane.h"
+#include "usvfs_shared/shared_memory.h"
 #include <boost/interprocess/ipc/message_queue.hpp>
 #include <boost/format.hpp>
 #include <atomic>
-#include <spdlog.h>
+#include <spdlog/spdlog.h>
 #include <cstdint>
 
 typedef boost::interprocess::message_queue_t<usvfs::shared::VoidPointerT> message_queue_interop;

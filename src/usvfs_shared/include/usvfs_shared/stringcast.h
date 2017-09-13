@@ -20,6 +20,6 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include "stringcast_basic.h"
-#include "stringcast_win.h"
+#include "usvfs_shared/stringcast_basic.h"
+#include "usvfs_shared/stringcast_win.h"
 

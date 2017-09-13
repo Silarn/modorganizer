@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "debug_monitor.h"
+#include "usvfs_shared/debug_monitor.h"
 #include <stdexcept>
 
 

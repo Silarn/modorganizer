@@ -20,10 +20,10 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include "windows_sane.h"
-#include "windows_error.h"
-#include "logging.h"
-#include "stringcast_win.h"
+#include "usvfs_shared/windows_sane.h"
+#include "usvfs_shared/windows_error.h"
+#include "usvfs_shared/logging.h"
+#include "usvfs_shared/stringcast_win.h"
 
 #include <string>
 #include <memory>

@@ -20,7 +20,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include "windows_sane.h"
+#include "usvfs_shared/windows_sane.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4201)

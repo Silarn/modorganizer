@@ -21,7 +21,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 
 #include <stdexcept>
-#include "windows_sane.h"
+#include "usvfs_shared/windows_sane.h"
 
 namespace usvfs {
 

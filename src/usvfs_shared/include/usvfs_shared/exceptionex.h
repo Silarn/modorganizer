@@ -20,7 +20,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include "logging.h"
+#include "usvfs_shared/logging.h"
 #include <boost/exception/all.hpp>
 #include <stdexcept>
 

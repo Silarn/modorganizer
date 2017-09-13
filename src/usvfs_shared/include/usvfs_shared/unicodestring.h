@@ -22,8 +22,8 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 
 #include <sstream>
 #include <vector>
-#include "windows_sane.h"
-#include "ntdll_declarations.h"
+#include "usvfs_shared/windows_sane.h"
+#include "usvfs_shared/ntdll_declarations.h"
 #include <cassert>
 
 
