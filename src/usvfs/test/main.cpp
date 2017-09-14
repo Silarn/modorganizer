@@ -18,6 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
+#define GTEST_LANG_CXX11 1
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
@@ -26,17 +27,16 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <usvfs/hooks/kernel32.h>
 #include <usvfs/hooks/ntdll.h>
 #include <usvfs/inject.h>
-#include <usvfs/usvfs.h>
-#include <usvfs/hookcontext.h>
 #include <usvfs/redirectiontree.h>
+#include <usvfs/usvfs.h>
+#include <usvfs_shared/directory_tree.h>
 #include <usvfs_shared/logging.h>
+#include <usvfs_shared/shmlogger.h>
 #include <usvfs_shared/stringcast.h>
 #include <usvfs_shared/stringutils.h>
 #include <usvfs_shared/unicodestring.h>
 #include <usvfs_shared/winapi.h>
 #include <usvfs_shared/windows_sane.h>
-#include <usvfs_shared/shmlogger.h>
-#include <usvfs_shared/directory_tree.h>
 
 namespace spd = spdlog;
 namespace uhooks = usvfs::hooks;
@@ -55,161 +55,143 @@ static LPCSTR REAL_DIRA = "C:/windows/Logs";
 static LPCWSTR REAL_DIRW = L"C:/windows/Logs";
 
 static std::shared_ptr<spdlog::logger> logger() {
-  std::shared_ptr<spdlog::logger> result = spdlog::get("test");
-  if (result.get() == nullptr) {
-    result = spdlog::stdout_logger_mt("test");
-  }
-  return result;
+    std::shared_ptr<spdlog::logger> result = spdlog::get("test");
+    if (result.get() == nullptr) {
+        result = spdlog::stdout_logger_mt("test");
+    }
+    return result;
 }
 
 class USVFSTest : public testing::Test {
-public:
-  void SetUp() {
-    SHMLogger::create("usvfs");
-    // need to initialize logging in the context of the dll
-    InitLogging();
-  }
-
-  void TearDown() {
-    std::array<char, 1024> buffer;
-    while (SHMLogger::instance().tryGet(buffer.data(), buffer.size())) {
-      std::cout << buffer.data() << std::endl;
+  public:
+    void SetUp() {
+        SHMLogger::create("usvfs");
+        // need to initialize logging in the context of the dll
+        InitLogging();
     }
-    SHMLogger::free();
-  }
 
-private:
+    void TearDown() {
+        std::array<char, 1024> buffer;
+        while (SHMLogger::instance().tryGet(buffer.data(), buffer.size())) {
+            std::cout << buffer.data() << std::endl;
+        }
+        SHMLogger::free();
+    }
+
+  private:
 };
 
 class USVFSTestWithReroute : public testing::Test {
-public:
-  void SetUp() {
-    SHMLogger::create("usvfs");
-    // need to initialize logging in the context of the dll
-    InitLogging();
+  public:
+    void SetUp() {
+        SHMLogger::create("usvfs");
+        // need to initialize logging in the context of the dll
+        InitLogging();
 
-    USVFSParameters params;
-    USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
-    m_Context.reset(CreateHookContext(params, ::GetModuleHandle(nullptr)));
-    usvfs::RedirectionTreeContainer &tree = m_Context->redirectionTable();
-    tree.addFile(
-        ush::string_cast<std::string>(VIRTUAL_FILEW, ush::CodePage::UTF8)
-            .c_str(),
-        usvfs::RedirectionDataLocal(REAL_FILEA));
-  }
-
-  void TearDown() {
-    std::array<char, 1024> buffer;
-    while (SHMLogger::instance().tryGet(buffer.data(), buffer.size())) {
-      std::cout << buffer.data() << std::endl;
+        USVFSParameters params;
+        USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
+        m_Context.reset(CreateHookContext(params, ::GetModuleHandle(nullptr)));
+        usvfs::RedirectionTreeContainer& tree = m_Context->redirectionTable();
+        tree.addFile(ush::string_cast<std::string>(VIRTUAL_FILEW, ush::CodePage::UTF8).c_str(),
+                     usvfs::RedirectionDataLocal(REAL_FILEA));
     }
-    m_Context.reset();
-    SHMLogger::free();
-  }
 
-private:
-  std::unique_ptr<usvfs::HookContext> m_Context;
+    void TearDown() {
+        std::array<char, 1024> buffer;
+        while (SHMLogger::instance().tryGet(buffer.data(), buffer.size())) {
+            std::cout << buffer.data() << std::endl;
+        }
+        m_Context.reset();
+        SHMLogger::free();
+    }
+
+  private:
+    std::unique_ptr<usvfs::HookContext> m_Context;
 };
 
 class USVFSTestAuto : public testing::Test {
-public:
-  void SetUp() {
-    USVFSParameters params;
-    USVFSInitParameters(&params, "usvfs_test_fixture", true, LogLevel::Debug);
-    ConnectVFS(&params);
-    SHMLogger::create("usvfs");
-  }
-
-  void TearDown() {
-    DisconnectVFS();
-
-    std::array<char, 1024> buffer;
-    while (SHMLogger::instance().tryGet(buffer.data(), buffer.size())) {
-      std::cout << buffer.data() << std::endl;
+  public:
+    void SetUp() {
+        USVFSParameters params;
+        USVFSInitParameters(&params, "usvfs_test_fixture", true, LogLevel::Debug);
+        ConnectVFS(&params);
+        SHMLogger::create("usvfs");
     }
-    SHMLogger::free();
-  }
 
-private:
+    void TearDown() {
+        DisconnectVFS();
+
+        std::array<char, 1024> buffer;
+        while (SHMLogger::instance().tryGet(buffer.data(), buffer.size())) {
+            std::cout << buffer.data() << std::endl;
+        }
+        SHMLogger::free();
+    }
+
+  private:
 };
 
 TEST_F(USVFSTest, CanResizeRedirectiontree) {
-  using usvfs::shared::MissingThrow;
-  EXPECT_NO_THROW({
-    usvfs::RedirectionTreeContainer container("treetest_shm", 1024);
-    for (char i = 'a'; i <= 'z'; ++i) {
-      for (char j = 'a'; j <= 'z'; ++j) {
-        std::string name = std::string(R"(C:\temp\)") + i + j;
-        container.addFile(name, usvfs::RedirectionDataLocal("gaga"), false);
-      }
-    }
+    using usvfs::shared::MissingThrow;
+    EXPECT_NO_THROW({
+        usvfs::RedirectionTreeContainer container("treetest_shm", 1024);
+        for (char i = 'a'; i <= 'z'; ++i) {
+            for (char j = 'a'; j <= 'z'; ++j) {
+                std::string name = std::string(R"(C:\temp\)") + i + j;
+                container.addFile(name, usvfs::RedirectionDataLocal("gaga"), false);
+            }
+        }
 
-    EXPECT_EQ("gaga", container->node("C:")
-                          ->node("temp")
-                          ->node("aa", MissingThrow)
-                          ->data()
-                          .linkTarget);
-    EXPECT_EQ("gaga", container->node("C:")
-                          ->node("temp")
-                          ->node("az", MissingThrow)
-                          ->data()
-                          .linkTarget);
-  });
+        EXPECT_EQ("gaga", container->node("C:")->node("temp")->node("aa", MissingThrow)->data().linkTarget);
+        EXPECT_EQ("gaga", container->node("C:")->node("temp")->node("az", MissingThrow)->data().linkTarget);
+    });
 }
 
 TEST_F(USVFSTest, CreateFileHookReportsCorrectErrorOnMissingFile) {
-  EXPECT_NO_THROW({
-    USVFSParameters params;
-    USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
-    std::unique_ptr<usvfs::HookContext> ctx(
-        CreateHookContext(params, ::GetModuleHandle(nullptr)));
-    HANDLE res = uhooks::CreateFileW(
-        VIRTUAL_FILEW, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
-        nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+    EXPECT_NO_THROW({
+        USVFSParameters params;
+        USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
+        std::unique_ptr<usvfs::HookContext> ctx(CreateHookContext(params, ::GetModuleHandle(nullptr)));
+        HANDLE res = uhooks::CreateFileW(VIRTUAL_FILEW, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
+                                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 
-    EXPECT_EQ(INVALID_HANDLE_VALUE, res);
-    EXPECT_EQ(ERROR_FILE_NOT_FOUND, ::GetLastError());
-  });
+        EXPECT_EQ(INVALID_HANDLE_VALUE, res);
+        EXPECT_EQ(ERROR_FILE_NOT_FOUND, ::GetLastError());
+    });
 }
 
 TEST_F(USVFSTestWithReroute, CreateFileHookRedirectsFile) {
-  EXPECT_NE(INVALID_HANDLE_VALUE,
-            uhooks::CreateFileW(VIRTUAL_FILEW, GENERIC_READ,
-                                FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr,
-                                OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
+    EXPECT_NE(INVALID_HANDLE_VALUE, uhooks::CreateFileW(VIRTUAL_FILEW, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                                        nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr));
 }
 
 TEST_F(USVFSTest, GetFileAttributesHookReportsCorrectErrorOnMissingFile) {
-  EXPECT_NO_THROW({
-    try {
-      USVFSParameters params;
-      USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
-      std::unique_ptr<usvfs::HookContext> ctx(
-          CreateHookContext(params, ::GetModuleHandle(nullptr)));
-      DWORD res = uhooks::GetFileAttributesW(VIRTUAL_FILEW);
+    EXPECT_NO_THROW({
+        try {
+            USVFSParameters params;
+            USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
+            std::unique_ptr<usvfs::HookContext> ctx(CreateHookContext(params, ::GetModuleHandle(nullptr)));
+            DWORD res = uhooks::GetFileAttributesW(VIRTUAL_FILEW);
 
-      EXPECT_EQ(INVALID_FILE_ATTRIBUTES, res);
-      EXPECT_EQ(ERROR_FILE_NOT_FOUND, ::GetLastError());
-    } catch (const std::exception &e) {
-      logger()->error("Exception: {}", e.what());
-      throw;
-    }
-  });
+            EXPECT_EQ(INVALID_FILE_ATTRIBUTES, res);
+            EXPECT_EQ(ERROR_FILE_NOT_FOUND, ::GetLastError());
+        } catch (const std::exception& e) {
+            logger()->error("Exception: {}", e.what());
+            throw;
+        }
+    });
 }
 
 TEST_F(USVFSTest, GetFileAttributesHookRedirectsFile) {
-  USVFSParameters params;
-  USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
-  std::unique_ptr<usvfs::HookContext> ctx(
-      CreateHookContext(params, ::GetModuleHandle(nullptr)));
-  usvfs::RedirectionTreeContainer &tree = ctx->redirectionTable();
+    USVFSParameters params;
+    USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
+    std::unique_ptr<usvfs::HookContext> ctx(CreateHookContext(params, ::GetModuleHandle(nullptr)));
+    usvfs::RedirectionTreeContainer& tree = ctx->redirectionTable();
 
-  tree.addFile(
-      ush::string_cast<std::string>(VIRTUAL_FILEW, ush::CodePage::UTF8).c_str(),
-      usvfs::RedirectionDataLocal(REAL_FILEA));
+    tree.addFile(ush::string_cast<std::string>(VIRTUAL_FILEW, ush::CodePage::UTF8).c_str(),
+                 usvfs::RedirectionDataLocal(REAL_FILEA));
 
-  EXPECT_EQ(::GetFileAttributesW(REAL_FILEW),
-            uhooks::GetFileAttributesW(VIRTUAL_FILEW));
+    EXPECT_EQ(::GetFileAttributesW(REAL_FILEW), uhooks::GetFileAttributesW(VIRTUAL_FILEW));
 }
 
 /*
@@ -235,80 +217,68 @@ buffer.get(), &filePart);
 }*/
 
 TEST_F(USVFSTest, NtQueryDirectoryFileRegularFile) {
-  USVFSParameters params;
-  USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
-  std::unique_ptr<usvfs::HookContext> ctx(
-      CreateHookContext(params, ::GetModuleHandle(nullptr)));
+    USVFSParameters params;
+    USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
+    std::unique_ptr<usvfs::HookContext> ctx(CreateHookContext(params, ::GetModuleHandle(nullptr)));
 
-  HANDLE hdl =
-      CreateFileW(L"C:\\", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
-                  nullptr, OPEN_EXISTING,
-                  FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+    HANDLE hdl = CreateFileW(L"C:\\", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
-  IO_STATUS_BLOCK status;
-  char buffer[1024];
+    IO_STATUS_BLOCK status;
+    char buffer[1024];
 
-  uhooks::NtQueryDirectoryFile(hdl, nullptr, nullptr, nullptr, &status, buffer,
-                               1024, FileDirectoryInformation, TRUE, nullptr,
-                               TRUE);
+    uhooks::NtQueryDirectoryFile(hdl, nullptr, nullptr, nullptr, &status, buffer, 1024, FileDirectoryInformation, TRUE,
+                                 nullptr, TRUE);
 
-  EXPECT_EQ(STATUS_SUCCESS, status.Status);
+    EXPECT_EQ(STATUS_SUCCESS, status.Status);
 }
 
 TEST_F(USVFSTest, NtQueryDirectoryFileFindsVirtualFile) {
-  USVFSParameters params;
-  USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
-  std::unique_ptr<usvfs::HookContext> ctx(
-      CreateHookContext(params, ::GetModuleHandle(nullptr)));
-  usvfs::RedirectionTreeContainer &tree = ctx->redirectionTable();
+    USVFSParameters params;
+    USVFSInitParameters(&params, "usvfs_test", true, LogLevel::Debug);
+    std::unique_ptr<usvfs::HookContext> ctx(CreateHookContext(params, ::GetModuleHandle(nullptr)));
+    usvfs::RedirectionTreeContainer& tree = ctx->redirectionTable();
 
-  tree.addFile("C:\\np.exe", usvfs::RedirectionDataLocal(REAL_FILEA));
+    tree.addFile("C:\\np.exe", usvfs::RedirectionDataLocal(REAL_FILEA));
 
-  HANDLE hdl =
-      CreateFileW(L"C:\\", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
-                  nullptr, OPEN_EXISTING,
-                  FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
+    HANDLE hdl = CreateFileW(L"C:\\", GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING,
+                             FILE_ATTRIBUTE_NORMAL | FILE_FLAG_BACKUP_SEMANTICS, nullptr);
 
-  IO_STATUS_BLOCK status;
-  char buffer[1024];
+    IO_STATUS_BLOCK status;
+    char buffer[1024];
 
-  usvfs::UnicodeString fileName(L"np.exe");
+    usvfs::UnicodeString fileName(L"np.exe");
 
-  uhooks::NtQueryDirectoryFile(hdl, nullptr, nullptr, nullptr, &status, buffer,
-                               1024, FileDirectoryInformation, TRUE,
-                               static_cast<PUNICODE_STRING>(fileName), TRUE);
+    uhooks::NtQueryDirectoryFile(hdl, nullptr, nullptr, nullptr, &status, buffer, 1024, FileDirectoryInformation, TRUE,
+                                 static_cast<PUNICODE_STRING>(fileName), TRUE);
 
-  FILE_DIRECTORY_INFORMATION *info =
-      reinterpret_cast<FILE_DIRECTORY_INFORMATION *>(buffer);
-  EXPECT_EQ(STATUS_SUCCESS, status.Status);
-  EXPECT_EQ(0, wcscmp(info->FileName, L"np.exe"));
+    FILE_DIRECTORY_INFORMATION* info = reinterpret_cast<FILE_DIRECTORY_INFORMATION*>(buffer);
+    EXPECT_EQ(STATUS_SUCCESS, status.Status);
+    EXPECT_EQ(0, wcscmp(info->FileName, L"np.exe"));
 }
 
 TEST_F(USVFSTestAuto, CannotCreateLinkToFileInNonexistantDirectory) {
-  EXPECT_EQ(FALSE,
-            VirtualLinkFile(REAL_FILEW,
-                            L"c:/this_directory_shouldnt_exist/np.exe", FALSE));
+    EXPECT_EQ(FALSE, VirtualLinkFile(REAL_FILEW, L"c:/this_directory_shouldnt_exist/np.exe", FALSE));
 }
 
 TEST_F(USVFSTestAuto, CanCreateMultipleLinks) {
-  static LPCWSTR outFile = LR"(C:\np.exe)";
-  static LPCWSTR outDir = LR"(C:\logs)";
-  EXPECT_EQ(TRUE, VirtualLinkFile(REAL_FILEW, outFile, 0));
-  EXPECT_EQ(TRUE, VirtualLinkDirectoryStatic(REAL_DIRW, outDir, 0));
+    static LPCWSTR outFile = LR"(C:\np.exe)";
+    static LPCWSTR outDir = LR"(C:\logs)";
+    EXPECT_EQ(TRUE, VirtualLinkFile(REAL_FILEW, outFile, 0));
+    EXPECT_EQ(TRUE, VirtualLinkDirectoryStatic(REAL_DIRW, outDir, 0));
 
-  // both file and dir exist and have the correct type
-  EXPECT_NE(INVALID_FILE_ATTRIBUTES, uhooks::GetFileAttributesW(outFile));
-  EXPECT_NE(INVALID_FILE_ATTRIBUTES, uhooks::GetFileAttributesW(outDir));
-  EXPECT_EQ(0UL,
-            uhooks::GetFileAttributesW(outFile) & FILE_ATTRIBUTE_DIRECTORY);
-  EXPECT_NE(0UL, uhooks::GetFileAttributesW(outDir) & FILE_ATTRIBUTE_DIRECTORY);
+    // both file and dir exist and have the correct type
+    EXPECT_NE(INVALID_FILE_ATTRIBUTES, uhooks::GetFileAttributesW(outFile));
+    EXPECT_NE(INVALID_FILE_ATTRIBUTES, uhooks::GetFileAttributesW(outDir));
+    EXPECT_EQ(0UL, uhooks::GetFileAttributesW(outFile) & FILE_ATTRIBUTE_DIRECTORY);
+    EXPECT_NE(0UL, uhooks::GetFileAttributesW(outDir) & FILE_ATTRIBUTE_DIRECTORY);
 }
 
-int main(int argc, char **argv) {
-  // note: this makes the logger available only to functions statically linked
-  // to the test binary, not those called in the dll
-  auto logger = spdlog::stdout_logger_mt("usvfs");
-  logger->set_level(spdlog::level::warn);
-  testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+int main(int argc, char** argv) {
+    // note: this makes the logger available only to functions statically linked
+    // to the test binary, not those called in the dll
+    auto logger = spdlog::stdout_logger_mt("usvfs");
+    logger->set_level(spdlog::level::warn);
+    testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 }
