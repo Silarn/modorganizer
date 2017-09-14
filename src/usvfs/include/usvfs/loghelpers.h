@@ -134,13 +134,10 @@ LogLevel ConvertLogLevel(spdlog::level::level_enum level);
 
 } // namespace usvfs
 
-// prefer the short variant of the function name, without signature.
-// Fall back to the portable boost macro
-#ifdef __FUNCTION__
-#define __MYFUNC__ __FUNCTION__
-#else
-#define __MYFUNC__ BOOST_CURRENT_FUNCTION
-#endif
+// Resolve the macro at instanition, it is only valid in a function.
+#define USVFS_LOG_S1(x) #x
+#define USVFS_LOG_S2(x) USVFS_LOG_S1(x)
+#define __MYFUNC__ USVFS_LOG_S2(__FUNCTION__)
 
 #define LOG_CALL() usvfs::log::CallLogger(__MYFUNC__)
 //#define LOG_CALL() usvfs::log::CallLoggerDummy()
