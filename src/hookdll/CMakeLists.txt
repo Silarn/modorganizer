@@ -31,8 +31,8 @@ SET(SRCS
     src/fallout3info.cpp
     src/falloutnvinfo.cpp
     src/gameinfo.cpp
-	src/hookdll.pro
-	src/hookdll.qbs
+    src/hookdll.pro
+    src/hookdll.qbs
     src/hooklock.cpp
     src/logger.cpp
     src/modinfo.cpp
@@ -54,7 +54,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC)
+target_link_libraries(${library_name} PUBLIC MOShared)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.

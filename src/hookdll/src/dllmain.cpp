@@ -29,11 +29,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "hookdll/profile.h"
 #include "hookdll/reroutes.h"
 #include "hookdll/utility.h"
-#include "inject.h"
+#include "MO/Shared/inject.h"
+#include "MO/Shared/util.h"
+#include "MO/Shared/appconfig.h"
 #include <DbgHelp.h>
 #include <Psapi.h>
 #include <Shellapi.h>
+#include <ShlObj.h>
 #include <Shlwapi.h>
+#include <Windows.h>
 #include <algorithm>
 #include <cstdarg>
 #include <cstdio>
@@ -45,13 +49,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <tchar.h>
 #include <tuple>
 #include <vector>
-#ifdef LEAK_CHECK_WITH_VLD
-#include <vld.h>
-#endif // LEAK_CHECK_WITH_VLD
-
-#include <ShlObj.h>
-#include <Shlwapi.h>
-#include <Windows.h>
+#include <mutex>
+#include <deque>
 
 using namespace MOShared;
 
@@ -134,7 +133,7 @@ HANDLE instanceMutex = INVALID_HANDLE_VALUE;
 HMODULE dllModule = nullptr;
 PVOID exceptionHandler = nullptr;
 
-boost::mutex queryMutex;
+std::mutex queryMutex;
 std::map<HANDLE, std::wstring> directoryCFHandles;
 std::map<HANDLE, std::deque<std::vector<uint8_t>>> qdfData;
 
