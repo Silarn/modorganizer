@@ -18,13 +18,12 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "apihook.h"
-#include "logger.h"
-#include "stdafx.h"
+#include "hookdll/apihook.h"
+#include "hookdll/logger.h"
+#include <MO/Shared/windows_error.h>
 #include <cassert>
 #include <exception>
 #include <stdexcept>
-#include <windows_error.h>
 
 const BYTE ApiHook::jump[] = {
     0xE9, 0xBB, 0xBB, 0xBB, 0xBB // JMP 0xBBBBBBBB (addr. of reroute function (relative))

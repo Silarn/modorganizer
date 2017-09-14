@@ -18,15 +18,14 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "logger.h"
-#include "reroutes.h"
-#include "stdafx.h"
+#include "hookdll/logger.h"
+#include "hookdll/reroutes.h"
+#include <MO/shared/error_report.h>
+#include <MO/shared/util.h>
 #include <Shlwapi.h>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
-#include <error_report.h>
-#include <util.h>
 
 using namespace MOShared;
 

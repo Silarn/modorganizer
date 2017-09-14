@@ -1,5 +1,5 @@
-#include "profile.h"
-#include "logger.h"
+#include "hookdll/profile.h"
+#include "hookdll/logger.h"
 
 std::map<const char*, TProfile::Time> TProfile::s_Times;
 time_t TProfile::s_LastDisplay = time(nullptr);

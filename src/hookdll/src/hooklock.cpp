@@ -1,5 +1,5 @@
-#include "hooklock.h"
-#include "logger.h"
+#include "hookdll/hooklock.h"
+#include "hookdll/logger.h"
 
 class __tlsCleanup {
   public:

@@ -16,19 +16,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include "skyriminfo.h"
-
-#include "error_report.h"
-#include "util.h"
-#include "windows_error.h"
+#include "hookdll/skyriminfo.h"
+#include "MO/shared/error_report.h"
+#include "MO/shared/util.h"
+#include "MO/shared/windows_error.h"
 #include <ShlObj.h>
 #include <sstream>
 #include <tchar.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Shlwapi.h>
 #include <Windows.h>
-#include <boost/assign.hpp>
 
 namespace MOShared {
 
@@ -64,9 +61,7 @@ std::wstring SkyrimInfo::getRegPathStatic() {
     }
 }
 
-std::vector<std::wstring> SkyrimInfo::getIniFileNames() const {
-    return boost::assign::list_of(L"skyrim.ini")(L"skyrimprefs.ini");
-}
+std::vector<std::wstring> SkyrimInfo::getIniFileNames() const { return {L"skyrim.ini", L"skyrimprefs.ini"}; }
 
 std::wstring SkyrimInfo::getReferenceDataFile() const { return L"Skyrim - Meshes.bsa"; }
 

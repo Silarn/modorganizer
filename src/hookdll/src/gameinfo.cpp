@@ -16,21 +16,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include "gameinfo.h"
-
-#include "windows_error.h"
-
-#include "fallout3info.h"
-#include "falloutnvinfo.h"
-#include "oblivioninfo.h"
-#include "skyriminfo.h"
-#include "util.h"
-
-#include <boost/assign.hpp>
-#include <boost/format.hpp>
-
+#include "hookdll/gameinfo.h"
+#include "MO/shared/util.h"
+#include "MO/shared/windows_error.h"
+#include "hookdll/fallout3info.h"
+#include "hookdll/falloutnvinfo.h"
+#include "hookdll/oblivioninfo.h"
+#include "hookdll/skyriminfo.h"
 #include <cassert>
+#include <fmt/format.h>
 #include <shlobj.h>
 #include <sstream>
 
@@ -130,8 +124,7 @@ std::wstring GameInfo::getSpecialPath(LPCWSTR name) const {
 
     errorcode = ::RegQueryValueExW(key, name, nullptr, nullptr, (LPBYTE)temp, &bufferSize);
     if (errorcode != ERROR_SUCCESS) {
-        throw windows_error((boost::format("failed to look up special folder (%1%)") % ToString(name, true)).str(),
-                            errorcode);
+        throw windows_error(fmt::format("failed to look up special folder {}", ToString(name, true)), errorcode);
     }
 
     WCHAR temp2[MAX_PATH];

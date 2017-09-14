@@ -17,9 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#include "disasm_table.h"
-#include "stdafx.h"
+#include "hookdll/disasm_table.h"
 
 const TableEntry table1[] = {
     /*  0 */ {"          add", OPT_RM_OPERAND, OPS_BYTE, OPT_RM_GPREG, OPS_BYTE, OPT_NOOPT, OPS_nullptr, 0 | HASRM,

@@ -17,28 +17,26 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#include "modinfo.h"
-#include "StdAfx.h"
-#include "gameinfo.h"
-#include "hooklock.h"
-#include "logger.h"
-#include "profile.h"
-#include "reroutes.h"
-#include "utility.h"
-#include <appconfig.h>
+#include "hookdll/modinfo.h"
+#include "hookdll/gameinfo.h"
+#include "hookdll/hooklock.h"
+#include "hookdll/logger.h"
+#include "hookdll/profile.h"
+#include "hookdll/reroutes.h"
+#include "hookdll/utility.h"
+#include <MO/shared/appconfig.h>
 #ifdef __GNUC__
 #include <cstdlib>
 #endif
+#include <MO/shared/util.h>
 #include <Shlobj.h>
 #include <Shlwapi.h>
 #include <algorithm>
-#include <boost/scoped_array.hpp>
 #include <ctime>
 #include <fstream>
 #include <iterator>
+#include <memory>
 #include <sstream>
-#include <util.h>
 
 using namespace MOShared;
 
@@ -301,7 +299,7 @@ bool ModInfo::detectOverwriteChange() {
 std::wstring ModInfo::reverseReroute(const std::wstring& path, bool* rerouted) {
     std::wstring result;
     size_t length = path.length() * 2;
-    boost::scoped_array<wchar_t> temp(new wchar_t[length]);
+    std::unique_ptr<wchar_t[]> temp(new wchar_t[length]);
     Canonicalize(temp.get(), path.c_str(), length);
     if (PathStartsWith(temp.get(), m_ModsPath.c_str())) {
         // path points to a mod
@@ -314,7 +312,7 @@ std::wstring ModInfo::reverseReroute(const std::wstring& path, bool* rerouted) {
 
         if (relPath != nullptr) {
             std::wstring combined = m_DataPathAbsoluteW + L"\\" + relPath;
-            boost::scoped_array<wchar_t> reroutedPath(new wchar_t[combined.length() * 2]);
+            std::unique_ptr<wchar_t[]> reroutedPath(new wchar_t[combined.length() * 2]);
             Canonicalize(reroutedPath.get(), combined.c_str());
             result.assign(reroutedPath.get());
         } else {
@@ -331,7 +329,7 @@ std::wstring ModInfo::reverseReroute(const std::wstring& path, bool* rerouted) {
             relPath += 1;
 
         std::wstring combined = m_DataPathAbsoluteW + L"\\" + relPath;
-        boost::scoped_array<wchar_t> reroutedPath(new wchar_t[combined.length() * 2]);
+        std::unique_ptr<wchar_t[]> reroutedPath(new wchar_t[combined.length() * 2]);
         Canonicalize(reroutedPath.get(), combined.c_str());
         result.assign(reroutedPath.get());
 

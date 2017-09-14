@@ -16,17 +16,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include "oblivioninfo.h"
-#include "error_report.h"
-#include "util.h"
-#include "windows_error.h"
+#include "hookdll/oblivioninfo.h"
+#include "MO/shared//error_report.h"
+#include "MO/shared/util.h"
+#include "MO/shared/windows_error.h"
 #include <ShlObj.h>
 #include <sstream>
 #include <tchar.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <boost/assign.hpp>
 
 namespace MOShared {
 
@@ -57,9 +55,7 @@ std::wstring OblivionInfo::getRegPathStatic() {
     }
 }
 
-std::vector<std::wstring> OblivionInfo::getIniFileNames() const {
-    return boost::assign::list_of(L"oblivion.ini")(L"oblivionprefs.ini");
-}
+std::vector<std::wstring> OblivionInfo::getIniFileNames() const { return {L"oblivion.ini", L"oblivionprefs.ini"}; }
 
 bool OblivionInfo::rerouteToProfile(const wchar_t* fileName, const wchar_t*) const {
     static LPCWSTR profileFiles[] = {L"oblivion.ini", L"oblivionprefs.ini", L"plugins.txt", nullptr};
