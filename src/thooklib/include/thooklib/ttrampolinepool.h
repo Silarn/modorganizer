@@ -43,17 +43,19 @@ namespace detail {
 template <typename Bar>
 class thread_specific_ptr {
   private:
-    static thread_local std::unordered_map<thread_specific_ptr*, Bar> tls;
-    Bar* get_() {
-        auto I = tls.find(this);
-        if (I != tls.end())
-            return &I->second;
-        auto II = tls.emplace(this, thread_specific_ptr()); // Could use std::piecewise_construct here...
-        return &II->second.second;
+    static thread_local std::unordered_map<thread_specific_ptr*, Bar*> tls;
+    Bar* get_() const {
+        auto I = tls.find(const_cast<thread_specific_ptr*>(this));
+        if (I != tls.end()) {
+            return I->second;
+        }
+        auto II = tls.emplace(const_cast<thread_specific_ptr*>(this),
+                              nullptr); // Could use std::piecewise_construct here...
+        return II.first->second;
     }
     void set_(Bar* new_value) {
-        Bar* Old = get_();
-        tls[Old] = new_value;
+        get_();
+        tls[this] = new_value;
     }
 
   public:
@@ -63,8 +65,9 @@ class thread_specific_ptr {
     Bar* operator->() const { return get(); }
     Bar& operator*() const { return *get(); }
     void reset(Bar* new_value = nullptr) {
-        if (get() != new_value && get()) {
-            delete get();
+        auto Old = get();
+        if (Old != new_value && Old) {
+            delete Old;
         }
         set_(new_value);
     }
