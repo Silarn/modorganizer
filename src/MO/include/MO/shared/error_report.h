@@ -16,7 +16,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #pragma once
 
 #include <tchar.h>
@@ -30,7 +29,7 @@ typedef wstring tstring;
 #else
 typedef string tstring;
 #endif
-}
+} // namespace std
 
 extern void log(const char* format, ...);
 

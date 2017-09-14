@@ -17,17 +17,18 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "appconfig.h"
+#include "MO/shared/appconfig.h"
 
 namespace AppConfig {
 
 #define PARWSTRING wstring
-#define APPPARAM(partype, parid, value) partype parid () { return value; }
-#include "appconfig.inc"
+#define APPPARAM(partype, parid, value)                                                                                \
+    partype parid() { return value; }
+#include "MO/shared/appconfig.inc"
 
 namespace MOShared {
 #undef PARWSTRING
 #undef APPPARAM
 
-}
 } // namespace MOShared
+} // namespace AppConfig
