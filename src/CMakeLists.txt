@@ -52,7 +52,7 @@ if (MSVC)
                         "Only tested with Visual Studio 2017 15.3")
     endif()
     ## For all configurations ##
-    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS -DUNICODE -D_UNICODE)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS -DUNICODE -D_UNICODE -DASMJIT_STATIC)
     # For C++17, Standards Conformance, and Proper Warning Levels.
     set(COMPILER
         "/std:c++17"
@@ -72,7 +72,6 @@ if (MSVC)
     string(REPLACE ";" " " LINKER "${LINKER}")
     
     set(COMPILER_DEBUG
-        "/MTd"
     )
     string(REPLACE ";" " " COMPILER_DEBUG "${COMPILER_DEBUG}")
     
@@ -84,7 +83,6 @@ if (MSVC)
         "/Qpar" # Auto Parralize Loops
         "/Qpar-report:1" # Outputs an info message for loops that are parallelized.
         "/Qvec-report:1" # Outputs an info message for loops that are vectorized.
-        "/MT"
     )
     string(REPLACE ";" " " COMPILER_RELEASE "${COMPILER_RELEASE}")
     
