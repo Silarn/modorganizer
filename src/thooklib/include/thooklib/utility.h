@@ -19,8 +19,7 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
-#include <windows_sane.h>
+#include "usvfs_shared/windows_sane.h"
 
 namespace HookLib {
 
@@ -30,4 +29,4 @@ namespace HookLib {
 /// \return address of the exported function
 FARPROC MyGetProcAddress(HMODULE module, LPCSTR functionName);
 
-}
+} // namespace HookLib

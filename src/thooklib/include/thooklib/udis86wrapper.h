@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
 #include <udis86.h>
 #undef inline // libudis86/types.h defines inline to __inline which is no longer legal since vs2012
 
@@ -27,36 +26,32 @@ namespace HookLib {
 
 class UDis86Wrapper {
 
-public:
+  public:
+    UDis86Wrapper();
 
-  UDis86Wrapper();
+    void setInputBuffer(const uint8_t* buffer, size_t size);
 
-  void setInputBuffer(const uint8_t *buffer, size_t size);
+    ud_t& obj();
 
-  ud_t &obj();
+    operator ud_t*() { return &m_Obj; }
 
-  operator ud_t*() { return &m_Obj; }
+    bool isRelativeJump();
 
-  bool isRelativeJump();
+    intptr_t jumpOffset();
 
-  intptr_t jumpOffset();
+    ///
+    /// determines the absolute jump target at the current instruction, taking into account
+    /// relative instructions of all sizes and RIP-relative addressing.
+    /// \return absolute address of the jump at the current disassembler instruction
+    /// \note this works correctly ONLY if the input buffer has been set with setInputBuffer or
+    ///       if ud_set_pc has been called
+    ///
+    uint64_t jumpTarget();
 
-  ///
-  /// determines the absolute jump target at the current instruction, taking into account
-  /// relative instructions of all sizes and RIP-relative addressing.
-  /// \return absolute address of the jump at the current disassembler instruction
-  /// \note this works correctly ONLY if the input buffer has been set with setInputBuffer or
-  ///       if ud_set_pc has been called
-  ///
-  uint64_t jumpTarget();
-
-private:
-
-private:
-
-  ud_t m_Obj;
-  const uint8_t *m_Buffer { nullptr };
-
+  private:
+  private:
+    ud_t m_Obj;
+    const uint8_t* m_Buffer{nullptr};
 };
 
 } // namespace HookLib
