@@ -193,6 +193,7 @@ set_property(TARGET GTest PROPERTY IMPORTED_LOCATION_DEBUG ${GTEST_LIBRARY_D})
 
 ## Targets ##
 add_subdirectory(usvfs_shared)
+add_subdirectory(thooklib)
 add_subdirectory(usvfs)
 
 
