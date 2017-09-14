@@ -26,7 +26,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/shmlogger.h"
 #include "usvfs_shared/winapi.h"
 #include "usvfs_shared/windows_error.h"
-#include <asmjit.h>
+#include <asmjit/asmjit.h>
 #include <map>
 
 #if BOOST_ARCH_X86_64
