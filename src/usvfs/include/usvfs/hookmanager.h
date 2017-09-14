@@ -20,7 +20,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include "hooklib.h"
+#include "thooklib/hooklib.h"
 #include "usvfs/hookcontext.h"
 #include "usvfs/usvfsparameters.h"
 #include <map>

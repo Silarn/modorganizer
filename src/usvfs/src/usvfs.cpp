@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs/usvfs.h"
-#include "ttrampolinepool.h"
+#include "thooklib/ttrampolinepool.h"
 #include "usvfs/hookmanager.h"
 #include "usvfs/inject.h"
 #include "usvfs/loghelpers.h"

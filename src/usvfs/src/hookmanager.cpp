@@ -19,6 +19,8 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs/hookmanager.h"
+#include "thooklib/ttrampolinepool.h"
+#include "thooklib/utility.h"
 #include "usvfs/hooks/kernel32.h"
 #include "usvfs/hooks/ntdll.h"
 #include "usvfs/hooks/ole32.h"
@@ -31,8 +33,6 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/winapi.h"
 #include <filesystem>
 #include <stdexcept>
-#include <ttrampolinepool.h>
-#include <utility.h>
 
 using namespace HookLib;
 namespace uhooks = usvfs::hooks;
