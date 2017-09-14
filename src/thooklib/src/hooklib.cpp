@@ -29,13 +29,16 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <asmjit/asmjit.h>
 #include <map>
 
-#if BOOST_ARCH_X86_64
+#if defined(_M_X64) || defined(__amd64__)
 #pragma message("64bit build")
 #define JUMP_SIZE 13
-#elif BOOST_ARCH_X86_32
+#define IS_X64 1
+#elif _M_IX86
+#pragma message("32bit build")
 #define JUMP_SIZE 5
+#define IS_X64 0
 #else
-#error "unsupported architecture"
+#error "Unsupported Architecture"
 #endif
 
 using namespace asmjit;
@@ -91,6 +94,8 @@ size_t GetJumpSize(LPBYTE, LPVOID) {
 
     // Since trampoline buffers is always allocated within 32-bit
     // address range of jump, we can say with confidence that a 5-byte jump is possible
+
+    // FIXME: Shouldnt this use the JUMP_SIZE Macro? - Diana
     return 5;
 }
 
@@ -98,7 +103,7 @@ void WriteLongJump(LPBYTE jumpAddr, LPVOID destination) {
     // TODO: not using asmjit here because I couldn't figure out how to generate
     // a working, space-optimized, relative jump to outside the generated code and
     // we do want to optimize this jump
-#if BOOST_ARCH_X86_64
+#if IS_X64
     intptr_t dist = reinterpret_cast<intptr_t>(destination) - (reinterpret_cast<intptr_t>(jumpAddr) + 5);
     int32_t distShort = static_cast<int32_t>(dist);
 #else
