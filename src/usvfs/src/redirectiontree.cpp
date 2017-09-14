@@ -18,11 +18,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "redirectiontree.h"
+#include "usvfs/redirectiontree.h"
 
-
-std::ostream &usvfs::operator<<(std::ostream &stream, const RedirectionData &data)
-{
-  stream << data.linkTarget;
-  return stream;
+std::ostream& usvfs::operator<<(std::ostream& stream, const RedirectionData& data) {
+    stream << data.linkTarget;
+    return stream;
 }

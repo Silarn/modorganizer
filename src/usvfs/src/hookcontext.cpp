@@ -110,7 +110,7 @@ SharedParameters* HookContext::retrieveParameters(const USVFSParameters& params)
         res.first = m_ConfigurationSHM.construct<SharedParameters>("parameters")(
             params, VoidAllocatorT(m_ConfigurationSHM.get_segment_manager()));
         if (res.first == nullptr) {
-            USVFS_THROW_EXCEPTION(bi::bad_alloc());
+            USVFS_THROW_EXCEPTION(std::bad_alloc());
         }
     } else {
         spdlog::get("usvfs")->info("access existing config in {}", ::GetCurrentProcessId());
@@ -120,7 +120,7 @@ SharedParameters* HookContext::retrieveParameters(const USVFSParameters& params)
 }
 
 HookContext::ConstPtr HookContext::readAccess(const char*) {
-    BOOST_ASSERT(s_Instance != nullptr);
+    assert(s_Instance != nullptr);
 
     // TODO: this should be a shared mutex!
     s_Instance->m_Mutex.wait(200);
@@ -128,7 +128,7 @@ HookContext::ConstPtr HookContext::readAccess(const char*) {
 }
 
 HookContext::Ptr HookContext::writeAccess(const char*) {
-    BOOST_ASSERT(s_Instance != nullptr);
+    assert(s_Instance != nullptr);
 
     s_Instance->m_Mutex.wait(200);
     return Ptr(s_Instance, unlock);
@@ -148,7 +148,7 @@ USVFSParameters HookContext::callParameters() const {
 
 std::wstring HookContext::dllPath() const {
     std::wstring path = winapi::wide::getModuleFileName(m_DLLModule);
-    return boost::filesystem::path(path).parent_path().make_preferred().wstring();
+    return fs::path(path).parent_path().make_preferred().wstring();
 }
 
 void HookContext::registerProcess(DWORD pid) { m_Parameters->processList.insert(pid); }

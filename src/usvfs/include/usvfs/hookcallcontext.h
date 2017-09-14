@@ -19,11 +19,8 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
-#include "windows_sane.h"
-
+#include "usvfs_shared/windows_sane.h"
 #include <vector>
-
 
 namespace usvfs {
 
@@ -32,56 +29,53 @@ namespace usvfs {
  *    to one should be manipulated
  */
 enum class MutExHookGroup : int {
-  ALL_GROUPS = 0,       // An ALL_GROUPS-hook prevents all other hooks from becoming active BUT
-                        // hooks from other groups don't prevent the ALL_GROUPS-hook from becoming activated
-  OPEN_FILE = 1,
-  CREATE_PROCESS = 2,
-  FILE_ATTRIBUTES = 3,
-  FIND_FILES = 4,
-  LOAD_LIBRARY = 5,
-  FULL_PATHNAME = 6,
-  SHELL_FILEOP = 7,
-  DELETE_FILE = 8,
-  GET_FILE_VERSION = 9,
-  GET_MODULE_HANDLE = 10,
+    ALL_GROUPS = 0, // An ALL_GROUPS-hook prevents all other hooks from becoming active BUT
+                    // hooks from other groups don't prevent the ALL_GROUPS-hook from becoming activated
+    OPEN_FILE = 1,
+    CREATE_PROCESS = 2,
+    FILE_ATTRIBUTES = 3,
+    FIND_FILES = 4,
+    LOAD_LIBRARY = 5,
+    FULL_PATHNAME = 6,
+    SHELL_FILEOP = 7,
+    DELETE_FILE = 8,
+    GET_FILE_VERSION = 9,
+    GET_MODULE_HANDLE = 10,
 
-  NO_GROUP = 11,
-  LAST = NO_GROUP,
+    NO_GROUP = 11,
+    LAST = NO_GROUP,
 };
-
 
 class HookCallContext {
 
-public:
+  public:
+    HookCallContext();
+    HookCallContext(MutExHookGroup group);
+    ~HookCallContext();
 
-  HookCallContext();
-  HookCallContext(MutExHookGroup group);
-  ~HookCallContext();
+    HookCallContext(const HookCallContext& reference) = delete;
+    HookCallContext& operator=(const HookCallContext& reference) = delete;
 
-  HookCallContext(const HookCallContext &reference) = delete;
-  HookCallContext &operator=(const HookCallContext &reference) = delete;
+    void updateLastError(DWORD lastError = GetLastError());
 
-  void updateLastError(DWORD lastError = GetLastError());
+    DWORD lastError() const { return m_LastError; }
 
-  DWORD lastError() const { return m_LastError; }
+    bool active() const;
 
-  bool active() const;
-
-private:
-
-  DWORD m_LastError;
-  bool m_Active;
-  MutExHookGroup m_Group;
-
+  private:
+    DWORD m_LastError;
+    bool m_Active;
+    MutExHookGroup m_Group;
 };
 
 class FunctionGroupLock {
-public:
-  FunctionGroupLock(MutExHookGroup group);
-  ~FunctionGroupLock();
-private:
-  MutExHookGroup m_Group;
-  bool m_Active;
+  public:
+    FunctionGroupLock(MutExHookGroup group);
+    ~FunctionGroupLock();
+
+  private:
+    MutExHookGroup m_Group;
+    bool m_Active;
 };
 
 } // namespace usvfs

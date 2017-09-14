@@ -18,123 +18,118 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
-#include "loghelpers.h"
-#include <stringcast.h>
-#include <stringutils.h>
-
+#include "usvfs/loghelpers.h"
+#include "usvfs_shared/stringcast.h"
+#include "usvfs_shared/stringutils.h"
 
 namespace ush = usvfs::shared;
 
-
-std::ostream &usvfs::log::operator<<(std::ostream &os, const Wrap<NTSTATUS> &status)
-{
-  switch (status.data()) {
+std::ostream& usvfs::log::operator<<(std::ostream& os, const Wrap<NTSTATUS>& status) {
+    switch (status.data()) {
     case 0x00000000: {
-      os << "ok";
+        os << "ok";
     } break;
     case 0xC0000022: {
-      os << "access denied";
+        os << "access denied";
     } break;
     case 0xC0000035: {
-      os << "exists already";
+        os << "exists already";
     } break;
     default: {
-      ush::FormatGuard guard(os);
-      os << "err " << std::hex << (int)status.data();
+        ush::FormatGuard guard(os);
+        os << "err " << std::hex << (int)status.data();
     } break;
-  }
-  return os;
-}
-
-
-std::ostream &usvfs::log::operator<<(std::ostream &os, const Wrap<PUNICODE_STRING> &str)
-{
-  try {
-    // TODO this does not correctly support surrogate pairs since the size used here
-    // is the number of 16-bit characters in the buffer whereas toNarrow expects the
-    // actual number of characters. It will always underestimate though, so worst
-    // case scenario we truncate the string
-    if (str.data() == nullptr) {
-      os << "<null>";
-    } else {
-      os << ush::string_cast<std::string>(str.data()->Buffer
-                                          , ush::CodePage::UTF8
-                                          , str.data()->Length / sizeof(WCHAR));
     }
-  } catch (const std::exception &e) {
-    os << e.what();
-  }
-
-  return os;
+    return os;
 }
 
+std::ostream& usvfs::log::operator<<(std::ostream& os, const Wrap<PUNICODE_STRING>& str) {
+    try {
+        // TODO this does not correctly support surrogate pairs since the size used here
+        // is the number of 16-bit characters in the buffer whereas toNarrow expects the
+        // actual number of characters. It will always underestimate though, so worst
+        // case scenario we truncate the string
+        if (str.data() == nullptr) {
+            os << "<null>";
+        } else {
+            os << ush::string_cast<std::string>(str.data()->Buffer, ush::CodePage::UTF8,
+                                                str.data()->Length / sizeof(WCHAR));
+        }
+    } catch (const std::exception& e) {
+        os << e.what();
+    }
 
-static void writeToStream(std::ostream &os, LPCWSTR str)
-{
-  if (str == nullptr) {
-    os << "<null>";
-  } else {
-    os << ush::string_cast<std::string>(str, ush::CodePage::UTF8);
-  }
+    return os;
 }
 
-
-std::ostream &usvfs::log::operator<<(std::ostream &os, const Wrap<LPWSTR> &str)
-{
-  try {
-    writeToStream(os, str.data());
-  } catch (const std::exception &e) {
-    os << e.what();
-  }
-
-  return os;
+static void writeToStream(std::ostream& os, LPCWSTR str) {
+    if (str == nullptr) {
+        os << "<null>";
+    } else {
+        os << ush::string_cast<std::string>(str, ush::CodePage::UTF8);
+    }
 }
 
+std::ostream& usvfs::log::operator<<(std::ostream& os, const Wrap<LPWSTR>& str) {
+    try {
+        writeToStream(os, str.data());
+    } catch (const std::exception& e) {
+        os << e.what();
+    }
 
-std::ostream &usvfs::log::operator<<(std::ostream &os, const Wrap<LPCWSTR> &str)
-{
-  try {
-    writeToStream(os, str.data());
-  } catch (const std::exception &e) {
-    os << e.what();
-  }
-
-  return os;
+    return os;
 }
 
-std::ostream &usvfs::log::operator<<(std::ostream &os, const Wrap<std::wstring> &str)
-{
-  try {
-    // TODO this does not correctly support surrogate pairs since the size used here
-    // is the number of 16-bit characters in the buffer whereas toNarrow expects the
-    // actual number of characters. It will always underestimate though, so worst
-    // case scenario we truncate the string
-    os << ush::string_cast<std::string>(str.data(), ush::CodePage::UTF8);
-  } catch (const std::exception &e) {
-    os << e.what();
-  }
+std::ostream& usvfs::log::operator<<(std::ostream& os, const Wrap<LPCWSTR>& str) {
+    try {
+        writeToStream(os, str.data());
+    } catch (const std::exception& e) {
+        os << e.what();
+    }
 
-  return os;
+    return os;
 }
 
-spdlog::level::level_enum usvfs::log::ConvertLogLevel(LogLevel level)
-{
-  switch (level) {
-    case LogLevel::Debug: return spdlog::level::debug;
-    case LogLevel::Info: return spdlog::level::info;
-    case LogLevel::Warning: return spdlog::level::warn;
-    case LogLevel::Error: return spdlog::level::err;
-    default: return spdlog::level::debug;
-  }
+std::ostream& usvfs::log::operator<<(std::ostream& os, const Wrap<std::wstring>& str) {
+    try {
+        // TODO this does not correctly support surrogate pairs since the size used here
+        // is the number of 16-bit characters in the buffer whereas toNarrow expects the
+        // actual number of characters. It will always underestimate though, so worst
+        // case scenario we truncate the string
+        os << ush::string_cast<std::string>(str.data(), ush::CodePage::UTF8);
+    } catch (const std::exception& e) {
+        os << e.what();
+    }
+
+    return os;
 }
 
-LogLevel usvfs::log::ConvertLogLevel(spdlog::level::level_enum level)
-{
-  switch (level) {
-    case spdlog::level::debug: return LogLevel::Debug;
-    case spdlog::level::info:  return LogLevel::Info;
-    case spdlog::level::warn:  return LogLevel::Warning;
-    case spdlog::level::err:   return LogLevel::Error;
-    default: return LogLevel::Debug;
-  }
+spdlog::level::level_enum usvfs::log::ConvertLogLevel(LogLevel level) {
+    switch (level) {
+    case LogLevel::Debug:
+        return spdlog::level::debug;
+    case LogLevel::Info:
+        return spdlog::level::info;
+    case LogLevel::Warning:
+        return spdlog::level::warn;
+    case LogLevel::Error:
+        return spdlog::level::err;
+    default:
+        return spdlog::level::debug;
+    }
+}
+
+LogLevel usvfs::log::ConvertLogLevel(spdlog::level::level_enum level) {
+    switch (level) {
+    case spdlog::level::debug:
+        return LogLevel::Debug;
+    case spdlog::level::info:
+        return LogLevel::Info;
+    case spdlog::level::warn:
+        return LogLevel::Warning;
+    case spdlog::level::err:
+        return LogLevel::Error;
+    default:
+        return LogLevel::Debug;
+    }
 }

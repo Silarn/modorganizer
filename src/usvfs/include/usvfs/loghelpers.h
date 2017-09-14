@@ -19,90 +19,83 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
-
-#include "dllimport.h"
-#include <boost/current_function.hpp>
+#include "usvfs/dllimport.h"
+#include "usvfs_shared/ntdll_declarations.h"
+#include "usvfs_shared/shmlogger.h"
+#include "usvfs_shared/stringutils.h"
 #include <sstream>
-#include <shmlogger.h>
-#include <stringutils.h>
-#include <ntdll_declarations.h>
-
 
 namespace usvfs {
 
 namespace log {
 
-enum class DisplayStyle : uint8_t {
-  Hex = 0x01
-};
-
+enum class DisplayStyle : uint8_t { Hex = 0x01 };
 
 class CallLoggerDummy {
-public:
-  template <typename T>
-  CallLoggerDummy &addParam(const char*, const T&, uint8_t style = 0) { return *this; }
+  public:
+    template <typename T>
+    CallLoggerDummy& addParam(const char*, const T&, uint8_t style = 0) {
+        return *this;
+    }
 };
 
 class CallLogger {
-public:
-  explicit CallLogger(const char *function)
-  {
-    const char *namespaceend = strrchr(function, ':');
-    if (namespaceend != nullptr) {
-      function = namespaceend + 1;
+  public:
+    explicit CallLogger(const char* function) {
+        const char* namespaceend = strrchr(function, ':');
+        if (namespaceend != nullptr) {
+            function = namespaceend + 1;
+        }
+        m_Message << function;
     }
-    m_Message << function;
-  }
-  ~CallLogger()
-  {
-    try {
-      static std::shared_ptr<spdlog::logger> log = spdlog::get("hooks");
-      log->debug("{}", m_Message.str());
-    } catch (...) {
-      // suppress all exceptions in destructor
+    ~CallLogger() {
+        try {
+            static std::shared_ptr<spdlog::logger> log = spdlog::get("hooks");
+            log->debug("{}", m_Message.str());
+        } catch (...) {
+            // suppress all exceptions in destructor
+        }
     }
-  }
 
-  template <typename T>
-  CallLogger &addParam(const char *name, const T &value, uint8_t style = 0);
-private:
-  template <typename T>
-  void outputParam(std::ostream &stream, const T &value, std::false_type) {
-    stream << value;
-  }
+    template <typename T>
+    CallLogger& addParam(const char* name, const T& value, uint8_t style = 0);
 
-  template <typename T>
-  void outputParam(std::ostream &stream, const T &value, std::true_type) {
-    if (value == nullptr) {
-      stream << "<null>";
-    } else {
-      stream << value;
+  private:
+    template <typename T>
+    void outputParam(std::ostream& stream, const T& value, std::false_type) {
+        stream << value;
     }
-  }
-private:
-  std::ostringstream m_Message;
+
+    template <typename T>
+    void outputParam(std::ostream& stream, const T& value, std::true_type) {
+        if (value == nullptr) {
+            stream << "<null>";
+        } else {
+            stream << value;
+        }
+    }
+
+  private:
+    std::ostringstream m_Message;
 };
 
-
 template <typename T>
-CallLogger &CallLogger::addParam(const char *name, const T &value, uint8_t style)
-{
-  static bool enabled = spdlog::get("hooks")->should_log(spdlog::level::debug);
-  typedef std::underlying_type<DisplayStyle>::type DSType;
-  if (enabled) {
-    m_Message << " [" << name << "=";
-    if (style & static_cast<DSType>(DisplayStyle::Hex)) {
-      m_Message << std::hex;
-    } else {
-      m_Message << std::dec;
+CallLogger& CallLogger::addParam(const char* name, const T& value, uint8_t style) {
+    static bool enabled = spdlog::get("hooks")->should_log(spdlog::level::debug);
+    typedef std::underlying_type<DisplayStyle>::type DSType;
+    if (enabled) {
+        m_Message << " [" << name << "=";
+        if (style & static_cast<DSType>(DisplayStyle::Hex)) {
+            m_Message << std::hex;
+        } else {
+            m_Message << std::dec;
+        }
+
+        outputParam(m_Message, value, std::is_pointer<T>());
+
+        m_Message << "]";
     }
-
-    outputParam(m_Message, value, std::is_pointer<T>());
-
-    m_Message << "]";
-  }
-  return *this;
+    return *this;
 }
 
 /**
@@ -111,27 +104,28 @@ CallLogger &CallLogger::addParam(const char *name, const T &value, uint8_t style
  */
 template <typename T>
 class Wrap {
-public:
-  explicit Wrap(const T &data) : m_Data(data) {}
-  Wrap(Wrap<T> &&reference) : m_Data(std::move(reference.m_Data)) {}
-  Wrap(const Wrap<T> &reference) = delete;
-  Wrap<T> &operator=(const Wrap<T>& reference) = delete;
-  const T &data() const { return m_Data; }
-private:
-  const T &m_Data;
+  public:
+    explicit Wrap(const T& data) : m_Data(data) {}
+    Wrap(Wrap<T>&& reference) : m_Data(std::move(reference.m_Data)) {}
+    Wrap(const Wrap<T>& reference) = delete;
+    Wrap<T>& operator=(const Wrap<T>& reference) = delete;
+    const T& data() const { return m_Data; }
+
+  private:
+    const T& m_Data;
 };
 
 template <typename T>
-Wrap<T> wrap(const T &data) { return Wrap<T>(data); }
+Wrap<T> wrap(const T& data) {
+    return Wrap<T>(data);
+}
 
+std::ostream& operator<<(std::ostream& os, const Wrap<LPWSTR>& str);
+std::ostream& operator<<(std::ostream& os, const Wrap<LPCWSTR>& str);
+extern "C" DLLEXPORT std::ostream& operator<<(std::ostream& os, const Wrap<std::wstring>& str);
 
-std::ostream &operator<<(std::ostream &os, const Wrap<LPWSTR> &str);
-std::ostream &operator<<(std::ostream &os, const Wrap<LPCWSTR> &str);
-extern "C" DLLEXPORT std::ostream &operator<<(std::ostream &os, const Wrap<std::wstring> &str);
-
-std::ostream &operator<<(std::ostream &os, const Wrap<PUNICODE_STRING> &str);
-std::ostream &operator<<(std::ostream &os, const Wrap<NTSTATUS> &status);
-
+std::ostream& operator<<(std::ostream& os, const Wrap<PUNICODE_STRING>& str);
+std::ostream& operator<<(std::ostream& os, const Wrap<NTSTATUS>& status);
 
 spdlog::level::level_enum ConvertLogLevel(LogLevel level);
 LogLevel ConvertLogLevel(spdlog::level::level_enum level);
@@ -139,7 +133,6 @@ LogLevel ConvertLogLevel(spdlog::level::level_enum level);
 } // namespace log
 
 } // namespace usvfs
-
 
 // prefer the short variant of the function name, without signature.
 // Fall back to the portable boost macro
