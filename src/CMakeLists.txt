@@ -216,6 +216,7 @@ set_property(TARGET UDIS86 PROPERTY IMPORTED_LOCATION_DEBUG ${UDIS86_LIBRARY_D})
 ## Targets ##
 add_subdirectory(usvfs_shared)
 add_subdirectory(thooklib)
+add_subdirectory(tinjectlib)
 add_subdirectory(usvfs)
 
 
