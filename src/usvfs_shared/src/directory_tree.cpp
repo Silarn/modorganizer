@@ -20,24 +20,20 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs_shared/directory_tree.h"
 
-fs::path::iterator usvfs::shared::nextIter(const fs::path::iterator &iter,
-                                           const fs::path::iterator &end) {
-  fs::path::iterator next = iter;
-  ++next;
-  while ((next != end) &&
-         ((*next->c_str() == L'/') || (*next->c_str() == L'\\') ||
-          (*next->c_str() == L'.') || (*next->c_str() == L'\0'))) {
+fs::path::iterator usvfs::shared::nextIter(const fs::path::iterator& iter, const fs::path::iterator& end) {
+    fs::path::iterator next = iter;
     ++next;
-  }
-  return next;
+    while ((next != end) && ((*next->c_str() == L'/') || (*next->c_str() == L'\\') || (*next->c_str() == L'.') ||
+                             (*next->c_str() == L'\0'))) {
+        ++next;
+    }
+    return next;
 }
 
-void usvfs::shared::advanceIter(fs::path::iterator &iter,
-                                const fs::path::iterator &end) {
-  ++iter;
-  while ((iter != end) &&
-         ((*iter->c_str() == L'/') || (*iter->c_str() == L'\\') ||
-          (*iter->c_str() == L'.') || (*iter->c_str() == L'\0'))) {
+void usvfs::shared::advanceIter(fs::path::iterator& iter, const fs::path::iterator& end) {
     ++iter;
-  }
+    while ((iter != end) && ((*iter->c_str() == L'/') || (*iter->c_str() == L'\\') || (*iter->c_str() == L'.') ||
+                             (*iter->c_str() == L'\0'))) {
+        ++iter;
+    }
 }

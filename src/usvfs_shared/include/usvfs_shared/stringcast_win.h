@@ -20,10 +20,10 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
+#include "usvfs_shared/logging.h"
 #include "usvfs_shared/stringcast.h"
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/windows_error.h"
-#include "usvfs_shared/logging.h"
 #include <type_traits>
 
 namespace usvfs {
@@ -33,79 +33,75 @@ UINT windowsCP(CodePage codePage);
 
 template <>
 class string_cast_impl<std::string, const wchar_t*> {
-public:
-  static std::string cast(const wchar_t * const &source, CodePage codePage, size_t sourceLength)
-  {
-    std::string result;
+  public:
+    static std::string cast(const wchar_t* const& source, CodePage codePage, size_t sourceLength) {
+        std::string result;
 
-    if (sourceLength == std::numeric_limits<size_t>::max()) {
-      sourceLength = wcslen(source);
+        if (sourceLength == std::numeric_limits<size_t>::max()) {
+            sourceLength = wcslen(source);
+        }
+
+        if (sourceLength > 0) {
+            // use utf8 or local 8-bit encoding depending on user choice
+            UINT cp = windowsCP(codePage);
+            // preflight to find out the required buffer size
+            int outLength =
+                WideCharToMultiByte(cp, 0, source, static_cast<int>(sourceLength), nullptr, 0, nullptr, nullptr);
+            if (outLength == 0) {
+                throw windows_error("string conversion failed");
+            }
+            result.resize(outLength);
+            outLength = WideCharToMultiByte(cp, 0, source, static_cast<int>(sourceLength), &result[0], outLength,
+                                            nullptr, nullptr);
+            if (outLength == 0) {
+                throw windows_error("string conversion failed");
+            }
+            // fix output string length (i.e. in case of unconvertible characters
+            while (result[outLength - 1] == L'\0') {
+                result.resize(--outLength);
+            }
+        }
+
+        return result;
     }
-
-    if (sourceLength > 0) {
-      // use utf8 or local 8-bit encoding depending on user choice
-      UINT cp = windowsCP(codePage);
-      // preflight to find out the required buffer size
-      int outLength = WideCharToMultiByte(cp, 0, source, static_cast<int>(sourceLength),
-                                          nullptr, 0, nullptr, nullptr);
-      if (outLength == 0) {
-        throw windows_error("string conversion failed");
-      }
-      result.resize(outLength);
-      outLength = WideCharToMultiByte(cp, 0, source, static_cast<int>(sourceLength),
-                                      &result[0], outLength, nullptr, nullptr);
-      if (outLength == 0) {
-        throw windows_error("string conversion failed");
-      }
-      // fix output string length (i.e. in case of unconvertible characters
-      while (result[outLength - 1] == L'\0') {
-        result.resize(--outLength);
-      }
-    }
-
-    return result;
-  }
 };
-
 
 template <>
 class string_cast_impl<std::wstring, const char*> {
-public:
-  static std::wstring cast(const char * const &source, CodePage codePage, size_t sourceLength) {
-    std::wstring result;
+  public:
+    static std::wstring cast(const char* const& source, CodePage codePage, size_t sourceLength) {
+        std::wstring result;
 
-    if (sourceLength == std::numeric_limits<size_t>::max()) {
-      sourceLength = strlen(source);
-    }
-    if (sourceLength > 0) {
-      // use utf8 or local 8-bit encoding depending on user choice
-      UINT cp = windowsCP(codePage);
-      // preflight to find out the required source size
-      int outLength = MultiByteToWideChar(cp, 0, source, static_cast<int>(sourceLength), &result[0], 0);
-      if (outLength == 0) {
-        throw windows_error("string conversion failed");
-      }
-      result.resize(outLength);
-      outLength = MultiByteToWideChar(cp, 0, source, static_cast<int>(sourceLength), &result[0], outLength);
-      if (outLength == 0) {
-        throw windows_error("string conversion failed");
-      }
-      while (result[outLength - 1] == L'\0') {
-        result.resize(--outLength);
-      }
-    }
+        if (sourceLength == std::numeric_limits<size_t>::max()) {
+            sourceLength = strlen(source);
+        }
+        if (sourceLength > 0) {
+            // use utf8 or local 8-bit encoding depending on user choice
+            UINT cp = windowsCP(codePage);
+            // preflight to find out the required source size
+            int outLength = MultiByteToWideChar(cp, 0, source, static_cast<int>(sourceLength), &result[0], 0);
+            if (outLength == 0) {
+                throw windows_error("string conversion failed");
+            }
+            result.resize(outLength);
+            outLength = MultiByteToWideChar(cp, 0, source, static_cast<int>(sourceLength), &result[0], outLength);
+            if (outLength == 0) {
+                throw windows_error("string conversion failed");
+            }
+            while (result[outLength - 1] == L'\0') {
+                result.resize(--outLength);
+            }
+        }
 
-    return result;
-  }
+        return result;
+    }
 };
 
 template <>
 class string_cast_impl<std::wstring, const wchar_t*> {
-public:
-  static std::wstring cast(const wchar_t * const &source, CodePage, size_t) {
-    return std::wstring(source);
-  }
+  public:
+    static std::wstring cast(const wchar_t* const& source, CodePage, size_t) { return std::wstring(source); }
 };
 
-}
-}
+} // namespace shared
+} // namespace usvfs
