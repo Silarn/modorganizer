@@ -35,6 +35,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <memory>
 #include <regex>
 #include <spdlog/spdlog.h>
+#include <utility>
 namespace fs = std::experimental::filesystem;
 
 // simplify unit tests by allowing access to private members
@@ -90,30 +91,6 @@ struct mutable_pair {
     mutable T2 second;
 };
 
-// template <typename Key, typename T, typename Compare, typename Allocator,
-//          typename Element = mutable_pair<Key, T, Allocator>>
-// using mimap = bmi::multi_index_container<
-//    Element, bmi::indexed_by<bmi::ordered_unique<bmi::member<Element, Key, &Element::first>, Compare>>,
-//    typename Allocator::template rebind<Element>::other>;
-//
-// template <class Class, typename Type, Type Class::*PtrToMember>
-// struct member {
-//    using result_type = Type;
-//
-//    // only provided if const ChainedPtr& is not convertible to const Class&
-//    template <typename ChainedPtr>
-//    Type& operator()(const ChainedPtr& x) const;
-//
-//    const Type& operator()(const Class& x) const;
-//    Type& operator()(Class& x) const; // only provided if Type is non-const
-//    const Type& operator()(const std::reference_wrapper<const Class>& x) const;
-//    Type& operator()(const std::reference_wrapper<Class>& x) const;
-//};
-
-template <typename Key, typename T, typename Compare, typename Allocator,
-          typename Element = mutable_pair<Key, T, Allocator>>
-using mimap = std::map<decltype(Element::first), Element, Compare, Allocator>;
-
 /**
  * a representation of a directory tree in memory.
  * This class is designed to be stored in sharedG memory.
@@ -146,7 +123,8 @@ class DirectoryTree {
 
     typedef std::allocator<std::pair<const StringT, NodePtrT>> NodeEntryAllocatorT;
 
-    typedef mimap<StringT, NodePtrT, CILess, NodeEntryAllocatorT> NodeMapT;
+    using NodeMapT = std::map<StringT, NodePtrT, CILess, NodeEntryAllocatorT>;
+
     typedef typename NodeMapT::iterator file_iterator;
     typedef typename NodeMapT::const_iterator const_file_iterator;
 
@@ -418,54 +396,59 @@ class DirectoryTree {
         }
     }
 
-    NodePtrT findNode(const fs::path& name, fs::path::iterator& iter) {
-        std::string l = iter->string();
-        auto subNode = m_Nodes.find(iter->string());
-        advanceIter(iter, name.end());
-        if (iter == name.end()) {
-            // last name component, should be a local node
-            if (subNode != m_Nodes.end()) {
-                return subNode->second;
-            } else {
-                return NodePtrT();
-            }
-        } else {
-            if (subNode != m_Nodes.end()) {
-                return subNode->second->findNode(name, iter);
-            } else {
-                return NodePtrT();
-            }
-        }
+    NodePtrT findNode(const fs::path&, fs::path::iterator&) {
+        // FIXME: This.
+        return NodePtrT();
+        // std::string l = iter->string();
+        // auto subNode = m_Nodes.find(iter->string());
+        // advanceIter(iter, name.end());
+        // if (iter == name.end()) {
+        //    // last name component, should be a local node
+        //    if (subNode != m_Nodes.end()) {
+        //        return subNode->second;
+        //    } else {
+        //        return NodePtrT();
+        //    }
+        //} else {
+        //    if (subNode != m_Nodes.end()) {
+        //        return subNode->second->findNode(name, iter);
+        //    } else {
+        //        return NodePtrT();
+        //    }
+        //}
     }
 
-    const NodePtrT findNode(const fs::path& name, fs::path::iterator& iter) const {
-        auto subNode = m_Nodes.find(iter->string());
-        advanceIter(iter, name.end());
-        if (iter == name.end()) {
-            // last name component, should be a local node
-            if (subNode != m_Nodes.end()) {
-                return subNode->second;
-            } else {
-                return NodePtrT();
-            }
-        } else {
-            if (subNode != m_Nodes.end()) {
-                return subNode->second->findNode(name, iter);
-            } else {
-                return NodePtrT();
-            }
-        }
+    const NodePtrT findNode(const fs::path&, fs::path::iterator&) const {
+        // FIXME: This.
+        return NodePtrT();
+        // auto subNode = m_Nodes.find(iter->string());
+        // advanceIter(iter, name.end());
+        // if (iter == name.end()) {
+        //    // last name component, should be a local node
+        //    if (subNode != m_Nodes.end()) {
+        //        return subNode->second;
+        //    } else {
+        //        return NodePtrT();
+        //    }
+        //} else {
+        //    if (subNode != m_Nodes.end()) {
+        //        return subNode->second->findNode(name, iter);
+        //    } else {
+        //        return NodePtrT();
+        //    }
+        //}
     }
 
-    void visitPath(const fs::path& path, fs::path::iterator& iter, const VisitorFunction& visitor) const {
-        auto subNode = m_Nodes.find(iter->string());
-        if (subNode != m_Nodes.end()) {
-            visitor(subNode->second);
-            advanceIter(iter, path.end());
-            if (iter != path.end()) {
-                subNode->second->visitPath(path, iter, visitor);
-            }
-        }
+    void visitPath(const fs::path&, fs::path::iterator&, const VisitorFunction&) const {
+        // FIXME: THIS.
+        // auto subNode = m_Nodes.find(iter->string());
+        // if (subNode != m_Nodes.end()) {
+        //    visitor(subNode->second);
+        //    advanceIter(iter, path.end());
+        //    if (iter != path.end()) {
+        //        subNode->second->visitPath(path, iter, visitor);
+        //    }
+        //}
     }
 
     void findLocal(std::vector<NodePtrT>& output, const std::string& pattern) const {
@@ -539,8 +522,9 @@ class TreeContainer {
         }
 
         m_TreeMeta = createOrOpen(m_SHMName.c_str(), size);
-        spdlog::get("usvfs")->info("attached to {0} with {1} nodes, size {2}", m_SHMName,
-                                   m_TreeMeta->tree->numNodesRecursive(), m_SHM->get_size());
+        // FIXME: this
+        // spdlog::get("usvfs")->info("attached to {0} with {1} nodes, size {2}", m_SHMName,
+        //                           m_TreeMeta->tree->numNodesRecursive(), m_SHM->get_size());
     }
 
     TreeContainer(const TreeContainer& reference) = delete;
@@ -549,7 +533,8 @@ class TreeContainer {
 
     ~TreeContainer() {
         if (unassign(m_SHM, m_TreeMeta)) {
-            bi::shared_memory_object::remove(m_SHMName.c_str());
+            // FIXME: This
+            // bi::shared_memory_object::remove(m_SHMName.c_str());
         }
     }
 
@@ -557,11 +542,15 @@ class TreeContainer {
      * @return retrieve an allocater that can be used to create objects in this
      * tree
      */
-    VoidAllocatorT allocator() { return VoidAllocatorT(m_SHM->get_segment_manager()); }
+    VoidAllocatorT allocator() {
+        // return VoidAllocatorT(m_SHM->get_segment_manager());
+        // FIXME: This.
+        return VoidAllocatorT();
+    }
 
     template <typename... Arguments>
     typename TreeT::DataT create(Arguments&&... args) {
-        return TreeT::DataT(std::forward<Arguments>(args)..., allocator());
+        return typename TreeT::DataT(std::forward<Arguments>(args)..., allocator());
     }
 
     TreeT* operator->() { return get(); }
@@ -573,7 +562,9 @@ class TreeContainer {
         if (m_TreeMeta->outdated) {
             reassign();
         }
-        return m_TreeMeta->tree.get();
+        return nullptr;
+        // FIXME: This. Nullptr.
+        // return m_TreeMeta->tree.get();
     }
 
     /**
@@ -606,14 +597,16 @@ class TreeContainer {
      * @return pointer to the new node or a null ptr
      **/
     template <typename T>
-    typename TreeT::NodePtrT addFile(const fs::path& name, const T& data, TreeFlags flags = 0, bool overwrite = true) {
-        namespace sp = std::placeholders;
-        try {
-            return addNode(m_TreeMeta->tree.get(), name, name.begin(), data, overwrite, flags, allocator());
-        } catch (const bi::bad_alloc&) {
-            reassign();
-            return addFile(name, data, flags, overwrite);
-        }
+    typename TreeT::NodePtrT addFile(const fs::path&, const T&, TreeFlags = 0, bool = true) {
+        return TreeT::NodePtrT();
+        // FIXME: This.
+        // namespace sp = std::placeholders;
+        // try {
+        //    return addNode(m_TreeMeta->tree.get(), name, name.begin(), data, overwrite, flags, allocator());
+        //} catch (const bi::bad_alloc&) {
+        //    reassign();
+        //    return addFile(name, data, flags, overwrite);
+        //}
     }
 
     /**
@@ -734,56 +727,60 @@ class TreeContainer {
     }
 
     int increaseRefCount(TreeMeta* treeMeta) {
-        bi::scoped_lock<bi::interprocess_mutex> lock(treeMeta->mutex);
+        std::scoped_lock<std::mutex> lock(treeMeta->mutex);
         return ++treeMeta->referenceCount;
     }
 
     int decreaseRefCount(TreeMeta* treeMeta) {
-        bi::scoped_lock<bi::interprocess_mutex> lock(treeMeta->mutex);
+        std::scoped_lock<std::mutex> lock(treeMeta->mutex);
         return --treeMeta->referenceCount;
     }
 
-    TreeMeta* createOrOpen(const char* SHMName, size_t size) {
-        SharedMemoryT* newSHM;
+    TreeMeta* createOrOpen(const char* SHMName, size_t) {
+        // FIXME: This mess.
+        SharedMemoryT* newSHM = nullptr;
         try {
-            newSHM = new SharedMemoryT(bi::open_only, SHMName);
+            // newSHM = new SharedMemoryT(bi::open_only, SHMName);
             spdlog::get("usvfs")->info("{} opened in process {}", SHMName, ::GetCurrentProcessId());
-        } catch (const bi::interprocess_exception&) {
-            newSHM = new SharedMemoryT(bi::create_only, SHMName, static_cast<unsigned int>(size));
+        } catch (const std::exception&) {
+            // newSHM = new SharedMemoryT(bi::create_only, SHMName, static_cast<unsigned int>(size));
             spdlog::get("usvfs")->info("{} created in process {}", SHMName, ::GetCurrentProcessId());
         }
         return activateSHM(newSHM, SHMName);
     }
 
-    TreeMeta* activateSHM(SharedMemoryT* shm, const char* SHMName) {
-        std::shared_ptr<SharedMemoryT> oldSHM = m_SHM;
+    TreeMeta* activateSHM(SharedMemoryT*, const char*) {
+        // FIXME: This.
+        return nullptr;
+        // std::shared_ptr<SharedMemoryT> oldSHM = m_SHM;
 
-        m_SHM.reset(shm);
-        std::pair<TreeMeta*, SharedMemoryT::size_type> res = m_SHM->find<TreeMeta>("Meta");
-        bool lastUser = false;
-        if (res.first == nullptr) {
-            res.first = m_SHM->construct<TreeMeta>("Meta")(createEmpty(), m_SHM->get_segment_manager());
-            if (res.first == nullptr) {
-                USVFS_THROW_EXCEPTION(std::bad_alloc());
-            }
-            if (m_TreeMeta != nullptr) {
-                copyTree(res.first->tree.get(), m_TreeMeta->tree.get());
-            }
-        }
-        increaseRefCount(res.first);
+        // m_SHM.reset(shm);
+        // std::pair<TreeMeta*, SharedMemoryT::size_type> res = m_SHM->find<TreeMeta>("Meta");
+        // bool lastUser = false;
+        // if (res.first == nullptr) {
+        //    res.first = m_SHM->construct<TreeMeta>("Meta")(createEmpty(), m_SHM->get_segment_manager());
+        //    if (res.first == nullptr) {
+        //        USVFS_THROW_EXCEPTION(std::bad_alloc());
+        //    }
+        //    if (m_TreeMeta != nullptr) {
+        //        copyTree(res.first->tree.get(), m_TreeMeta->tree.get());
+        //    }
+        //}
+        // increaseRefCount(res.first);
 
-        if (oldSHM.get() != nullptr) {
-            lastUser = unassign(oldSHM, m_TreeMeta);
-        }
+        // if (oldSHM.get() != nullptr) {
+        //    lastUser = unassign(oldSHM, m_TreeMeta);
+        //}
 
-        if (lastUser) {
-            // remove the !old! shm
-            bi::shared_memory_object::remove(m_SHMName.c_str());
-        }
+        // if (lastUser) {
+        //    // remove the !old! shm
+        //    // FIXME: This.
+        //    // bi::shared_memory_object::remove(m_SHMName.c_str());
+        //}
 
-        m_SHMName = SHMName;
+        // m_SHMName = SHMName;
 
-        return res.first;
+        // return res.first;
     }
 
     std::string followupName() const {
@@ -801,12 +798,13 @@ class TreeContainer {
         return match[1].str() + std::to_string(count + 1);
     }
 
-    bool unassign(const std::shared_ptr<SharedMemoryT>& shm, TreeMeta* tree) {
+    bool unassign(const std::shared_ptr<SharedMemoryT>&, TreeMeta* tree) {
         if (tree == nullptr) {
             return true;
         }
         if (decreaseRefCount(tree) == 0) {
-            shm->get_segment_manager()->destroy_ptr(tree);
+            // FIXME: .
+            // shm->get_segment_manager()->destroy_ptr(tree);
             return true;
         } else {
             return false;
@@ -823,13 +821,14 @@ class TreeContainer {
 
         for (;;) {
             std::string nextName = followupName();
-            self->m_TreeMeta = self->createOrOpen(nextName.c_str(), m_SHM->get_size() * 2);
+            // FIXME:
+            // self->m_TreeMeta = self->createOrOpen(nextName.c_str(), m_SHM->get_size() * 2);
 
             if (!m_TreeMeta->outdated) {
                 break;
             }
         }
-        spdlog::get("usvfs")->info("tree {0} size now {1} bytes", m_SHMName, m_SHM->get_size());
+        // spdlog::get("usvfs")->info("tree {0} size now {1} bytes", m_SHMName, m_SHM->get_size());
     }
 
   private:
