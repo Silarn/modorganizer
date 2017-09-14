@@ -153,7 +153,7 @@ if (IS_X64)
 else()
     list(APPEND CMAKE_PREFIX_PATH "C:/Qt/5.9.1/msvc2015")
 endif()
-find_package(Qt5Widgets REQUIRED)
+find_package(Qt5Core REQUIRED)
 
 # ZLIB
 set(ZLIB_INCLUDE_DIRS ${PREFIX_PATH}/include)
@@ -218,6 +218,7 @@ set_property(TARGET UDIS86 PROPERTY IMPORTED_LOCATION_DEBUG ${UDIS86_LIBRARY_D})
 # add_subdirectory(thooklib)
 # add_subdirectory(tinjectlib)
 # add_subdirectory(usvfs)
+add_subdirectory(MO)
 add_subdirectory(hookdll)
 
 
