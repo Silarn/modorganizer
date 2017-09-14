@@ -67,7 +67,7 @@ class null_sink : public sink {
 // Logging
 //
 
-//char* SeverityShort(LogLevel lvl) {
+// char* SeverityShort(LogLevel lvl) {
 //    switch (lvl) {
 //    case LogLevel::Debug:
 //        return "D";
@@ -428,7 +428,7 @@ bool assertPathExists(usvfs::RedirectionTreeContainer& table, LPCWSTR path) {
         if (current->exists(iter->string().c_str())) {
             // subdirectory exists virtually, all good
             usvfs::RedirectionTree::NodePtrT found = current->node(iter->string().c_str());
-            current = found.get().get();
+            current = found.get();
         } else {
             // targetPath is relative to the last rerouted "real" path. This means
             // that if virtual c:/foo maps to real c:/windows then creating virtual
@@ -439,7 +439,7 @@ bool assertPathExists(usvfs::RedirectionTreeContainer& table, LPCWSTR path) {
             if (fs::is_directory(targetPath)) {
                 usvfs::RedirectionTree::NodePtrT newNode =
                     table.addDirectory(current->path() / *iter, targetPath.string().c_str(), ush::FLAG_DUMMY, false);
-                current = newNode.get().get();
+                current = newNode.get();
             } else {
                 spdlog::get("usvfs")->info("{} doesn't exist", targetPath);
                 return false;
@@ -462,8 +462,10 @@ BOOL WINAPI VirtualLinkFile(LPCWSTR source, LPCWSTR destination, unsigned int fl
         std::string sourceU8 = ush::string_cast<std::string>(source, ush::CodePage::UTF8);
         auto res = context->redirectionTable().addFile(fs::path(destination), usvfs::RedirectionDataLocal(sourceU8),
                                                        !(flags & LINKFLAG_FAILIFEXISTS));
-
-        std::string fileExt = ba::to_lower_copy(fs::extension(sourceU8));
+        // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
+        // This will fail on unicode.
+        std::string fileExt = fs::path(sourceU8).extension().string();
+        std::transform(fileExt.begin(), fileExt.end(), fileExt.begin(), [](const char& a) { return std::tolower(a); });
         if (extensions.find(fileExt) != extensions.end()) {
             std::string destinationU8 = ush::string_cast<std::string>(destination, ush::CodePage::UTF8);
 
@@ -537,7 +539,11 @@ BOOL WINAPI VirtualLinkDirectoryStatic(LPCWSTR source, LPCWSTR destination, unsi
                     context->redirectionTable().addFile(fs::path(destination) / nameU8,
                                                         usvfs::RedirectionDataLocal(sourceU8 + nameU8), true);
 
-                    std::string fileExt = ba::to_lower_copy(fs::extension(nameU8));
+                    // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
+                    // This will fail on unicode.
+                    std::string fileExt = fs::path(nameU8).extension().string();
+                    std::transform(fileExt.begin(), fileExt.end(), fileExt.begin(),
+                                   [](const char& a) { return std::tolower(a); });
 
                     if (extensions.find(fileExt) != extensions.end()) {
                         std::string destinationU8 =
