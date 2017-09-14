@@ -5,7 +5,7 @@ set(library_name "uibase")
 ## Files ##
 # Main
 SET(HDRS
-	include/${library_name}/iplugin.h
+    include/${library_name}/iplugin.h
     include/${library_name}/iplugintool.h
     include/${library_name}/iplugininstaller.h
     include/${library_name}/iplugininstallersimple.h
@@ -80,11 +80,11 @@ SET(SRCS
     src/sortabletreewidget.cpp
     src/executableinfo.cpp
     src/delayedfilewriter.cpp
-	src/filenamestring.cpp
+    src/filenamestring.cpp
 )
 
 SET(QTs
-	src/finddialog.ui
+    src/finddialog.ui
     src/questionboxmemory.ui
     src/textviewer.ui
 )
@@ -93,6 +93,8 @@ source_group(QT FILES ${QTs})
 ## Dependencies ##
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5WinExtras REQUIRED)
+find_package(Qt5Script REQUIRED)
+find_package(Qt5Quick REQUIRED)
 
 ## Library ##
 add_library(${library_name} STATIC ${HDRS} ${SRCS})
@@ -103,7 +105,11 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5WinExtras fmt::fmt-header-only)
+target_link_libraries(${library_name} PUBLIC
+    Qt5::Widgets Qt5::WinExtras Qt5::Script Qt5::Quick
+    fmt::fmt-header-only
+)
+set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.
