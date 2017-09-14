@@ -26,13 +26,13 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QBitmap>
 #include <QCoreApplication>
 #include <QDebug>
-#include <QDeclarativeContext>
-#include <QDeclarativeEngine>
 #include <QDir>
 #include <QFile>
 #include <QGraphicsObject>
 #include <QImage>
 #include <QMouseEvent>
+#include <QQmlContext>
+#include <QQmlEngine>
 #include <QTableWidget>
 #include <QTimer>
 #include <QToolBar>
@@ -46,8 +46,7 @@ namespace MOBase {
 
 TutorialControl::TutorialControl(const TutorialControl& reference)
     : QObject(reference.parent()), m_TargetControl(reference.m_TargetControl), m_Name(reference.m_Name),
-      m_TutorialView(nullptr), m_Manager(TutorialManager::instance()), m_ExpectedTab(0),
-      m_CurrentClickControl(nullptr) {}
+      m_Manager(TutorialManager::instance()), m_ExpectedTab(0) {}
 
 TutorialControl::TutorialControl(QWidget* targetControl, const QString& name)
     : QObject(nullptr), m_TargetControl(targetControl), m_Name(name), m_TutorialView(nullptr),
@@ -85,9 +84,10 @@ static QString canonicalPath(const QString& path) {
 
 void TutorialControl::startTutorial(const QString& tutorial) {
     if (m_TutorialView == nullptr) {
-        m_TutorialView = new QDeclarativeView(m_TargetControl);
-        m_TutorialView->setResizeMode(QDeclarativeView::SizeRootObjectToView);
-        m_TutorialView->setStyleSheet("background: transparent");
+        m_TutorialView = new QQuickView(m_TargetControl->windowHandle());
+        m_TutorialView->setResizeMode(QQuickView::SizeRootObjectToView);
+        // FIXME: This.
+        // m_TutorialView->setStyleSheet("background: transparent");
         m_TutorialView->setObjectName("tutorialView");
         m_TutorialView->rootContext()->setContextProperty("manager", &m_Manager);
 
@@ -108,24 +108,27 @@ void TutorialControl::startTutorial(const QString& tutorial) {
         }
         m_TutorialView->show();
         m_TutorialView->raise();
-        if (!QMetaObject::invokeMethod(m_TutorialView->rootObject(), "init")) {
-            reportError(tr("Tutorial failed to start, please check \"mo_interface.log\" for details."));
-            m_TutorialView->close();
-        }
+        // FIXME: This
+        // if (!QMetaObject::invokeMethod(m_TutorialView->rootObject(), "init")) {
+        //    reportError(tr("Tutorial failed to start, please check \"mo_interface.log\" for details."));
+        //    m_TutorialView->close();
+        //}
     }
 }
 
 void TutorialControl::lockUI(bool locked) {
-    m_TutorialView->setAttribute(Qt::WA_TransparentForMouseEvents, !locked);
+    // FIXME: This
+    // m_TutorialView->setAttribute(Qt::WA_TransparentForMouseEvents, !locked);
 
-    QMetaObject::invokeMethod(m_TutorialView->rootObject(), "enableBackground", Q_ARG(QVariant, QVariant(locked)));
+    // QMetaObject::invokeMethod(m_TutorialView->rootObject(), "enableBackground", Q_ARG(QVariant, QVariant(locked)));
 }
 
 void TutorialControl::simulateClick(int x, int y) {
-    bool wasTransparent = m_TutorialView->testAttribute(Qt::WA_TransparentForMouseEvents);
-    if (!wasTransparent) {
-        m_TutorialView->setAttribute(Qt::WA_TransparentForMouseEvents, true);
-    }
+    // FIXME: This
+    // bool wasTransparent = m_TutorialView->testAttribute(Qt::WA_TransparentForMouseEvents);
+    // if (!wasTransparent) {
+    //    m_TutorialView->setAttribute(Qt::WA_TransparentForMouseEvents, true);
+    //}
     QWidget* hitControl = m_TargetControl->childAt(x, y);
     QPoint globalPos = m_TargetControl->mapToGlobal(QPoint(x, y));
     QPoint hitPos = hitControl->mapFromGlobal(globalPos);
@@ -137,9 +140,9 @@ void TutorialControl::simulateClick(int x, int y) {
     qApp->postEvent(hitControl, (QEvent*)downEvent);
     qApp->postEvent(hitControl, (QEvent*)upEvent);
 
-    if (!wasTransparent) {
-        m_TutorialView->setAttribute(Qt::WA_TransparentForMouseEvents, false);
-    }
+    // if (!wasTransparent) {
+    //    m_TutorialView->setAttribute(Qt::WA_TransparentForMouseEvents, false);
+    //}
 }
 
 QWidget* TutorialControl::getChild(const QString& name) {
@@ -190,9 +193,10 @@ QRect TutorialControl::getActionRect(const QString& widgetName) {
 void TutorialControl::nextTutorialStepProxy() {
 
     if (m_TutorialView != nullptr) {
-        QObject* background = m_TutorialView->rootObject();
+        // FIXME: This
+        // QObject* background = m_TutorialView->rootObject();
 
-        QTimer::singleShot(1, background, SLOT(nextStep()));
+        // QTimer::singleShot(1, background, SLOT(nextStep()));
         lockUI(true);
 
         bool success = false;
@@ -212,8 +216,9 @@ void TutorialControl::nextTutorialStepProxy() {
 
 void TutorialControl::tabChangedProxy(int selected) {
     if ((m_TutorialView != nullptr) && (selected == m_ExpectedTab)) {
-        QObject* background = m_TutorialView->rootObject();
-        QTimer::singleShot(1, background, SLOT(nextStep()));
+        // FIXME: This
+        // QObject* background = m_TutorialView->rootObject();
+        // QTimer::singleShot(1, background, SLOT(nextStep()));
         lockUI(true);
         if (!disconnect(sender(), SIGNAL(currentChanged(int)), this, SLOT(tabChangedProxy(int)))) {
             qCritical("failed to disconnect tab-changed proxy");

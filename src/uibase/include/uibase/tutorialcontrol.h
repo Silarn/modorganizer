@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define TUTORIALCONTROL_H
 
 #include "uibase/dllimport.h"
-#include <QDeclarativeView>
+#include <QQuickView>
 #include <QScriptEngine>
 #include <QWidget>
 #include <utility>
@@ -62,15 +62,15 @@ class QDLLEXPORT TutorialControl : public QObject {
     void nextTutorialStepProxy();
 
   private:
-    QWidget* m_TargetControl;
+    QWidget* m_TargetControl = nullptr;
     QString m_Name;
-    QDeclarativeView* m_TutorialView;
+    QQuickView* m_TutorialView = nullptr;
 
     TutorialManager& m_Manager;
 
     std::vector<std::pair<QString, QObject*>> m_ExposedObjects;
     int m_ExpectedTab;
-    QWidget* m_CurrentClickControl;
+    QWidget* m_CurrentClickControl = nullptr;
 };
 
 } // namespace MOBase
