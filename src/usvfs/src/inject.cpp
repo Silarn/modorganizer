@@ -19,15 +19,15 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs/inject.h"
+#include "injectlib.h"
+#include "usvfs/loghelpers.h"
+#include "usvfs_shared/exceptionex.h"
+#include "usvfs_shared/stringcast.h"
+#include "usvfs_shared/stringutils.h"
+#include "usvfs_shared/winapi.h"
 #include <filesystem>
-#include <injectlib.h>
 #include <spdlog/spdlog.h>
 #include <string>
-#include <usvfs/loghelpers.h>
-#include <usvfs_shared/exceptionex.h>
-#include <usvfs_shared/stringcast.h>
-#include <usvfs_shared/stringutils.h>
-#include <usvfs_shared/winapi.h>
 #include <utility>
 
 namespace ush = usvfs::shared;
@@ -35,118 +35,106 @@ namespace fs = std::experimental::filesystem;
 
 using namespace winapi;
 
-void usvfs::injectProcess(const std::wstring &applicationPath,
-                          const USVFSParameters &parameters,
-                          const PROCESS_INFORMATION &processInfo) {
-  injectProcess(applicationPath, parameters, processInfo.hProcess,
-                processInfo.hThread);
+void usvfs::injectProcess(const std::wstring& applicationPath, const USVFSParameters& parameters,
+                          const PROCESS_INFORMATION& processInfo) {
+    injectProcess(applicationPath, parameters, processInfo.hProcess, processInfo.hThread);
 }
 
-void usvfs::injectProcess(const std::wstring &applicationPath,
-                          const USVFSParameters &parameters,
-                          HANDLE processHandle, HANDLE threadHandle) {
-  bool proc64 = false;
-  bool sameBitness = false;
-  {
-    SYSTEM_INFO info;
-    GetSystemInfo(&info);
-    BOOL wow64;
-    IsWow64Process(processHandle, &wow64);
-    if (wow64) {
-      // process is running under wow64 so it has to be a 32bit process running
-      // on 64bit windows
-      proc64 = false;
-      BOOL temp;
-      IsWow64Process(GetCurrentProcess(), &temp);
-      sameBitness = temp == TRUE;
-    } else {
-      BOOL selfWow64;
-      IsWow64Process(GetCurrentProcess(), &selfWow64);
-      if (selfWow64) {
-        // WE are a 32 bit process running on 64bit windows. the other process
-        // isn't, so its 64bit
-        proc64 = true;
-      } else {
-        sameBitness = true;
-        // we have the same bitness as that other process, but which is it?
+void usvfs::injectProcess(const std::wstring& applicationPath, const USVFSParameters& parameters, HANDLE processHandle,
+                          HANDLE threadHandle) {
+    bool proc64 = false;
+    bool sameBitness = false;
+    {
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+        BOOL wow64;
+        IsWow64Process(processHandle, &wow64);
+        if (wow64) {
+            // process is running under wow64 so it has to be a 32bit process running
+            // on 64bit windows
+            proc64 = false;
+            BOOL temp;
+            IsWow64Process(GetCurrentProcess(), &temp);
+            sameBitness = temp == TRUE;
+        } else {
+            BOOL selfWow64;
+            IsWow64Process(GetCurrentProcess(), &selfWow64);
+            if (selfWow64) {
+                // WE are a 32 bit process running on 64bit windows. the other process
+                // isn't, so its 64bit
+                proc64 = true;
+            } else {
+                sameBitness = true;
+                // we have the same bitness as that other process, but which is it?
 #ifdef _WIN64
-        proc64 = true;
+                proc64 = true;
 #else
-        proc64 = false;
+                proc64 = false;
 #endif
-      }
+            }
+        }
     }
-  }
-  boost::filesystem::path binPath = boost::filesystem::path(applicationPath);
-  spdlog::get("usvfs")->info("injecting to process {} with {} bitness",
-                             ::GetProcessId(processHandle),
-                             sameBitness ? "same" : "different");
+    fs::path binPath = fs::path(applicationPath);
+    spdlog::get("usvfs")->info("injecting to process {} with {} bitness", ::GetProcessId(processHandle),
+                               sameBitness ? "same" : "different");
 
-  if (sameBitness) {
-    std::string libName = std::string("usvfs_") + (proc64 ? "x64" : "x86");
+    if (sameBitness) {
+        std::string libName = std::string("usvfs_") + (proc64 ? "x64" : "x86");
 #ifdef _DEBUG
-    std::wstring dllPath = (binPath / (libName + "-d.dll").wstring());
+        std::wstring dllPath = (binPath / (libName + "-d.dll").wstring());
 #else  // DEBUG
-    std::wstring dllPath = (binPath / (libName + ".dll")).wstring();
+        std::wstring dllPath = (binPath / (libName + ".dll")).wstring();
 #endif // DEBUG
-    if (!boost::filesystem::exists(dllPath)) {
-      USVFS_THROW_EXCEPTION(
-          file_not_found_error()
-          << ex_msg(std::string("dll missing: ") +
-                    ush::string_cast<std::string>(dllPath).c_str()));
-    }
+        if (!fs::exists(dllPath)) {
+            USVFS_THROW_EXCEPTION(file_not_found_error() << ex_msg(std::string("dll missing: ") +
+                                                                   ush::string_cast<std::string>(dllPath).c_str()));
+        }
 
-    spdlog::get("usvfs")->debug("dll path: {}", log::wrap(dllPath));
+        spdlog::get("usvfs")->debug("dll path: {}", log::wrap(dllPath));
 
-    InjectLib::InjectDLL(processHandle, threadHandle, dllPath.c_str(),
-                         "InitHooks", &parameters, sizeof(USVFSParameters));
-  } else {
-    std::wstring exePath = (binPath / "usvfs_proxy.exe").wstring();
-    if (!boost::filesystem::exists(exePath)) {
-      USVFS_THROW_EXCEPTION(file_not_found_error()
-                            << ex_msg(std::string("exe missing: ") +
-                                      ush::string_cast<std::string>(exePath)));
-    }
-    // need to use proxy aplication to inject
-    auto proxyProcess = std::move(
-        wide::createProcess(exePath)
-            .arg(L"--instance")
-            .arg(ush::string_cast<std::wstring>(parameters.instanceName))
-            .arg(L"--pid")
-            .arg(GetProcessId(processHandle)));
-
-    if (threadHandle != INVALID_HANDLE_VALUE) {
-      proxyProcess.arg("--tid").arg(GetThreadId(threadHandle));
-    }
-    process::Result result = proxyProcess();
-    if (!result.valid) {
-      USVFS_THROW_EXCEPTION(unknown_error()
-                            << ex_msg(std::string("failed to start proxy ") +
-                                      ush::string_cast<std::string>(exePath))
-                            << ex_win_errcode(result.errorCode));
+        InjectLib::InjectDLL(processHandle, threadHandle, dllPath.c_str(), "InitHooks", &parameters,
+                             sizeof(USVFSParameters));
     } else {
-      // wait for proxy completion. this shouldn't take long, 5 seconds is very
-      // generous
-      switch (WaitForSingleObject(result.processInfo.hProcess, 5000)) {
-      case WAIT_TIMEOUT: {
-        spdlog::get("usvfs")->debug("proxy timeout");
-        TerminateProcess(result.processInfo.hProcess, 1);
-        USVFS_THROW_EXCEPTION(timeout_error() << ex_msg(std::string(
-                                  "proxy didn't complete in time")));
-      } break;
-      case WAIT_FAILED: {
-        spdlog::get("usvfs")->debug("proxy wait failed");
-        TerminateProcess(result.processInfo.hProcess, 1);
-        USVFS_THROW_EXCEPTION(
-            unknown_error()
-            << ex_msg(std::string("failed to wait for proxy completion"))
-            << ex_win_errcode(result.errorCode));
-      } break;
-      default: {
-        spdlog::get("usvfs")->debug("proxy run successful");
-        // nop
-      } break;
-      }
+        std::wstring exePath = (binPath / "usvfs_proxy.exe").wstring();
+        if (!fs::exists(exePath)) {
+            USVFS_THROW_EXCEPTION(file_not_found_error()
+                                  << ex_msg(std::string("exe missing: ") + ush::string_cast<std::string>(exePath)));
+        }
+        // need to use proxy aplication to inject
+        auto proxyProcess = std::move(wide::createProcess(exePath)
+                                          .arg(L"--instance")
+                                          .arg(ush::string_cast<std::wstring>(parameters.instanceName))
+                                          .arg(L"--pid")
+                                          .arg(GetProcessId(processHandle)));
+
+        if (threadHandle != INVALID_HANDLE_VALUE) {
+            proxyProcess.arg("--tid").arg(GetThreadId(threadHandle));
+        }
+        process::Result result = proxyProcess();
+        if (!result.valid) {
+            USVFS_THROW_EXCEPTION(unknown_error() << ex_msg(std::string("failed to start proxy ") +
+                                                            ush::string_cast<std::string>(exePath))
+                                                  << ex_win_errcode(result.errorCode));
+        } else {
+            // wait for proxy completion. this shouldn't take long, 5 seconds is very
+            // generous
+            switch (WaitForSingleObject(result.processInfo.hProcess, 5000)) {
+            case WAIT_TIMEOUT: {
+                spdlog::get("usvfs")->debug("proxy timeout");
+                TerminateProcess(result.processInfo.hProcess, 1);
+                USVFS_THROW_EXCEPTION(timeout_error() << ex_msg(std::string("proxy didn't complete in time")));
+            } break;
+            case WAIT_FAILED: {
+                spdlog::get("usvfs")->debug("proxy wait failed");
+                TerminateProcess(result.processInfo.hProcess, 1);
+                USVFS_THROW_EXCEPTION(unknown_error() << ex_msg(std::string("failed to wait for proxy completion"))
+                                                      << ex_win_errcode(result.errorCode));
+            } break;
+            default: {
+                spdlog::get("usvfs")->debug("proxy run successful");
+                // nop
+            } break;
+            }
+        }
     }
-  }
 }

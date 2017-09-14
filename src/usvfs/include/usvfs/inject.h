@@ -19,10 +19,9 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
 #include "usvfs/usvfsparameters.h"
+#include "usvfs_shared/windows_sane.h"
 #include <string>
-#include <usvfs_shared/windows_sane.h>
 
 namespace usvfs {
 
@@ -32,9 +31,8 @@ namespace usvfs {
  * @param parameters
  * @param processInfo
  */
-void injectProcess(const std::wstring &applicationPath,
-                   const USVFSParameters &parameters,
-                   const PROCESS_INFORMATION &processInfo);
+void injectProcess(const std::wstring& applicationPath, const USVFSParameters& parameters,
+                   const PROCESS_INFORMATION& processInfo);
 
 /**
  * @brief inject usvfs to a process
@@ -44,8 +42,7 @@ void injectProcess(const std::wstring &applicationPath,
  * @param thread main thread inside that process. This can be set to
  * INVALID_HANDLE_VALUE in which case a new thread is created in the process
  */
-void injectProcess(const std::wstring &applicationPath,
-                   const USVFSParameters &parameters, HANDLE process,
+void injectProcess(const std::wstring& applicationPath, const USVFSParameters& parameters, HANDLE process,
                    HANDLE thread);
 
 } // namespace usvfs

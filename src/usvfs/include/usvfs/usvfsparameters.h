@@ -24,10 +24,10 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 
 extern "C" {
 struct USVFSParameters {
-  char instanceName[65];
-  char currentSHMName[65];
-  char currentInverseSHMName[65];
-  bool debugMode{false};
-  LogLevel logLevel{LogLevel::Debug};
+    char instanceName[65];
+    char currentSHMName[65];
+    char currentInverseSHMName[65];
+    bool debugMode{false};
+    LogLevel logLevel{LogLevel::Debug};
 };
 }
