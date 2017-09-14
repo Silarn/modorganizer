@@ -22,19 +22,27 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/winapi.h"
 #include <spdlog/spdlog.h>
 
-void logExtInfo(const std::exception &e, LogLevel logLevel) {
-  std::string content;
-  if (const std::string *msg = MyBoost::get_error_info<ex_msg>(e)) {
-    content = *msg;
-  }
-  if (const DWORD *errorCode = MyBoost::get_error_info<ex_win_errcode>(e)) {
-    content = std::string("error: ") + winapi::ex::ansi::errorString(*errorCode);
-  }
+void logExtInfo(const std::exception& e, LogLevel logLevel) {
+    std::string content;
+    if (const std::string* msg = MyBoost::get_error_info<ex_msg>(e)) {
+        content = *msg;
+    }
+    if (const DWORD* errorCode = MyBoost::get_error_info<ex_win_errcode>(e)) {
+        content = std::string("error: ") + winapi::ex::ansi::errorString(*errorCode);
+    }
 
-  switch (logLevel) {
-    case LogLevel::Debug:    spdlog::get("usvfs")->debug(content); break;
-    case LogLevel::Info:     spdlog::get("usvfs")->info(content); break;
-    case LogLevel::Warning:  spdlog::get("usvfs")->warn(content); break;
-    case LogLevel::Error:    spdlog::get("usvfs")->error(content); break;
-  }
+    switch (logLevel) {
+    case LogLevel::Debug:
+        spdlog::get("usvfs")->debug(content);
+        break;
+    case LogLevel::Info:
+        spdlog::get("usvfs")->info(content);
+        break;
+    case LogLevel::Warning:
+        spdlog::get("usvfs")->warn(content);
+        break;
+    case LogLevel::Error:
+        spdlog::get("usvfs")->error(content);
+        break;
+    }
 }

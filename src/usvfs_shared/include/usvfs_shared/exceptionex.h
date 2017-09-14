@@ -19,49 +19,38 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
 #include "usvfs_shared/logging.h"
-#include <boost/exception/all.hpp>
 #include <stdexcept>
 
-/*
-namespace MyBoostFake
-{
-  struct error_base
-  {
-  };
+namespace MyBoostFake {
+struct error_base {};
 
-  template <typename TagT, typename ValueT>
-  struct error_info : error_base
-  {
+template <typename TagT, typename ValueT>
+struct error_info : error_base {
     typedef ValueT value_type;
     error_info(const ValueT&) {}
-  };
+};
 
-  class exception : virtual std::exception
-  {
-  };
+class exception : virtual std::exception {};
 
-  template <class ExceptionT, class TagT, typename ValueT>
-  const ExceptionT &operator<<(const ExceptionT &ex, const error_info<TagT, ValueT> &val) {
+template <class ExceptionT, class TagT, typename ValueT>
+const ExceptionT& operator<<(const ExceptionT& ex, const error_info<TagT, ValueT>& val) {
     return ex;
-  }
-
-  template <class InfoT, class ExceptionT>
-  typename InfoT::value_type *get_error_info(const ExceptionT &ex) {
-    static InfoT::value_type def;
-    return &def;
-  }
-
 }
 
-namespace MyBoost = MyBoostFake;
-*/
-namespace MyBoost = boost;
+template <class InfoT, class ExceptionT>
+typename InfoT::value_type* get_error_info(const ExceptionT& ex) {
+    static InfoT::value_type def;
+    return &def;
+}
 
-//#ifdef _MSC_VER
+void debug_throw(std::exception& e, std::string file, int line) { throw e; }
+
+} // namespace MyBoostFake
+
+namespace MyBoost = MyBoostFake;
+
 typedef MyBoost::error_info<struct tag_message, DWORD> ex_win_errcode;
-//#endif // _MSC_VER
 typedef MyBoost::error_info<struct tag_message, std::string> ex_msg;
 
 struct incompatibility_error : virtual MyBoost::exception, virtual std::exception {};
@@ -72,17 +61,8 @@ struct timeout_error : virtual MyBoost::exception, virtual std::exception {};
 struct unknown_error : virtual MyBoost::exception, virtual std::exception {};
 struct node_missing_error : virtual MyBoost::exception, virtual std::exception {};
 
+#define USVFS_S1(x) #x
+#define USVFS_S2(x) USVFS_S1(x)
+#define USVFS_THROW_EXCEPTION(x) debug_throw((x), USVFS_S2(__FILE__), USVFS_S2(__LINE__))
 
-
-#define USVFS_THROW_EXCEPTION(x) BOOST_THROW_EXCEPTION(x)
-
-#ifdef BOOST_NO_EXCEPTIONS
-namespace boost
-{
-inline void throw_exception(const std::exception &e) {
-  throw e;
-}
-}
-#endif
-
-void logExtInfo(const std::exception &e, LogLevel logLevel = LogLevel::Warning);
+void logExtInfo(const std::exception& e, LogLevel logLevel = LogLevel::Warning);
