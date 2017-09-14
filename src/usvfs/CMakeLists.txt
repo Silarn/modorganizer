@@ -75,28 +75,14 @@ install(EXPORT ${library_name}Config DESTINATION cmake)
 export(TARGETS ${library_name} FILE ${library_name}Config.cmake)
 
 ## Tests ##
-add_executable(${library_name}Tests
+add_executable(${library_name}Tests EXCLUDE_FROM_ALL
     test/main.cpp
 )
 target_include_directories(${library_name}Tests PRIVATE test)
 target_link_libraries(${library_name}Tests PRIVATE ${library_name} spdlog GTest)
 add_test(${library_name}_Tests Tests)
 
-#### OLD ####
-#[[
 
-SET_PROPERTY(SOURCE logger.cpp PROPERTY COMPILE_DEFINITIONS A DEFAULT_LOG_FILE=L"usvfs.log")
 
-LINK_DIRECTORIES(${LINK_DIRECTORIES}
-                 "${ASMJIT_BINARY_DIR}"
-                 "${UDIS86_BINARY_DIR}"
-  )
 
-ADD_DEFINITIONS(-D_WINDLL -DBOOST_LIB_DIAGNOSTIC -DNOMINMAX)
-
-SET(libname usvfs_${PROJ_ARCH})
-
-ADD_LIBRARY(${libname} SHARED ${usvfs_HDRS} ${usvfs_SRCS} ${usvfs_RCS})
-TARGET_LINK_LIBRARIES(${libname} asmjit shared libudis86 thooklib tinjectlib Shlwapi usvfs_helper Version)
-#]]
 
