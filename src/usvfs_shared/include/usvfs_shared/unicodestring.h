@@ -19,14 +19,11 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
+#include "usvfs_shared/ntdll_declarations.h"
+#include "usvfs_shared/windows_sane.h"
+#include <cassert>
 #include <sstream>
 #include <vector>
-#include "usvfs_shared/windows_sane.h"
-#include "usvfs_shared/ntdll_declarations.h"
-#include <cassert>
-
-
 
 namespace usvfs {
 
@@ -34,59 +31,58 @@ namespace usvfs {
  * @brief C++ wrapper for the windows UNICODE_STRING structure
  */
 class UnicodeString {
-  friend std::ostream &operator<<(std::ostream &os, const UnicodeString &str);
-public:
+    friend std::ostream& operator<<(std::ostream& os, const UnicodeString& str);
 
-  UnicodeString();
+  public:
+    UnicodeString();
 
-  explicit UnicodeString(HANDLE fileHandle);
+    explicit UnicodeString(HANDLE fileHandle);
 
-  explicit UnicodeString(LPCSTR string);
+    explicit UnicodeString(LPCSTR string);
 
-  explicit UnicodeString(LPCWSTR string, size_t length = std::string::npos);
+    explicit UnicodeString(LPCWSTR string, size_t length = std::string::npos);
 
-  /**
-   * @brief convert to a WinNt Api-style unicode string. This is only valid as long
-   *        as the string isn't modified
-   */
-  explicit operator PUNICODE_STRING();
+    /**
+     * @brief convert to a WinNt Api-style unicode string. This is only valid as long
+     *        as the string isn't modified
+     */
+    explicit operator PUNICODE_STRING();
 
-  /**
-   * @brief convert to a Win32 Api-style unicode string. This is only valid as long
-   *        as the string isn't modified
-   */
-  explicit operator LPCWSTR() const;
+    /**
+     * @brief convert to a Win32 Api-style unicode string. This is only valid as long
+     *        as the string isn't modified
+     */
+    explicit operator LPCWSTR() const;
 
-  /**
-   * @return length of the string in 16-bit words (not including zero termination)
-   */
-  size_t size() const;
+    /**
+     * @return length of the string in 16-bit words (not including zero termination)
+     */
+    size_t size() const;
 
-  wchar_t operator[] (size_t pos) { return m_Buffer[pos]; }
+    wchar_t operator[](size_t pos) { return m_Buffer[pos]; }
 
-  void resize(size_t minSize);
+    void resize(size_t minSize);
 
-  UnicodeString &appendPath(PUNICODE_STRING path);
+    UnicodeString& appendPath(PUNICODE_STRING path);
 
-  UnicodeString subString(size_t offset, size_t length = std::string::npos) {
-    assert(offset < m_Buffer.size());
-    if (length == std::string::npos) {
-      length = m_Buffer.size() - offset;
+    UnicodeString subString(size_t offset, size_t length = std::string::npos) {
+        assert(offset < m_Buffer.size());
+        if (length == std::string::npos) {
+            length = m_Buffer.size() - offset;
+        }
+        return UnicodeString(&m_Buffer[offset], length);
     }
-    return UnicodeString(&m_Buffer[offset], length);
-  }
 
-  void set(LPCWSTR path);
+    void set(LPCWSTR path);
 
-  void setFromHandle(HANDLE fileHandle);
+    void setFromHandle(HANDLE fileHandle);
 
-private:
+  private:
+    void update();
 
-  void update();
-
-private:
-  UNICODE_STRING m_Data;
-  std::vector<wchar_t> m_Buffer;
+  private:
+    UNICODE_STRING m_Data;
+    std::vector<wchar_t> m_Buffer;
 };
 
-}
+} // namespace usvfs

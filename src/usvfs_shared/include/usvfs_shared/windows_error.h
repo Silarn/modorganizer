@@ -19,26 +19,22 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
-#include <stdexcept>
 #include "usvfs_shared/windows_sane.h"
+#include <stdexcept>
 
 namespace usvfs {
-
 namespace shared {
-
 class windows_error : public std::runtime_error {
-public:
-  windows_error(const std::string& message, int errorcode = GetLastError())
-    : runtime_error(constructMessage(message, errorcode)), m_ErrorCode(errorcode)
-  {}
-  int getErrorCode() const { return m_ErrorCode; }
-private:
-  std::string constructMessage(const std::string& input, int errorcode);
-private:
-  int m_ErrorCode;
+  public:
+    windows_error(const std::string& message, int errorcode = GetLastError())
+        : runtime_error(constructMessage(message, errorcode)), m_ErrorCode(errorcode) {}
+    int getErrorCode() const { return m_ErrorCode; }
+
+  private:
+    std::string constructMessage(const std::string& input, int errorcode);
+
+  private:
+    int m_ErrorCode;
 };
-
-}
-
-}
+} // namespace shared
+} // namespace usvfs

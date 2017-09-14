@@ -21,15 +21,11 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 /// Wildcard matching code
 /// by Martin Richter
 /// licensed under The Code Project Open License (CPOL)
-
 #pragma once
-
 #include "usvfs_shared/windows_sane.h"
 
 namespace usvfs {
-
 namespace shared {
-
 namespace wildcard {
 
 /**
@@ -53,7 +49,6 @@ bool Match(LPCWSTR pszString, LPCWSTR pszMatch);
  * @return true if the string matches the pattern
  */
 bool Match(LPCSTR pszString, LPCSTR pszMatch);
-
 
 /**
  * @brief match string to wildcard windows-style
