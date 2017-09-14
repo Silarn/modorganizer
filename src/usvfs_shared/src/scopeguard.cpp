@@ -20,8 +20,4 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs_shared/scopeguard.h"
 
-namespace MOBase {
-
-
-
-} // namespace MOBase
+namespace MOBase {} // namespace MOBase
