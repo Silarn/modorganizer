@@ -25,11 +25,48 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/windows_sane.h"
 #include <map>
 #include <mutex>
+#include <unordered_map>
 #include <vector>
 
-//#include <boost/thread/mutex.hpp>
-
 namespace HookLib {
+
+namespace detail {
+template <typename Bar>
+class thread_specific_ptr {
+  private:
+    static thread_local std::unordered_map<thread_specific_ptr*, Bar> tls;
+    Bar* get_() {
+        auto I = tls.find(this);
+        if (I != tls.end())
+            return &I->second;
+        auto II = tls.emplace(this, thread_specific_ptr()); // Could use std::piecewise_construct here...
+        return &II->second.second;
+    }
+    void set_(Bar* new_value) {
+        Bar* Old = get_();
+        tls[Old] = new_value;
+    }
+
+  public:
+    explicit thread_specific_ptr() = default;
+    ~thread_specific_ptr() { reset(); };
+    Bar* get() const { return get_(); }
+    Bar* operator->() const { return get(); }
+    Bar& operator*() const { return *get(); }
+    void reset(Bar* new_value = nullptr) {
+        if (get() != new_value && get()) {
+            delete get();
+        }
+        set_(new_value);
+    }
+    Bar* release() {
+        // TODO: Set current thread pointer to null.
+        Bar* old = get();
+        set_(new_value);
+        return old;
+    }
+};
+} // namespace detail
 
 ///
 /// trampolines are runtime-generated mini-functions that are used to call the
@@ -164,7 +201,7 @@ class TrampolinePool {
     BufferMap m_Buffers;
 
     typedef std::map<void*, void*> TThreadMap;
-    boost::thread_specific_ptr<TThreadMap> m_ThreadGuards;
+    detail::thread_specific_ptr<TThreadMap> m_ThreadGuards;
 
     LPVOID m_BarrierAddr;
     LPVOID m_ReleaseAddr;
