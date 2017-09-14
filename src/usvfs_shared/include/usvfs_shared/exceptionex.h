@@ -31,22 +31,22 @@ struct error_info : error_base {
     error_info(const ValueT&) {}
 };
 
-class exception : virtual std::exception {};
+class exception : public std::exception {};
 
 template <class ExceptionT, class TagT, typename ValueT>
-const ExceptionT& operator<<(const ExceptionT& ex, const error_info<TagT, ValueT>& val) {
+const ExceptionT& operator<<(const ExceptionT& ex, const error_info<TagT, ValueT>&) {
     return ex;
 }
 
 template <class InfoT, class ExceptionT>
-typename InfoT::value_type* get_error_info(const ExceptionT& ex) {
+typename InfoT::value_type* get_error_info(const ExceptionT&) {
     static InfoT::value_type def;
     return &def;
 }
 
 // FIXME: This?
-template <typename T>
-void debug_throw(const exception& e, std::string file, T line) {
+template <typename Exec, typename T>
+void debug_throw(const Exec& e, std::string, T) {
     throw e;
 }
 
@@ -57,13 +57,13 @@ namespace MyBoost = MyBoostFake;
 typedef MyBoost::error_info<struct tag_message, unsigned long> ex_win_errcode;
 typedef MyBoost::error_info<struct tag_message, std::string> ex_msg;
 
-struct incompatibility_error : virtual MyBoost::exception, virtual std::exception {};
-struct usage_error : virtual MyBoost::exception, virtual std::exception {};
-struct data_error : virtual MyBoost::exception, virtual std::exception {};
-struct file_not_found_error : virtual MyBoost::exception, virtual std::exception {};
-struct timeout_error : virtual MyBoost::exception, virtual std::exception {};
-struct unknown_error : virtual MyBoost::exception, virtual std::exception {};
-struct node_missing_error : virtual MyBoost::exception, virtual std::exception {};
+struct incompatibility_error : MyBoost::exception {};
+struct usage_error : MyBoost::exception {};
+struct data_error : MyBoost::exception {};
+struct file_not_found_error : MyBoost::exception {};
+struct timeout_error : MyBoost::exception {};
+struct unknown_error : MyBoost::exception {};
+struct node_missing_error : MyBoost::exception {};
 
 #define USVFS_S1(x) #x
 #define USVFS_S2(x) USVFS_S1(x)
