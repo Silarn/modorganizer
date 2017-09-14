@@ -1,48 +1,16 @@
+## Common Library.
 cmake_minimum_required (VERSION 3.9 FATAL_ERROR)
-project(hookdll VERSION 0.1 LANGUAGES CXX)
-set(library_name "hookdll")
+project(common VERSION 0.1 LANGUAGES CXX)
+set(library_name "common")
 
 ## Files ##
 # Main
 SET(HDRS
-    include/${library_name}/apihook.h
-    include/${library_name}/disasm.h
-    include/${library_name}/disasm_table.h
-    include/${library_name}/dllmain.h
-    include/${library_name}/fallout3info.h
-    include/${library_name}/falloutnvinfo.h
-    include/${library_name}/gameinfo.h
-    include/${library_name}/hooklock.h
-    include/${library_name}/logger.h
-    include/${library_name}/modinfo.h
-    include/${library_name}/oblivioninfo.h
-    include/${library_name}/obse.h
-    include/${library_name}/profile.h
-    include/${library_name}/reroutes.h
-    include/${library_name}/skyriminfo.h
-    include/${library_name}/utility.h
+    include/${library_name}/dllmain.h # Handle Static vs Shared DLL exports.
 )
 
 SET(SRCS
     src/apihook.cpp
-    src/disasm.cpp
-    src/disasm_table.cpp
-    src/dllmain.cpp
-    src/fallout3info.cpp
-    src/falloutnvinfo.cpp
-    src/gameinfo.cpp
-    src/hookdll.pro
-    src/hookdll.qbs
-    src/hooklock.cpp
-    src/logger.cpp
-    src/modinfo.cpp
-    src/oblivioninfo.cpp
-    src/process_blacklist.txt
-    src/profile.cpp
-    src/SConscript
-    src/skyriminfo.cpp
-    src/utility.cpp
-    src/version.rc
 )
 
 ## Library ##
@@ -54,7 +22,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC common MOShared fmt::fmt-header-only)
+target_link_libraries(${library_name} PUBLIC fmt::fmt-header-only)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.

@@ -253,7 +253,8 @@ target_include_directories(${library_name} PUBLIC
 target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras
 					  # Qt5::WebKitWidgets
 					  Zlib
-					  # uibase esptk bsatk
+					  common uibase
+					  # esptk bsatk
                       Dbghelp advapi32 Version Shlwapi)
 # QT
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
