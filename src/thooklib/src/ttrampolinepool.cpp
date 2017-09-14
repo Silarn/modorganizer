@@ -212,7 +212,7 @@ LPVOID TrampolinePool::storeStub(LPVOID reroute, LPVOID original, LPVOID returnA
     CodeHolder rcode;
     rcode.init(runtime.getCodeInfo());
     X86Assembler assembler(&rcode);
-    
+
     addCallToStub(assembler, original, reroute);
     addAbsoluteJump(assembler, reinterpret_cast<uint64_t>(returnAddress));
 
@@ -230,8 +230,11 @@ LPVOID TrampolinePool::storeStub(LPVOID reroute, LPVOID original, LPVOID returnA
 
     // adjust relative jumps for move to buffer
     codeSize = rcode.relocate(spot);
-    
-    uint8_t* code = assembler.getBufferData();
+    rcode.sync();
+    // copy code to buffer
+    CodeBuffer& buf = rcode.getSectionEntry(0)->getBuffer();
+    uint8_t* code = buf.getData();
+
     memcpy(spot, code, codeSize);
 
     bufferList.offset += codeSize;
@@ -257,7 +260,7 @@ LPVOID TrampolinePool::storeTrampoline(LPVOID reroute, LPVOID original, LPVOID r
     CodeHolder rcode;
     rcode.init(runtime.getCodeInfo());
     X86Assembler assembler(&rcode);
-    
+
     addBarrier(reroute, original, assembler);
 #if IS_X64
     assembler.mov(rax, imm((intptr_t)(void*)(returnAddress)));
@@ -280,9 +283,10 @@ LPVOID TrampolinePool::storeTrampoline(LPVOID reroute, LPVOID original, LPVOID r
 
     // adjust relative jumps for move to buffer
     codeSize = rcode.relocate(spot);
-
+    rcode.sync();
     // copy code to buffer
-    uint8_t* code = assembler.getBufferData();
+    CodeBuffer& buf = rcode.getSectionEntry(0)->getBuffer();
+    uint8_t* code = buf.getData();
     memcpy(spot, code, codeSize);
 
     bufferList.offset += codeSize;

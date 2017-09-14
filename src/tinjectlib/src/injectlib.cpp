@@ -309,9 +309,11 @@ REGWORD WriteInjectionStub(HANDLE processHandle, LPCWSTR dllName, LPCSTR initFun
         throw windows_error("failed to allocate memory for stub");
     }
 
+    rcode.sync();
+    asmjit::CodeBuffer& buf = rcode.getSectionEntry(0)->getBuffer();
+
     // almost there. copy stub to target process
-    if (!WriteProcessMemory(processHandle, stubRemote, assembler.getBufferData(), stubSize, &written) ||
-        (written != stubSize)) {
+    if (!WriteProcessMemory(processHandle, stubRemote, buf.getData(), stubSize, &written) || (written != stubSize)) {
         throw windows_error("failed to write stub to target process");
     }
 
