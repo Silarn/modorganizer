@@ -22,6 +22,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs/hookcontext.h"
 #include "usvfs_shared/logging.h"
 #include <bitset>
+#include <memory>
 #include <thread>
 
 namespace usvfs {
@@ -51,11 +52,11 @@ class HookStack {
     HookStack() {}
 
   private:
-    static boost::thread_specific_ptr<HookStack> s_Instance;
+    static thread_local std::unique_ptr<HookStack> s_Instance;
     std::bitset<static_cast<size_t>(MutExHookGroup::LAST)> m_ActiveGroups;
 };
 
-boost::thread_specific_ptr<HookStack> HookStack::s_Instance;
+thread_local std::unique_ptr<HookStack> HookStack::s_Instance;
 
 HookCallContext::HookCallContext() : m_Active(true), m_Group(MutExHookGroup::NO_GROUP) { updateLastError(); }
 
