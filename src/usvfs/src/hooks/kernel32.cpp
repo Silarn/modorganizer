@@ -10,6 +10,7 @@
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/winapi.h"
 #include <filesystem>
+#include <fmt/ostream.h>
 #include <set>
 #include <shellapi.h>
 #include <sstream>
@@ -932,7 +933,7 @@ DWORD WINAPI usvfs::hooks::GetFullPathNameW(LPCWSTR lpFileName, DWORD nBufferLen
     if (actualCWD.empty() || fs::path(lpFileName).is_absolute()) {
         temp = lpFileName;
     } else {
-        temp = (fs::wpath(actualCWD) / lpFileName).wstring();
+        temp = (fs::path(actualCWD) / lpFileName).wstring();
     }
     PRE_REALCALL
     res = ::GetFullPathNameW(temp.c_str(), nBufferLength, lpBuffer, lpFilePart);
