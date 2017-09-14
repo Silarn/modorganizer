@@ -19,24 +19,24 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #define GTEST_LANG_CXX11 1
+#include "usvfs/hookcontext.h"
+#include "usvfs/hooks/kernel32.h"
+#include "usvfs/hooks/ntdll.h"
+#include "usvfs/inject.h"
+#include "usvfs/redirectiontree.h"
+#include "usvfs/usvfs.h"
+#include "usvfs_shared/directory_tree.h"
+#include "usvfs_shared/logging.h"
+#include "usvfs_shared/shmlogger.h"
+#include "usvfs_shared/stringcast.h"
+#include "usvfs_shared/stringutils.h"
+#include "usvfs_shared/unicodestring.h"
+#include "usvfs_shared/winapi.h"
+#include "usvfs_shared/windows_sane.h"
 #include <fstream>
 #include <gtest/gtest.h>
 #include <iostream>
 #include <spdlog/spdlog.h>
-#include <usvfs/hookcontext.h>
-#include <usvfs/hooks/kernel32.h>
-#include <usvfs/hooks/ntdll.h>
-#include <usvfs/inject.h>
-#include <usvfs/redirectiontree.h>
-#include <usvfs/usvfs.h>
-#include <usvfs_shared/directory_tree.h>
-#include <usvfs_shared/logging.h>
-#include <usvfs_shared/shmlogger.h>
-#include <usvfs_shared/stringcast.h>
-#include <usvfs_shared/stringutils.h>
-#include <usvfs_shared/unicodestring.h>
-#include <usvfs_shared/winapi.h>
-#include <usvfs_shared/windows_sane.h>
 
 namespace spd = spdlog;
 namespace uhooks = usvfs::hooks;
