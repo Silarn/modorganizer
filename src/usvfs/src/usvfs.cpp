@@ -34,6 +34,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <filesystem>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
+#include <unordered_map>
 
 namespace fs = std::experimental::filesystem;
 namespace ush = usvfs::shared;
@@ -66,20 +67,20 @@ class null_sink : public sink {
 // Logging
 //
 
-char* SeverityShort(LogLevel lvl) {
-    switch (lvl) {
-    case LogLevel::Debug:
-        return "D";
-    case LogLevel::Info:
-        return "I";
-    case LogLevel::Warning:
-        return "W";
-    case LogLevel::Error:
-        return "E";
-    default:
-        return "?";
-    }
-}
+//char* SeverityShort(LogLevel lvl) {
+//    switch (lvl) {
+//    case LogLevel::Debug:
+//        return "D";
+//    case LogLevel::Info:
+//        return "I";
+//    case LogLevel::Warning:
+//        return "W";
+//    case LogLevel::Error:
+//        return "E";
+//    default:
+//        return "?";
+//    }
+//}
 
 void InitLoggingInternal(bool toConsole, bool connectExistingSHM) {
     try {
