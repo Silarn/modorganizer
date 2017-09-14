@@ -23,6 +23,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace MOBase {
 
+#define UIBASE_EXPORT // FIXME: This.
+#define _NODLL
+
 #if defined(UIBASE_EXPORT)
 #define QDLLEXPORT __declspec(dllexport)
 #elif defined(_NODLL)

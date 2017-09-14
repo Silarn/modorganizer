@@ -28,4 +28,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define DLLEXPORT __declspec(dllimport)
 #endif
 
+#undef DLLEXPORT // FIXME: This
+#define DLLEXPORT
+
 extern "C" DLLEXPORT bool __cdecl Init(int logLevel, const wchar_t* profileName);
