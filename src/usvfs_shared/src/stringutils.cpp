@@ -21,6 +21,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/windows_error.h"
 #include "usvfs_shared/windows_sane.h"
+#include <algorithm>
 #include <cctype>
 #include <cstring>
 #include <fmt/format.h>
@@ -59,8 +60,8 @@ static fs::path normalize(const fs::path& path) { return fs::canonical(path); }
 static bool iequals(std::string a, std::string b) {
     // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
     // This will fail on unicode.
-    std::transform(a.begin(), a.end(), a.begin(), std::tolower);
-    std::transform(b.begin(), b.end(), b.begin(), std::tolower);
+    std::transform(a.begin(), a.end(), a.begin(), [](const char& a) { return std::tolower(a); });
+    std::transform(b.begin(), b.end(), b.begin(), [](const char& a) { return std::tolower(a); });
     return a == b;
 }
 
