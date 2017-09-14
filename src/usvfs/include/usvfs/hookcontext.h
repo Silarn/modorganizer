@@ -146,7 +146,7 @@ class HookContext {
         // std::map is supposed to not invalidate any iterators when elements are
         // added
         // so it should be safe to return a pointer here
-        T* res = boost::any_cast<T>(&iter->second);
+        T* res = std::any_cast<T>(&iter->second);
         return *res;
     }
 
