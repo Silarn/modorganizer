@@ -7,6 +7,7 @@ set(library_name "common")
 # Main
 SET(HDRS
     include/${library_name}/dllmain.h # Handle Static vs Shared DLL exports.
+    include/${library_name}/sane_windows.h # A sane windows.h import.
 )
 
 SET(SRCS
