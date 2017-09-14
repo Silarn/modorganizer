@@ -22,12 +22,22 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/shmlogger.h"
 #include <stdexcept>
 
+#if defined(_M_X64) || defined(__amd64__)
+#pragma message("64bit build")
+#define IS_X64 1
+#elif _M_IX86
+#pragma message("32bit build")
+#define IS_X64 0
+#else
+#error "Unsupported Architecture"
+#endif
+
 namespace HookLib {
 
 UDis86Wrapper::UDis86Wrapper() {
     ud_init(&m_Obj);
     ud_set_syntax(&m_Obj, UD_SYN_INTEL);
-#if BOOST_ARCH_X86_64
+#if IS_X64
     ud_set_mode(&m_Obj, 64);
 #else
     ud_set_mode(&m_Obj, 32);

@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
 #include "asmjit_sane.h"
 #include "usvfs_shared/logging.h"
 #include "usvfs_shared/windows_sane.h"
@@ -27,6 +26,16 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <mutex>
 #include <unordered_map>
 #include <vector>
+
+#if defined(_M_X64) || defined(__amd64__)
+#pragma message("64bit build")
+#define IS_X64 1
+#elif _M_IX86
+#pragma message("32bit build")
+#define IS_X64 0
+#else
+#error "Unsupported Architecture"
+#endif
 
 namespace HookLib {
 
@@ -159,9 +168,9 @@ class TrampolinePool {
 
     void addBarrier(LPVOID rerouteAddr, LPVOID original, asmjit::X86Assembler& assembler);
 
-#if BOOST_ARCH_X86_64
+#if IS_X64
     void copyCode(asmjit::X86Assembler& assembler, LPVOID source, size_t numBytes);
-#endif // BOOST_ARCH_X86_64
+#endif // IS_X64
 
     BufferList& getBufferList(LPVOID address);
 
@@ -188,9 +197,9 @@ class TrampolinePool {
     DWORD determinePageSize();
 
   private:
-#if BOOST_ARCH_X86_64
+#if IS_X64
     static const int SIZE_OF_JUMP = 13;
-#elif BOOST_ARCH_X86_32
+#elif !IS_X64
     static const int SIZE_OF_JUMP = 5;
 #endif
 
