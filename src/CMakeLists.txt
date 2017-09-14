@@ -72,7 +72,7 @@ if (MSVC)
     string(REPLACE ";" " " LINKER "${LINKER}")
     
     set(COMPILER_DEBUG
-        ""
+        "/MTd"
     )
     string(REPLACE ";" " " COMPILER_DEBUG "${COMPILER_DEBUG}")
     
@@ -84,6 +84,7 @@ if (MSVC)
         "/Qpar" # Auto Parralize Loops
         "/Qpar-report:1" # Outputs an info message for loops that are parallelized.
         "/Qvec-report:1" # Outputs an info message for loops that are vectorized.
+        "/MT"
     )
     string(REPLACE ";" " " COMPILER_RELEASE "${COMPILER_RELEASE}")
     
@@ -179,7 +180,8 @@ add_library(spdlog INTERFACE IMPORTED)
 set_property(TARGET spdlog PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${spdlog_INCLUDE_DIRS})
 # Google Test
 set(GTEST_INCLUDE_DIRS ${PREFIX_PATH}/include)
-set(GTEST_LIBRARY ${PREFIX_PATH}/lib/gtest_main${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(GTEST_LIBRARY ${PREFIX_PATH}/lib/gtest${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(GTEST_LIBRARY_D ${PREFIX_PATH}/lib/gtestd${CMAKE_STATIC_LIBRARY_SUFFIX})
 if(NOT EXISTS ${GTEST_INCLUDE_DIRS}/gtest/gtest.h OR NOT EXISTS ${GTEST_LIBRARY})
     message(FATAL_ERROR "GTest not found, have you built it correctly?\n"
             "${library_name} requires Static GTest")
@@ -187,6 +189,7 @@ endif()
 add_library(GTest STATIC IMPORTED)
 set_property(TARGET GTest PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIRS})
 set_property(TARGET GTest PROPERTY IMPORTED_LOCATION_RELEASE ${GTEST_LIBRARY})
+set_property(TARGET GTest PROPERTY IMPORTED_LOCATION_DEBUG ${GTEST_LIBRARY_D})
 
 ## Targets ##
 add_subdirectory(usvfs_shared)
