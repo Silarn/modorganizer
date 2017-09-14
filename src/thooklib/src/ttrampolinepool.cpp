@@ -24,10 +24,14 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/shmlogger.h"
 
 using namespace asmjit;
-#if BOOST_ARCH_X86_64
+#if defined(_M_X64) || defined(__amd64__)
 using namespace x86;
-#elif BOOST_ARCH_X86_32
+#define IS_X64 1
+#elif _M_IX86
 using namespace asmjit::x86;
+#define IS_X64 0
+#else
+#error "Unsupported Architecture"
 #endif
 
 using namespace usvfs::shared;
@@ -68,7 +72,7 @@ void TrampolinePool::setBlock(bool block) {
     }
 }
 
-#if BOOST_ARCH_X86_64
+#if IS_X64
 // push all registers (except rax) and flags to the stack
 static void pushAll(X86Assembler& assembler) {
     assembler.pushf();
@@ -106,12 +110,12 @@ static void popAll(X86Assembler& assembler) {
     assembler.pop(rcx);
     assembler.popf();
 }
-#endif // BOOST_ARCH_X86_64
+#endif // IS_X64
 
 void TrampolinePool::addBarrier(LPVOID rerouteAddr, LPVOID original, X86Assembler& assembler) {
     Label skipLabel = assembler.newLabel();
 
-#if BOOST_ARCH_X86_64
+#if IS_X64
     pushAll(assembler);
     assembler.mov(rcx, imm(reinterpret_cast<int64_t>(original))); // set call parameter for call to barrier function
     assembler.mov(rax, imm((intptr_t)(void*)barrier));
@@ -145,7 +149,7 @@ void TrampolinePool::addBarrier(LPVOID rerouteAddr, LPVOID original, X86Assemble
     assembler.push(rax);     // push the original return address back on the stack
     assembler.mov(rax, r10); // move result of actual call to rax
     assembler.ret();         // return, using the original return address
-#else                        // BOOST_ARCH_X86_64
+#else                        // IS_X64
     assembler.push(imm(void_ptr_cast<int32_t>(original))); // push original function, as parameter to barrier
     assembler.mov(ecx, (Ptr) static_cast<void*>(TrampolinePool::barrier));
     assembler.call(ecx); // call barrier function
@@ -169,7 +173,7 @@ void TrampolinePool::addBarrier(LPVOID rerouteAddr, LPVOID original, X86Assemble
                              // back on the stack
     assembler.mov(eax, ecx); // move result of actual call to eax
     assembler.ret();         // return, using the original return address
-#endif                       // BOOST_ARCH_X86_64
+#endif                       // IS_X64
 
     assembler.bind(skipLabel);
 }
@@ -205,7 +209,7 @@ LPVOID TrampolinePool::storeStub(LPVOID reroute, LPVOID original, LPVOID returnA
     bufferList.offset += sizeof(LPVOID);
 
     JitRuntime runtime;
-#if BOOST_ARCH_X86_64
+#if IS_X64
     X86Assembler assembler(&runtime);
 #else
     X86Assembler assembler(&runtime);
@@ -253,7 +257,7 @@ LPVOID TrampolinePool::storeTrampoline(LPVOID reroute, LPVOID original, LPVOID r
     JitRuntime runtime;
     X86Assembler assembler(&runtime);
     addBarrier(reroute, original, assembler);
-#if BOOST_ARCH_X86_64
+#if IS_X64
     assembler.mov(rax, imm((intptr_t)(void*)(returnAddress)));
     assembler.jmp(rax);
 #else
@@ -283,7 +287,7 @@ LPVOID TrampolinePool::storeTrampoline(LPVOID reroute, LPVOID original, LPVOID r
     return spot;
 }
 
-#if BOOST_ARCH_X86_64
+#if IS_X64
 void TrampolinePool::copyCode(X86Assembler& assembler, LPVOID source, size_t numBytes) {
     static UDis86Wrapper disasm;
 
@@ -310,7 +314,7 @@ void TrampolinePool::copyCode(X86Assembler& assembler, LPVOID source, size_t num
 #endif
 
 void TrampolinePool::addCallToStub(X86Assembler& assembler, LPVOID original, LPVOID reroute) {
-#if BOOST_ARCH_X86_64
+#if IS_X64
     pushAll(assembler);
     assembler.mov(rcx, imm(reinterpret_cast<int64_t>(original)));
     assembler.mov(rax, imm((intptr_t)(LPVOID)reroute));
@@ -318,26 +322,26 @@ void TrampolinePool::addCallToStub(X86Assembler& assembler, LPVOID original, LPV
     assembler.call(rax);
     assembler.add(rsp, 32);
     popAll(assembler);
-#else  // BOOST_ARCH_X86_64
+#else  // IS_X64
     assembler.push(reinterpret_cast<int64_t>(original));
     assembler.mov(ecx, imm((intptr_t)(LPVOID)reroute));
     assembler.call(ecx);
     assembler.pop(ecx); // remove argument from stack
-#endif // BOOST_ARCH_X86_64
+#endif // IS_X64
 }
 
 void TrampolinePool::addAbsoluteJump(X86Assembler& assembler, uint64_t destination) {
-#if BOOST_ARCH_X86_64
+#if IS_X64
     assembler.push(rax);
     assembler.push(rax);
     assembler.mov(rax, imm(destination));
     assembler.mov(ptr(rsp, 8), rax);
     assembler.pop(rax);
     assembler.ret();
-#else  // BOOST_ARCH_X86_64
+#else  // IS_X64
     assembler.push(imm(destination));
     assembler.ret();
-#endif // BOOST_ARCH_X86_64
+#endif // IS_X64
 }
 
 LPVOID TrampolinePool::storeStub(LPVOID reroute, LPVOID original, size_t preambleSize, size_t* rerouteOffset) {
@@ -357,13 +361,13 @@ LPVOID TrampolinePool::storeStub(LPVOID reroute, LPVOID original, size_t preambl
     JitRuntime runtime;
     X86Assembler assembler(&runtime);
     addCallToStub(assembler, original, reroute);
-#if BOOST_ARCH_X86_64
+#if IS_X64
     // insert backup code
     *rerouteOffset = assembler.getCodeSize();
     copyCode(assembler, original, preambleSize);
-#else  // BOOST_ARCH_X86_64
+#else  // IS_X64
     assembler.embed(original, preambleSize);
-#endif // BOOST_ARCH_X86_64
+#endif // IS_X64
     addAbsoluteJump(assembler, reinterpret_cast<uint64_t>(original) + preambleSize);
 
     // adjust relative jumps for move to buffer
