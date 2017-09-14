@@ -11,9 +11,9 @@ using namespace usvfs::shared;
 using namespace InjectLib;
 
 #ifdef DEBUG
-static const wchar_t INJECT_LIB[] = L"testinject_dll-d.dll";
+static const wchar_t INJECT_LIB[] = L"tinjectlibTestDll-d.dll";
 #else
-static const wchar_t INJECT_LIB[] = L"testinject_dll.dll";
+static const wchar_t INJECT_LIB[] = L"tinjectlibTestDll.dll";
 #endif
 
 static std::shared_ptr<spdlog::logger> logger() {
@@ -30,7 +30,7 @@ bool spawn(HANDLE& processHandle, HANDLE& threadHandle) {
     si.cb = sizeof(si);
 
     PROCESS_INFORMATION pi;
-    BOOL success = ::CreateProcess(TEXT("testinject_bin.exe"), nullptr, nullptr, nullptr, FALSE, CREATE_SUSPENDED,
+    BOOL success = ::CreateProcess(TEXT("tinjectlibTestExe.exe"), nullptr, nullptr, nullptr, FALSE, CREATE_SUSPENDED,
                                    nullptr, nullptr, &si, &pi);
 
     if (!success) {
@@ -62,7 +62,6 @@ TEST(InjectingTest, InjectionNoInit) {
 
 TEST(InjectingTest, InjectionSimpleInit) {
     // Verify lib can inject with a init function with null parameters
-
     HANDLE process, thread;
     spawn(process, thread);
     EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB, "InitNoParam"));
