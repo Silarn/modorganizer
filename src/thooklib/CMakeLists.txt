@@ -46,7 +46,6 @@ export(TARGETS ${library_name} FILE ${library_name}Config.cmake)
 ## Tests ##
 add_executable(${library_name}Tests
     test/main.cpp
-    test/test_hooks.cpp
 )
 target_include_directories(${library_name}Tests PRIVATE test)
 target_link_libraries(${library_name}Tests PRIVATE ${library_name} spdlog GTest)
