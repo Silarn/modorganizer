@@ -50,7 +50,7 @@ void debug_throw(std::exception& e, std::string file, int line) { throw e; }
 
 namespace MyBoost = MyBoostFake;
 
-typedef MyBoost::error_info<struct tag_message, DWORD> ex_win_errcode;
+typedef MyBoost::error_info<struct tag_message, unsigned long> ex_win_errcode;
 typedef MyBoost::error_info<struct tag_message, std::string> ex_msg;
 
 struct incompatibility_error : virtual MyBoost::exception, virtual std::exception {};

@@ -50,7 +50,7 @@ class string_cast_impl<ToT, std::basic_string<CharT>> {
 
 template <typename ToT, typename CharT>
 class string_cast_impl<ToT, CharT*> {
-    static_assert(!std::is_base_of_v(ToT, CharT));
+    static_assert(!std::is_base_of_v<ToT, CharT>);
 
   public:
     static ToT cast(CharT* source, CodePage codePage, size_t sourceLength) {
