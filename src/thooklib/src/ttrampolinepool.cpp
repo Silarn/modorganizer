@@ -209,15 +209,14 @@ LPVOID TrampolinePool::storeStub(LPVOID reroute, LPVOID original, LPVOID returnA
     bufferList.offset += sizeof(LPVOID);
 
     JitRuntime runtime;
-#if IS_X64
-    X86Assembler assembler(&runtime);
-#else
-    X86Assembler assembler(&runtime);
-#endif
+    CodeHolder rcode;
+    rcode.init(runtime.getCodeInfo());
+    X86Assembler assembler(&rcode);
+    
     addCallToStub(assembler, original, reroute);
     addAbsoluteJump(assembler, reinterpret_cast<uint64_t>(returnAddress));
 
-    size_t codeSize = assembler.getCodeSize();
+    size_t codeSize = rcode.getCodeSize();
 
     m_MaxTrampolineSize = std::max(m_MaxTrampolineSize, static_cast<int>(codeSize + sizeof(LPVOID)));
 
@@ -230,9 +229,9 @@ LPVOID TrampolinePool::storeStub(LPVOID reroute, LPVOID original, LPVOID returnA
     }
 
     // adjust relative jumps for move to buffer
-    codeSize = assembler.relocCode(spot);
-
-    uint8_t* code = assembler.getBuffer();
+    codeSize = rcode.relocate(spot);
+    
+    uint8_t* code = assembler.getBufferData();
     memcpy(spot, code, codeSize);
 
     bufferList.offset += codeSize;
@@ -255,7 +254,10 @@ LPVOID TrampolinePool::storeTrampoline(LPVOID reroute, LPVOID original, LPVOID r
     bufferList.offset += sizeof(LPVOID);
 
     JitRuntime runtime;
-    X86Assembler assembler(&runtime);
+    CodeHolder rcode;
+    rcode.init(runtime.getCodeInfo());
+    X86Assembler assembler(&rcode);
+    
     addBarrier(reroute, original, assembler);
 #if IS_X64
     assembler.mov(rax, imm((intptr_t)(void*)(returnAddress)));
@@ -264,7 +266,7 @@ LPVOID TrampolinePool::storeTrampoline(LPVOID reroute, LPVOID original, LPVOID r
     assembler.mov(eax, imm((intptr_t)(void*)(returnAddress)));
     assembler.jmp(eax);
 #endif
-    size_t codeSize = assembler.getCodeSize();
+    size_t codeSize = rcode.getCodeSize();
 
     m_MaxTrampolineSize = std::max(m_MaxTrampolineSize, static_cast<int>(codeSize + sizeof(LPVOID)));
 
@@ -277,10 +279,10 @@ LPVOID TrampolinePool::storeTrampoline(LPVOID reroute, LPVOID original, LPVOID r
     }
 
     // adjust relative jumps for move to buffer
-    codeSize = assembler.relocCode(spot);
+    codeSize = rcode.relocate(spot);
 
     // copy code to buffer
-    uint8_t* code = assembler.getBuffer();
+    uint8_t* code = assembler.getBufferData();
     memcpy(spot, code, codeSize);
 
     bufferList.offset += codeSize;
@@ -359,11 +361,13 @@ LPVOID TrampolinePool::storeStub(LPVOID reroute, LPVOID original, size_t preambl
     bufferList.offset += sizeof(LPVOID);
 
     JitRuntime runtime;
-    X86Assembler assembler(&runtime);
+    CodeHolder rcode;
+    rcode.init(runtime.getCodeInfo());
+    X86Assembler assembler(&rcode);
     addCallToStub(assembler, original, reroute);
 #if IS_X64
     // insert backup code
-    *rerouteOffset = assembler.getCodeSize();
+    *rerouteOffset = rcode.getCodeSize();
     copyCode(assembler, original, preambleSize);
 #else  // IS_X64
     assembler.embed(original, preambleSize);
@@ -371,7 +375,7 @@ LPVOID TrampolinePool::storeStub(LPVOID reroute, LPVOID original, size_t preambl
     addAbsoluteJump(assembler, reinterpret_cast<uint64_t>(original) + preambleSize);
 
     // adjust relative jumps for move to buffer
-    size_t codeSize = assembler.getCodeSize();
+    size_t codeSize = rcode.getCodeSize();
 
     m_MaxTrampolineSize = std::max(m_MaxTrampolineSize, static_cast<int>(codeSize + sizeof(LPVOID)));
 
@@ -384,7 +388,7 @@ LPVOID TrampolinePool::storeStub(LPVOID reroute, LPVOID original, size_t preambl
     }
 
     // copy code to buffer
-    codeSize = assembler.relocCode(spot);
+    codeSize = rcode.relocate(spot);
 
     bufferList.offset += preambleSize + codeSize;
     return spot;
@@ -405,15 +409,17 @@ LPVOID TrampolinePool::storeTrampoline(LPVOID reroute, LPVOID original, size_t p
     bufferList.offset += sizeof(LPVOID);
 
     JitRuntime runtime;
-    X86Assembler assembler(&runtime);
+    CodeHolder rcode;
+    rcode.init(runtime.getCodeInfo());
+    X86Assembler assembler(&rcode);
     addBarrier(reroute, original, assembler);
     // insert backup code
-    *rerouteOffset = assembler.getCodeSize();
+    *rerouteOffset = rcode.getCodeSize();
     assembler.embed(original, static_cast<uint32_t>(preambleSize));
     addAbsoluteJump(assembler, reinterpret_cast<uint64_t>(original) + preambleSize);
 
     // adjust relative jumps for move to buffer
-    size_t codeSize = assembler.getCodeSize();
+    size_t codeSize = rcode.getCodeSize();
 
     m_MaxTrampolineSize = std::max(m_MaxTrampolineSize, static_cast<int>(codeSize + sizeof(LPVOID)));
 
@@ -430,7 +436,7 @@ LPVOID TrampolinePool::storeTrampoline(LPVOID reroute, LPVOID original, size_t p
     }
 
     // copy code to buffer
-    codeSize = static_cast<size_t>(assembler.relocCode(spot));
+    codeSize = static_cast<size_t>(rcode.relocate(spot));
 
     bufferList.offset += preambleSize + codeSize;
 
