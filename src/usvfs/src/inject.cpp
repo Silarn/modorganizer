@@ -19,13 +19,14 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs/inject.h"
-#include "injectlib.h"
+#include "tinjectlib/injectlib.h"
 #include "usvfs/loghelpers.h"
 #include "usvfs_shared/exceptionex.h"
 #include "usvfs_shared/stringcast.h"
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/winapi.h"
 #include <filesystem>
+#include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
 #include <string>
 #include <utility>
@@ -81,9 +82,9 @@ void usvfs::injectProcess(const std::wstring& applicationPath, const USVFSParame
     if (sameBitness) {
         std::string libName = std::string("usvfs_") + (proc64 ? "x64" : "x86");
 #ifdef _DEBUG
-        std::wstring dllPath = (binPath / (libName + "-d.dll").wstring());
+        std::wstring dllPath = fs::path(binPath / (libName + "-d.dll")).wstring();
 #else  // DEBUG
-        std::wstring dllPath = (binPath / (libName + ".dll")).wstring();
+        std::wstring dllPath = fs::path(binPath / (libName + ".dll")).wstring();
 #endif // DEBUG
         if (!fs::exists(dllPath)) {
             USVFS_THROW_EXCEPTION(file_not_found_error() << ex_msg(std::string("dll missing: ") +

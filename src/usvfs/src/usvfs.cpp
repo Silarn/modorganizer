@@ -33,6 +33,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <ctime>
 #include <filesystem>
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
 #include <unordered_map>
 

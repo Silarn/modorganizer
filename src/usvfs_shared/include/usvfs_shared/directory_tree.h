@@ -553,10 +553,10 @@ class TreeContainer {
      */
     const TreeT* get() const {
         return nullptr;
-        //if (m_TreeMeta->outdated) {
+        // if (m_TreeMeta->outdated) {
         //    reassign();
         //}
-        //return m_TreeMeta->tree.get();
+        // return m_TreeMeta->tree.get();
     }
 
     const TreeT* operator->() const { return get(); }
@@ -604,19 +604,22 @@ class TreeContainer {
     template <typename T>
     typename TreeT::NodePtrT addDirectory(const fs::path& name, const T& data, TreeFlags flags = 0,
                                           bool overwrite = true) {
-        using namespace std::placeholders;
-        try {
-            return addNode(m_TreeMeta->tree.get(), name, name.begin(), data, overwrite, flags | FLAG_DIRECTORY,
-                           allocator());
-        } catch (const bi::bad_alloc&) {
-            reassign();
-            return addDirectory(name, data, flags, overwrite);
-        }
+        // FIXME:
+        return TreeT::NodePtrT();
+        // using namespace std::placeholders;
+        // try {
+        //    return addNode(m_TreeMeta->tree.get(), name, name.begin(), data, overwrite, flags | FLAG_DIRECTORY,
+        //                   allocator());
+        //} catch (const bi::bad_alloc&) {
+        //    reassign();
+        //    return addDirectory(name, data, flags, overwrite);
+        //}
     }
 
     void getBuffer(void*& buffer, size_t& bufferSize) const {
-        buffer = m_SHM->get_address();
-        bufferSize = m_SHM->get_size();
+        // FIXME:
+        // buffer = m_SHM->get_address();
+        // bufferSize = m_SHM->get_size();
     }
 
   private:
