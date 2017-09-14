@@ -19,7 +19,6 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
 #include "usvfs_shared/exceptionex.h"
 #include "usvfs_shared/logging.h"
 #include "usvfs_shared/scopeguard.h"
@@ -77,19 +76,6 @@ static const MissingThrowT MissingThrow = MissingThrowT();
 
 template <typename NodeDataT>
 class TreeContainer;
-
-template <typename T1, typename T2, typename Alloc>
-struct mutable_pair {
-    typedef T1 first_type;
-    typedef T2 second_type;
-
-    mutable_pair(Alloc alloc) : first(T1(alloc)), second(T2(alloc)) {}
-    mutable_pair(const T1& f, const T2& s) : first(f), second(s) {}
-    mutable_pair(const std::pair<T1, T2>& p) : first(p.first), second(p.second) {}
-
-    T1 first;
-    mutable T2 second;
-};
 
 /**
  * a representation of a directory tree in memory.
