@@ -28,7 +28,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC spdlog usvfs_shared AsmJit) # TODO: UDIS86, whatever that is.
+target_link_libraries(${library_name} PUBLIC spdlog usvfs_shared AsmJit UDIS86)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.
