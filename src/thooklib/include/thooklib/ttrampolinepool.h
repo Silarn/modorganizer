@@ -78,6 +78,8 @@ class thread_specific_ptr {
         return old;
     }
 };
+template <typename T>
+thread_local std::unordered_map<thread_specific_ptr<T>*, T*> thread_specific_ptr<T>::tls;
 } // namespace detail
 
 ///
