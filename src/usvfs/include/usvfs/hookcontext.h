@@ -190,8 +190,9 @@ class HookContext {
 };
 } // namespace usvfs
 
-#if defined(UNITTEST) || defined(_WINDLL)
+#if defined(UNITTEST) || defined(_WINDLL) || defined(USVFS_STATIC)
 // exposed only to unit tests for easier testability
+// FIXME: Comment is wrong. _WINDLL is always defined. -D
 extern "C" DLLEXPORT usvfs::HookContext* __cdecl CreateHookContext(const USVFSParameters& params, HMODULE module);
 #endif
 

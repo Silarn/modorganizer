@@ -19,13 +19,14 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
+#define USVFS_STATIC
 
-#define DLLEXPORT // FIXME: This.
-
-#ifndef DLLEXPORT
+#ifdef USVFS_STATIC
+#define DLLEXPORT
+#else
 #ifdef _WINDLL
 #define DLLEXPORT __declspec(dllexport)
 #else
 #define DLLEXPORT __declspec(dllimport)
 #endif
-#endif DLLEXPORT
+#endif
