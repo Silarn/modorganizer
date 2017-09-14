@@ -44,7 +44,11 @@ typename InfoT::value_type* get_error_info(const ExceptionT& ex) {
     return &def;
 }
 
-void debug_throw(std::exception& e, std::string file, int line) { throw e; }
+// FIXME: This?
+template <typename T>
+void debug_throw(const exception& e, std::string file, T line) {
+    throw e;
+}
 
 } // namespace MyBoostFake
 
@@ -63,6 +67,6 @@ struct node_missing_error : virtual MyBoost::exception, virtual std::exception {
 
 #define USVFS_S1(x) #x
 #define USVFS_S2(x) USVFS_S1(x)
-#define USVFS_THROW_EXCEPTION(x) debug_throw((x), USVFS_S2(__FILE__), USVFS_S2(__LINE__))
+#define USVFS_THROW_EXCEPTION(x) debug_throw((x), (USVFS_S2(__FILE__)), (USVFS_S2(__LINE__)))
 
 void logExtInfo(const std::exception& e, LogLevel logLevel = LogLevel::Warning);
