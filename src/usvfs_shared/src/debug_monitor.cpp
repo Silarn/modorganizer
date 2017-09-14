@@ -21,43 +21,34 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/debug_monitor.h"
 #include <stdexcept>
 
-
 DebugMonitor::DebugMonitor(const DebugCallback &callback)
-  : m_Callback(callback), m_ProcessFilter(NO_FILTER), m_DebugBuffer(nullptr)
-{
+    : m_Callback(callback), m_ProcessFilter(NO_FILTER), m_DebugBuffer(nullptr) {
   initialize();
 }
 
+DebugMonitor::~DebugMonitor() { stop(); }
 
-DebugMonitor::~DebugMonitor()
-{
-  stop();
-}
+DWORD DebugMonitor::errorState() const { return m_InitError; }
 
-DWORD DebugMonitor::errorState() const
-{
-  return m_InitError;
-}
-
-void DebugMonitor::setProcessFilter(DWORD processId)
-{
+void DebugMonitor::setProcessFilter(DWORD processId) {
   m_ProcessFilter = processId;
 }
 
-void DebugMonitor::initialize()
-{
+void DebugMonitor::initialize() {
   printf("initialize\n");
-  LPCTSTR dbBufferReady  = TEXT("DBWIN_BUFFER_READY");
-  LPCTSTR dbDataReady    = TEXT("DBWIN_DATA_READY");
+  LPCTSTR dbBufferReady = TEXT("DBWIN_BUFFER_READY");
+  LPCTSTR dbDataReady = TEXT("DBWIN_DATA_READY");
 
   m_InitError = NO_ERROR;
 
   // init events
-  if ((m_EventBufferReady = openOrCreateEvent(dbBufferReady, EVENT_ALL_ACCESS, FALSE)) == nullptr) {
+  if ((m_EventBufferReady = openOrCreateEvent(dbBufferReady, EVENT_ALL_ACCESS,
+                                              FALSE)) == nullptr) {
     return;
   }
 
-  if ((m_EventDataReady = openOrCreateEvent(dbDataReady, SYNCHRONIZE, FALSE)) == nullptr) {
+  if ((m_EventDataReady = openOrCreateEvent(dbDataReady, SYNCHRONIZE, FALSE)) ==
+      nullptr) {
     return;
   }
 
@@ -68,18 +59,14 @@ void DebugMonitor::initialize()
   startMonitorThread();
 }
 
-
-void DebugMonitor::clearHandle(HANDLE &handle)
-{
+void DebugMonitor::clearHandle(HANDLE &handle) {
   if (handle != nullptr) {
     CloseHandle(handle);
     handle = nullptr;
   }
 }
 
-
-bool DebugMonitor::stop()
-{
+bool DebugMonitor::stop() {
   m_StopMonitorThread = TRUE;
 
   bool threadStopped = FALSE;
@@ -102,15 +89,16 @@ bool DebugMonitor::stop()
   return threadStopped;
 }
 
-
-void DebugMonitor::startMonitorThread()
-{
+void DebugMonitor::startMonitorThread() {
   m_StopMonitorThread = false;
-  m_MonitorThread = CreateThread(nullptr, 0, monitorThreadLoop, this, 0, nullptr);
+  m_MonitorThread =
+      CreateThread(nullptr, 0, monitorThreadLoop, this, 0, nullptr);
   if (m_MonitorThread != 0) {
-    // set very high priority for the monitor thread so t doesn't slow down calls to OutputDebugString
+    // set very high priority for the monitor thread so t doesn't slow down
+    // calls to OutputDebugString
 
-    BOOL success = SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
+    BOOL success =
+        SetPriorityClass(GetCurrentProcess(), REALTIME_PRIORITY_CLASS);
     if (!success) {
       printf("failed to change priority class: %lu\n", GetLastError());
     }
@@ -122,9 +110,7 @@ void DebugMonitor::startMonitorThread()
   }
 }
 
-
-void DebugMonitor::processDebugEvent()
-{
+void DebugMonitor::processDebugEvent() {
   SetEvent(m_EventBufferReady);
   DWORD ret = WaitForSingleObject(m_EventDataReady, 100);
   ResetEvent(m_EventBufferReady);
@@ -132,16 +118,16 @@ void DebugMonitor::processDebugEvent()
   if (ret == WAIT_OBJECT_0) {
     if ((m_DebugBuffer->processId == NO_FILTER) ||
         (m_DebugBuffer->processId == m_ProcessFilter)) {
-      fprintf(stdout, "%lu : %s\n", m_DebugBuffer->processId, m_DebugBuffer->data);
+      fprintf(stdout, "%lu : %s\n", m_DebugBuffer->processId,
+              m_DebugBuffer->data);
       fflush(stdout);
-//      m_Callback(m_DebugBuffer->data);
+      //      m_Callback(m_DebugBuffer->data);
     }
   } // TODO: error handling?
 }
 
-DWORD WINAPI DebugMonitor::monitorThreadLoop(LPVOID data)
-{
-  DebugMonitor *self = reinterpret_cast<DebugMonitor*>(data);
+DWORD WINAPI DebugMonitor::monitorThreadLoop(LPVOID data) {
+  DebugMonitor *self = reinterpret_cast<DebugMonitor *>(data);
 
   if (self != nullptr) {
     while (!self->m_StopMonitorThread) {
@@ -153,7 +139,8 @@ DWORD WINAPI DebugMonitor::monitorThreadLoop(LPVOID data)
 }
 
 /*
-HANDLE DebugMonitor::openOrCreateEvent(LPCTSTR name, DWORD desiredAccess, BOOL initialState)
+HANDLE DebugMonitor::openOrCreateEvent(LPCTSTR name, DWORD desiredAccess, BOOL
+initialState)
 {
   HANDLE result = ::OpenEvent(desiredAccess, FALSE, name);
   if (result == nullptr) {
@@ -169,8 +156,7 @@ HANDLE DebugMonitor::openOrCreateEvent(LPCTSTR name, DWORD desiredAccess, BOOL i
 }
 */
 
-HANDLE DebugMonitor::openOrCreateEvent(LPCTSTR name, DWORD, BOOL initialState)
-{
+HANDLE DebugMonitor::openOrCreateEvent(LPCTSTR name, DWORD, BOOL initialState) {
   HANDLE result = ::CreateEvent(nullptr, FALSE, initialState, name);
   if ((result == nullptr) || (GetLastError() == ERROR_ALREADY_EXISTS)) {
     printf("failed to create event %ls\n", name);
@@ -184,22 +170,24 @@ HANDLE DebugMonitor::openOrCreateEvent(LPCTSTR name, DWORD, BOOL initialState)
   return result;
 }
 
-
-bool DebugMonitor::openSHM(LPCTSTR name)
-{
+bool DebugMonitor::openSHM(LPCTSTR name) {
   m_BufferMapping = ::OpenFileMapping(FILE_MAP_READ, FALSE, name);
 
   if (m_BufferMapping == nullptr) {
-    m_BufferMapping = ::CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0, sizeof(DebugBuffer), name);
+    m_BufferMapping =
+        ::CreateFileMapping(INVALID_HANDLE_VALUE, nullptr, PAGE_READWRITE, 0,
+                            sizeof(DebugBuffer), name);
 
-    if ((m_BufferMapping == nullptr) || (GetLastError() == ERROR_ALREADY_EXISTS)) {
+    if ((m_BufferMapping == nullptr) ||
+        (GetLastError() == ERROR_ALREADY_EXISTS)) {
       printf("failed to create mapping to debug buffer\n");
       m_InitError = GetLastError();
       return false;
     }
   }
 
-  m_DebugBuffer = static_cast<DebugBuffer*>(MapViewOfFile(m_BufferMapping, SECTION_MAP_READ, 0, 0, 0));
+  m_DebugBuffer = static_cast<DebugBuffer *>(
+      MapViewOfFile(m_BufferMapping, SECTION_MAP_READ, 0, 0, 0));
 
   if (m_DebugBuffer == nullptr) {
     printf("failed to map view of debug buffer\n");
