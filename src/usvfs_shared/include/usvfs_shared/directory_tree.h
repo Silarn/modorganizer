@@ -119,7 +119,7 @@ class DirectoryTree {
 
   public:
     DirectoryTree() = delete;
-    
+
     /**
      * @brief construct a new node to be inserted in an existing tree
      **/
@@ -476,10 +476,6 @@ class DirectoryTree {
  */
 template <typename TreeT>
 class TreeContainer {
-
-  public:
-    //  static const char LockName[];
-
   public:
     /**
      * @brief Constructor
@@ -493,21 +489,21 @@ class TreeContainer {
      */
     TreeContainer(const std::string& SHMName, size_t size = 64 * 1024) : m_TreeMeta(nullptr), m_SHMName(SHMName) {
         std::locale global_loc = std::locale();
-        // FIXME: this
+        // FIXME: this. -D
         // std::locale loc(global_loc, new fs::detail::utf8_codecvt_facet);
         // fs::path::imbue(loc);
 
         namespace sp = std::placeholders;
         std::regex pattern(R"exp((.*_)(\d+))exp");
         std::smatch match;
-        std::string shmName(m_SHMName.c_str());
+        std::string shmName = m_SHMName;
         regex_match(shmName, match, pattern);
         if (match.size() != 3) {
             m_SHMName += "_1";
         }
 
         m_TreeMeta = createOrOpen(m_SHMName.c_str(), size);
-        // FIXME: this
+        // FIXME: this. -D
         // spdlog::get("usvfs")->info("attached to {0} with {1} nodes, size {2}", m_SHMName,
         //                           m_TreeMeta->tree->numNodesRecursive(), m_SHM->get_size());
     }
@@ -556,10 +552,11 @@ class TreeContainer {
      * @return raw const pointer to the managed tree
      */
     const TreeT* get() const {
-        if (m_TreeMeta->outdated) {
-            reassign();
-        }
-        return m_TreeMeta->tree.get();
+        return nullptr;
+        //if (m_TreeMeta->outdated) {
+        //    reassign();
+        //}
+        //return m_TreeMeta->tree.get();
     }
 
     const TreeT* operator->() const { return get(); }
