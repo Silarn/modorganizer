@@ -78,9 +78,26 @@ static const MissingThrowT MissingThrow = MissingThrowT();
 template <typename NodeDataT>
 class TreeContainer;
 
+template <typename NodeDataT>
+class DirTree {
+  public:
+    using DataT = NodeDataT;
+    using NodeT = DirTree<DataT>;
+    using NodePtrT = NodeT*;
+
+  private:
+    std::string m_name;
+    NodePtrT m_parent = nullptr;
+    NodeDataT m_data;
+
+  public:
+    DirTree() = delete;
+    DirTree(std::string name, NodePtrT parent, const NodeDataT& data) : m_name(name), m_parent(parent), m_data(data) {}
+};
 /**
  * a representation of a directory tree in memory.
  * This class is designed to be stored in sharedG memory.
+ * NodeDataT is the type of node data. IE, int.
  */
 template <typename NodeDataT>
 class DirectoryTree {
@@ -253,12 +270,14 @@ class DirectoryTree {
      * @return the node found or an empty pointer if no such node was found
      */
     NodePtrT node(const char* name) {
-        auto iter = m_Nodes.find(name);
-        if (iter != m_Nodes.end()) {
-            return iter->second;
-        } else {
-            return NodePtrT();
-        }
+        // FIXME:
+        return NodePtrT();
+        // auto iter = m_Nodes.find(name);
+        // if (iter != m_Nodes.end()) {
+        //    return iter->second;
+        //} else {
+        //    return NodePtrT();
+        //}
     }
 
     /**
@@ -363,10 +382,7 @@ class DirectoryTree {
         }
     }
 
-    PRIVATE :
-
-        void
-        set(const StringT& key, const NodePtrT& value) {
+    PRIVATE : void set(const StringT& key, const NodePtrT& value) {
         auto res = m_Nodes.emplace(key, value);
         if (!res.second) {
             res.first->second = value;
@@ -456,9 +472,7 @@ class DirectoryTree {
         }
     }
 
-    PRIVATE :
-
-        TreeFlags m_Flags;
+    PRIVATE : TreeFlags m_Flags;
 
     WeakPtrT m_Parent;
     WeakPtrT m_Self;
@@ -487,23 +501,13 @@ class TreeContainer {
      * @note size can't be too small. If initial allocations fail automatic
      * growing won't work
      */
-    TreeContainer(const std::string& SHMName, size_t size = 64 * 1024) : m_TreeMeta(nullptr), m_SHMName(SHMName) {
-        std::locale global_loc = std::locale();
+    TreeContainer(const std::string& SHMName, size_t size = 64 * 1024) : m_SHMName(SHMName) {
         // FIXME: this. -D
+        // std::locale global_loc = std::locale();
         // std::locale loc(global_loc, new fs::detail::utf8_codecvt_facet);
         // fs::path::imbue(loc);
 
-        namespace sp = std::placeholders;
-        std::regex pattern(R"exp((.*_)(\d+))exp");
-        std::smatch match;
-        std::string shmName = m_SHMName;
-        regex_match(shmName, match, pattern);
-        if (match.size() != 3) {
-            m_SHMName += "_1";
-        }
-
         m_TreeMeta = createOrOpen(m_SHMName.c_str(), size);
-        // FIXME: this. -D
         // spdlog::get("usvfs")->info("attached to {0} with {1} nodes, size {2}", m_SHMName,
         //                           m_TreeMeta->tree->numNodesRecursive(), m_SHM->get_size());
     }
@@ -540,11 +544,11 @@ class TreeContainer {
      * @return raw pointer to the managed tree
      */
     TreeT* get() {
-        if (m_TreeMeta->outdated) {
-            reassign();
-        }
-        return nullptr;
         // FIXME: This. Nullptr.
+        return nullptr;
+        // if (m_TreeMeta->outdated) {
+        //    reassign();
+        //}
         // return m_TreeMeta->tree.get();
     }
 
@@ -722,50 +726,8 @@ class TreeContainer {
     }
 
     TreeMeta* createOrOpen(const char* SHMName, size_t) {
-        // FIXME: This mess.
-        SharedMemoryT* newSHM = nullptr;
-        try {
-            // newSHM = new SharedMemoryT(bi::open_only, SHMName);
-            spdlog::get("usvfs")->info("{} opened in process {}", SHMName, ::GetCurrentProcessId());
-        } catch (const std::exception&) {
-            // newSHM = new SharedMemoryT(bi::create_only, SHMName, static_cast<unsigned int>(size));
-            spdlog::get("usvfs")->info("{} created in process {}", SHMName, ::GetCurrentProcessId());
-        }
-        return activateSHM(newSHM, SHMName);
-    }
-
-    TreeMeta* activateSHM(SharedMemoryT*, const char*) {
-        // FIXME: This.
-        return nullptr;
-        // std::shared_ptr<SharedMemoryT> oldSHM = m_SHM;
-
-        // m_SHM.reset(shm);
-        // std::pair<TreeMeta*, SharedMemoryT::size_type> res = m_SHM->find<TreeMeta>("Meta");
-        // bool lastUser = false;
-        // if (res.first == nullptr) {
-        //    res.first = m_SHM->construct<TreeMeta>("Meta")(createEmpty(), m_SHM->get_segment_manager());
-        //    if (res.first == nullptr) {
-        //        USVFS_THROW_EXCEPTION(std::bad_alloc());
-        //    }
-        //    if (m_TreeMeta != nullptr) {
-        //        copyTree(res.first->tree.get(), m_TreeMeta->tree.get());
-        //    }
-        //}
-        // increaseRefCount(res.first);
-
-        // if (oldSHM.get() != nullptr) {
-        //    lastUser = unassign(oldSHM, m_TreeMeta);
-        //}
-
-        // if (lastUser) {
-        //    // remove the !old! shm
-        //    // FIXME: This.
-        //    // bi::shared_memory_object::remove(m_SHMName.c_str());
-        //}
-
-        // m_SHMName = SHMName;
-
-        // return res.first;
+        spdlog::get("usvfs")->info("{} opened in process {}", SHMName, ::GetCurrentProcessId());
+        return new TreeMeta(createEmpty());
     }
 
     std::string followupName() const {
@@ -819,7 +781,7 @@ class TreeContainer {
   private:
     std::string m_SHMName;
     std::shared_ptr<SharedMemoryT> m_SHM;
-    TreeMeta* m_TreeMeta;
+    TreeMeta* m_TreeMeta = nullptr;
 };
 
 /*
