@@ -48,5 +48,8 @@ typedef VoidAllocatorT::rebind<char>::other CharAllocatorT;
 
 typedef std::basic_string<char, std::char_traits<char>, CharAllocatorT> StringT;
 
+// FIXME:
+ typedef void* SharedMemoryT;
+
 } // namespace shared
 } // namespace usvfs

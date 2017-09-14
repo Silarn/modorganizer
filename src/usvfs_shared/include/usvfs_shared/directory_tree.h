@@ -90,11 +90,29 @@ struct mutable_pair {
     mutable T2 second;
 };
 
+// template <typename Key, typename T, typename Compare, typename Allocator,
+//          typename Element = mutable_pair<Key, T, Allocator>>
+// using mimap = bmi::multi_index_container<
+//    Element, bmi::indexed_by<bmi::ordered_unique<bmi::member<Element, Key, &Element::first>, Compare>>,
+//    typename Allocator::template rebind<Element>::other>;
+//
+// template <class Class, typename Type, Type Class::*PtrToMember>
+// struct member {
+//    using result_type = Type;
+//
+//    // only provided if const ChainedPtr& is not convertible to const Class&
+//    template <typename ChainedPtr>
+//    Type& operator()(const ChainedPtr& x) const;
+//
+//    const Type& operator()(const Class& x) const;
+//    Type& operator()(Class& x) const; // only provided if Type is non-const
+//    const Type& operator()(const std::reference_wrapper<const Class>& x) const;
+//    Type& operator()(const std::reference_wrapper<Class>& x) const;
+//};
+
 template <typename Key, typename T, typename Compare, typename Allocator,
           typename Element = mutable_pair<Key, T, Allocator>>
-using mimap = bmi::multi_index_container<
-    Element, bmi::indexed_by<bmi::ordered_unique<bmi::member<Element, Key, &Element::first>, Compare>>,
-    typename Allocator::template rebind<Element>::other>;
+using mimap = std::map<decltype(Element::first), Element, Compare, Allocator>;
 
 /**
  * a representation of a directory tree in memory.
@@ -121,13 +139,12 @@ class DirectoryTree {
 
   public:
     typedef DirectoryTree<NodeDataT> NodeT;
-    typedef bi::deleter<NodeT, SegmentManagerT> DeleterT;
     typedef NodeDataT DataT;
 
-    typedef bi::shared_ptr<NodeT, VoidAllocatorT, DeleterT> NodePtrT;
-    typedef bi::weak_ptr<NodeT, VoidAllocatorT, DeleterT> WeakPtrT;
+    typedef std::shared_ptr<NodeT> NodePtrT;
+    typedef std::weak_ptr<NodeT> WeakPtrT;
 
-    typedef bi::allocator<std::pair<const StringT, NodePtrT>, SegmentManagerT> NodeEntryAllocatorT;
+    typedef std::allocator<std::pair<const StringT, NodePtrT>> NodeEntryAllocatorT;
 
     typedef mimap<StringT, NodePtrT, CILess, NodeEntryAllocatorT> NodeMapT;
     typedef typename NodeMapT::iterator file_iterator;
@@ -508,8 +525,9 @@ class TreeContainer {
      */
     TreeContainer(const std::string& SHMName, size_t size = 64 * 1024) : m_TreeMeta(nullptr), m_SHMName(SHMName) {
         std::locale global_loc = std::locale();
-        std::locale loc(global_loc, new fs::detail::utf8_codecvt_facet);
-        fs::path::imbue(loc);
+        // FIXME: this
+        // std::locale loc(global_loc, new fs::detail::utf8_codecvt_facet);
+        // fs::path::imbue(loc);
 
         namespace sp = std::placeholders;
         std::regex pattern(R"exp((.*_)(\d+))exp");
@@ -628,14 +646,11 @@ class TreeContainer {
 
   private:
     struct TreeMeta {
-        TreeMeta(const typename TreeT::DataT& data, SegmentManagerT* segmentManager)
-            : tree(segmentManager->construct<TreeT>(bi::anonymous_instance)("", true, TreeT::NodePtrT(), data,
-                                                                            VoidAllocatorT(segmentManager))) {}
-        OffsetPtrT<TreeT> tree;
+        TreeMeta(const typename TreeT::DataT& data) {}
         long referenceCount{0}; // reference count only set on top level node
         bool outdated{false};
 
-        bi::interprocess_mutex mutex;
+        std::mutex mutex; // FIXME: mutex
     };
 
   private:
@@ -749,7 +764,7 @@ class TreeContainer {
         if (res.first == nullptr) {
             res.first = m_SHM->construct<TreeMeta>("Meta")(createEmpty(), m_SHM->get_segment_manager());
             if (res.first == nullptr) {
-                USVFS_THROW_EXCEPTION(bi::bad_alloc());
+                USVFS_THROW_EXCEPTION(std::bad_alloc());
             }
             if (m_TreeMeta != nullptr) {
                 copyTree(res.first->tree.get(), m_TreeMeta->tree.get());
