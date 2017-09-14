@@ -1,31 +1,33 @@
 #ifndef ORGANIZERCORE_H
 #define ORGANIZERCORE_H
 
-
-#include "selfupdater.h"
-#include "iuserinterface.h" //should be class IUserInterface;
-#include "settings.h"
-#include "modlist.h"
-#include "modinfo.h"
-#include "pluginlist.h"
 #include "directoryrefresher.h"
-#include "installationmanager.h"
 #include "downloadmanager.h"
 #include "executableslist.h"
+#include "installationmanager.h"
+#include "iuserinterface.h" //should be class IUserInterface;
+#include "modinfo.h"
+#include "modlist.h"
+#include "pluginlist.h"
+#include "selfupdater.h"
+#include "settings.h"
+#include <boost/signals2.hpp>
+#include <delayedfilewriter.h>
 #include <imoinfo.h>
 #include <iplugindiagnose.h>
 #include <versioninfo.h>
-#include <delayedfilewriter.h>
-#include <boost/signals2.hpp>
 
 class ModListSortProxy;
 class PluginListSortProxy;
 class Profile;
 namespace MOBase {
-  template <typename T> class GuessedValue;
-  class IModInterface;
+template <typename T>
+class GuessedValue;
+class IModInterface;
+} // namespace MOBase
+namespace MOShared {
+class DirectoryEntry;
 }
-namespace MOShared { class DirectoryEntry; }
 
 #include <QDir>
 #include <QFileInfo>
@@ -49,249 +51,240 @@ class QWidget;
 class PluginContainer;
 
 namespace MOBase {
-  class IPluginGame;
+class IPluginGame;
 }
 
-class OrganizerCore : public QObject, public MOBase::IPluginDiagnose
-{
+class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
 
-  Q_OBJECT
-  Q_INTERFACES(MOBase::IPluginDiagnose)
+    Q_OBJECT
+    Q_INTERFACES(MOBase::IPluginDiagnose)
 
-private:
-
-  struct SignalCombinerAnd
-  {
-    typedef bool result_type;
-    template<typename InputIterator>
-    bool operator()(InputIterator first, InputIterator last) const
-    {
-      while (first != last) {
-        if (!(*first)) {
-          return false;
+  private:
+    struct SignalCombinerAnd {
+        typedef bool result_type;
+        template <typename InputIterator>
+        bool operator()(InputIterator first, InputIterator last) const {
+            while (first != last) {
+                if (!(*first)) {
+                    return false;
+                }
+                ++first;
+            }
+            return true;
         }
-        ++first;
-      }
-      return true;
-    }
-  };
-
-private:
+    };
+
+  private:
+    typedef boost::signals2::signal<bool(const QString&), SignalCombinerAnd> SignalAboutToRunApplication;
+    typedef boost::signals2::signal<void(const QString&, unsigned int)> SignalFinishedRunApplication;
+    typedef boost::signals2::signal<void(const QString&)> SignalModInstalled;
+
+  public:
+    OrganizerCore(const QSettings& initSettings);
+
+    ~OrganizerCore();
+
+    void setUserInterface(IUserInterface* userInterface, QWidget* widget);
+    void connectPlugins(PluginContainer* container);
+    void disconnectPlugins();
+
+    void setManagedGame(const MOBase::IPluginGame* game);
+
+    void updateExecutablesList(QSettings& settings);
 
-  typedef boost::signals2::signal<bool (const QString&), SignalCombinerAnd> SignalAboutToRunApplication;
-  typedef boost::signals2::signal<void (const QString&, unsigned int)> SignalFinishedRunApplication;
-  typedef boost::signals2::signal<void (const QString&)> SignalModInstalled;
+    void startMOUpdate();
 
-public:
+    Settings& settings();
+    SelfUpdater* updater() { return &m_Updater; }
+    InstallationManager* installationManager();
+    MOShared::DirectoryEntry* directoryStructure() { return m_DirectoryStructure; }
+    DirectoryRefresher* directoryRefresher() { return &m_DirectoryRefresher; }
+    ExecutablesList* executablesList() { return &m_ExecutablesList; }
+    void setExecutablesList(const ExecutablesList& executablesList) { m_ExecutablesList = executablesList; }
 
-  OrganizerCore(const QSettings &initSettings);
+    Profile* currentProfile() const { return m_CurrentProfile; }
+    void setCurrentProfile(const QString& profileName);
 
-  ~OrganizerCore();
+    std::vector<QString> enabledArchives();
 
-  void setUserInterface(IUserInterface *userInterface, QWidget *widget);
-  void connectPlugins(PluginContainer *container);
-  void disconnectPlugins();
+    MOBase::VersionInfo getVersion() const { return m_Updater.getVersion(); }
 
-  void setManagedGame(const MOBase::IPluginGame *game);
+    ModListSortProxy* createModListProxyModel();
+    PluginListSortProxy* createPluginListProxyModel();
 
-  void updateExecutablesList(QSettings &settings);
+    MOBase::IPluginGame const* managedGame() const;
 
-  void startMOUpdate();
+    bool isArchivesInit() const { return m_ArchivesInit; }
 
-  Settings &settings();
-  SelfUpdater *updater() { return &m_Updater; }
-  InstallationManager *installationManager();
-  MOShared::DirectoryEntry *directoryStructure() { return m_DirectoryStructure; }
-  DirectoryRefresher *directoryRefresher() { return &m_DirectoryRefresher; }
-  ExecutablesList *executablesList() { return &m_ExecutablesList; }
-  void setExecutablesList(const ExecutablesList &executablesList) {
-    m_ExecutablesList = executablesList;
-  }
+    bool saveCurrentLists();
 
-  Profile *currentProfile() const { return m_CurrentProfile; }
-  void setCurrentProfile(const QString &profileName);
+    void prepareStart();
 
-  std::vector<QString> enabledArchives();
+    void refreshESPList();
+    void refreshBSAList();
 
-  MOBase::VersionInfo getVersion() const { return m_Updater.getVersion(); }
+    void refreshDirectoryStructure();
+    void updateModInDirectoryStructure(unsigned int index, ModInfo::Ptr modInfo);
 
-  ModListSortProxy *createModListProxyModel();
-  PluginListSortProxy *createPluginListProxyModel();
+    void doAfterLogin(const std::function<void()>& function) { m_PostLoginTasks.append(function); }
 
-  MOBase::IPluginGame const *managedGame() const;
+    void spawnBinary(const QFileInfo& binary, const QString& arguments = "", const QDir& currentDirectory = QDir(),
+                     bool closeAfterStart = true, const QString& steamAppID = "");
+    HANDLE spawnBinaryDirect(const QFileInfo& binary, const QString& arguments, const QString& profileName,
+                             const QDir& currentDirectory, const QString& steamAppID);
 
-  bool isArchivesInit() const { return m_ArchivesInit; }
+    void loginSuccessfulUpdate(bool necessary);
+    void loginFailedUpdate(const QString& message);
 
-  bool saveCurrentLists();
+    void createDefaultProfile();
 
-  void prepareStart();
+    MOBase::DelayedFileWriter& pluginsWriter() { return m_PluginListsWriter; }
 
-  void refreshESPList();
-  void refreshBSAList();
+  public:
+    MOBase::IModRepositoryBridge* createNexusBridge() const;
+    QString profileName() const;
+    QString profilePath() const;
+    QString downloadsPath() const;
+    MOBase::VersionInfo appVersion() const;
+    MOBase::IModInterface* getMod(const QString& name) const;
+    MOBase::IModInterface* createMod(MOBase::GuessedValue<QString>& name);
+    bool removeMod(MOBase::IModInterface* mod);
+    void modDataChanged(MOBase::IModInterface* mod);
+    QVariant pluginSetting(const QString& pluginName, const QString& key) const;
+    void setPluginSetting(const QString& pluginName, const QString& key, const QVariant& value);
+    QVariant persistent(const QString& pluginName, const QString& key, const QVariant& def) const;
+    void setPersistent(const QString& pluginName, const QString& key, const QVariant& value, bool sync);
+    QString pluginDataPath() const;
+    virtual MOBase::IModInterface* installMod(const QString& fileName, const QString& initModName);
+    QString resolvePath(const QString& fileName) const;
+    QStringList listDirectories(const QString& directoryName) const;
+    QStringList findFiles(const QString& path, const std::function<bool(const QString&)>& filter) const;
+    QStringList getFileOrigins(const QString& fileName) const;
+    QList<MOBase::IOrganizer::FileInfo>
+    findFileInfos(const QString& path, const std::function<bool(const MOBase::IOrganizer::FileInfo&)>& filter) const;
+    DownloadManager* downloadManager();
+    PluginList* pluginList();
+    ModList* modList();
+    HANDLE startApplication(const QString& executable, const QStringList& args, const QString& cwd,
+                            const QString& profile);
+    bool waitForApplication(HANDLE processHandle, LPDWORD exitCode = nullptr);
+    bool onModInstalled(const std::function<void(const QString&)>& func);
+    bool onAboutToRun(const std::function<bool(const QString&)>& func);
+    bool onFinishedRun(const std::function<void(const QString&, unsigned int)>& func);
+    void refreshModList(bool saveChanges = true);
+    QStringList modsSortedByProfilePriority() const;
 
-  void refreshDirectoryStructure();
-  void updateModInDirectoryStructure(unsigned int index, ModInfo::Ptr modInfo);
+    // std::vector<std::pair<QString, QString> > fileMapping();
 
-  void doAfterLogin(const std::function<void()> &function) { m_PostLoginTasks.append(function); }
+  public: // IPluginDiagnose interface
+    virtual std::vector<unsigned int> activeProblems() const;
+    virtual QString shortDescription(unsigned int key) const;
+    virtual QString fullDescription(unsigned int key) const;
+    virtual bool hasGuidedFix(unsigned int key) const;
+    virtual void startGuidedFix(unsigned int key) const;
 
-  void spawnBinary(const QFileInfo &binary, const QString &arguments = "", const QDir &currentDirectory = QDir(), bool closeAfterStart = true, const QString &steamAppID = "");
-  HANDLE spawnBinaryDirect(const QFileInfo &binary, const QString &arguments, const QString &profileName, const QDir &currentDirectory, const QString &steamAppID);
+  public slots:
 
-  void loginSuccessfulUpdate(bool necessary);
-  void loginFailedUpdate(const QString &message);
+    void profileRefresh();
+    void externalMessage(const QString& message);
 
-  void createDefaultProfile();
+    void syncOverwrite();
 
-  MOBase::DelayedFileWriter &pluginsWriter() { return m_PluginListsWriter; }
+    void savePluginList();
 
-public:
-  MOBase::IModRepositoryBridge *createNexusBridge() const;
-  QString profileName() const;
-  QString profilePath() const;
-  QString downloadsPath() const;
-  MOBase::VersionInfo appVersion() const;
-  MOBase::IModInterface *getMod(const QString &name) const;
-  MOBase::IModInterface *createMod(MOBase::GuessedValue<QString> &name);
-  bool removeMod(MOBase::IModInterface *mod);
-  void modDataChanged(MOBase::IModInterface *mod);
-  QVariant pluginSetting(const QString &pluginName, const QString &key) const;
-  void setPluginSetting(const QString &pluginName, const QString &key, const QVariant &value);
-  QVariant persistent(const QString &pluginName, const QString &key, const QVariant &def) const;
-  void setPersistent(const QString &pluginName, const QString &key, const QVariant &value, bool sync);
-  QString pluginDataPath() const;
-  virtual MOBase::IModInterface *installMod(const QString &fileName, const QString &initModName);
-  QString resolvePath(const QString &fileName) const;
-  QStringList listDirectories(const QString &directoryName) const;
-  QStringList findFiles(const QString &path, const std::function<bool (const QString &)> &filter) const;
-  QStringList getFileOrigins(const QString &fileName) const;
-  QList<MOBase::IOrganizer::FileInfo> findFileInfos(const QString &path, const std::function<bool (const MOBase::IOrganizer::FileInfo &)> &filter) const;
-  DownloadManager *downloadManager();
-  PluginList *pluginList();
-  ModList *modList();
-  HANDLE startApplication(const QString &executable, const QStringList &args, const QString &cwd, const QString &profile);
-  bool waitForApplication(HANDLE processHandle, LPDWORD exitCode = nullptr);
-  bool onModInstalled(const std::function<void (const QString &)> &func);
-  bool onAboutToRun(const std::function<bool (const QString &)> &func);
-  bool onFinishedRun(const std::function<void (const QString &, unsigned int)> &func);
-  void refreshModList(bool saveChanges = true);
-  QStringList modsSortedByProfilePriority() const;
+    void refreshLists();
 
-  //std::vector<std::pair<QString, QString> > fileMapping();
+    void installDownload(int downloadIndex);
 
-public: // IPluginDiagnose interface
+    void modStatusChanged(unsigned int index);
+    void requestDownload(const QUrl& url, QNetworkReply* reply);
+    void downloadRequestedNXM(const QString& url);
 
-  virtual std::vector<unsigned int> activeProblems() const;
-  virtual QString shortDescription(unsigned int key) const;
-  virtual QString fullDescription(unsigned int key) const;
-  virtual bool hasGuidedFix(unsigned int key) const;
-  virtual void startGuidedFix(unsigned int key) const;
+    bool nexusLogin(bool retry = false);
 
-public slots:
+  signals:
 
-  void profileRefresh();
-  void externalMessage(const QString &message);
+    /**
+     * @brief emitted after a mod has been installed
+     * @node this is currently only used for tutorials
+     */
+    void modInstalled(const QString& modName);
 
-  void syncOverwrite();
+    void managedGameChanged(MOBase::IPluginGame const* gamePlugin);
 
-  void savePluginList();
+  private:
+    void storeSettings();
 
-  void refreshLists();
+    QSettings::Status storeSettings(const QString& fileName);
 
-  void installDownload(int downloadIndex);
+    QString commitSettings(const QString& iniFile);
 
-  void modStatusChanged(unsigned int index);
-  void requestDownload(const QUrl &url, QNetworkReply *reply);
-  void downloadRequestedNXM(const QString &url);
+    bool queryLogin(QString& username, QString& password);
 
-  bool nexusLogin(bool retry = false);
+    void updateModActiveState(int index, bool active);
 
-signals:
+    bool testForSteam();
 
-  /**
-   * @brief emitted after a mod has been installed
-   * @node this is currently only used for tutorials
-   */
-  void modInstalled(const QString &modName);
+    /*
+     * std::vector<std::pair<QString, QString>> fileMapping(const QString &dataPath,
+                                                         const MOShared::DirectoryEntry *base,
+                                                         const MOShared::DirectoryEntry *directoryEntry);
+  */
 
-  void managedGameChanged(MOBase::IPluginGame const *gamePlugin);
+    bool waitForProcessCompletion(HANDLE handle, LPDWORD exitCode);
 
-private:
+  private slots:
 
-  void storeSettings();
+    void directory_refreshed();
+    void downloadRequested(QNetworkReply* reply, int modID, const QString& fileName);
+    void removeOrigin(const QString& name);
+    void downloadSpeed(const QString& serverName, int bytesPerSecond);
+    void loginSuccessful(bool necessary);
+    void loginFailed(const QString& message);
 
-  QSettings::Status storeSettings(const QString &fileName);
+  private:
+    static const unsigned int PROBLEM_TOOMANYPLUGINS = 1;
 
-  QString commitSettings(const QString &iniFile);
+  private:
+    IUserInterface* m_UserInterface;
+    PluginContainer* m_PluginContainer;
+    QString m_GameName;
+    MOBase::IPluginGame const* m_GamePlugin;
 
-  bool queryLogin(QString &username, QString &password);
+    Profile* m_CurrentProfile;
 
-  void updateModActiveState(int index, bool active);
+    Settings m_Settings;
 
-  bool testForSteam();
+    SelfUpdater m_Updater;
 
-  /*
-   * std::vector<std::pair<QString, QString>> fileMapping(const QString &dataPath,
-                                                       const MOShared::DirectoryEntry *base,
-                                                       const MOShared::DirectoryEntry *directoryEntry);
-*/
+    SignalAboutToRunApplication m_AboutToRun;
+    SignalFinishedRunApplication m_FinishedRun;
+    SignalModInstalled m_ModInstalled;
 
-  bool waitForProcessCompletion(HANDLE handle, LPDWORD exitCode);
+    ModList m_ModList;
+    PluginList m_PluginList;
 
-private slots:
+    QList<std::function<void()>> m_PostLoginTasks;
+    QList<std::function<void()>> m_PostRefreshTasks;
 
-  void directory_refreshed();
-  void downloadRequested(QNetworkReply *reply, int modID, const QString &fileName);
-  void removeOrigin(const QString &name);
-  void downloadSpeed(const QString &serverName, int bytesPerSecond);
-  void loginSuccessful(bool necessary);
-  void loginFailed(const QString &message);
+    ExecutablesList m_ExecutablesList;
+    QStringList m_PendingDownloads;
+    QStringList m_DefaultArchives;
+    QStringList m_ActiveArchives;
 
-private:
+    DirectoryRefresher m_DirectoryRefresher;
+    MOShared::DirectoryEntry* m_DirectoryStructure;
 
-  static const unsigned int PROBLEM_TOOMANYPLUGINS = 1;
+    DownloadManager m_DownloadManager;
+    InstallationManager m_InstallationManager;
 
-private:
+    QThread m_RefresherThread;
 
-  IUserInterface *m_UserInterface;
-  PluginContainer *m_PluginContainer;
-  QString m_GameName;
-  MOBase::IPluginGame const *m_GamePlugin;
+    bool m_AskForNexusPW;
+    bool m_DirectoryUpdate;
+    bool m_ArchivesInit;
 
-  Profile *m_CurrentProfile;
-
-  Settings m_Settings;
-
-  SelfUpdater m_Updater;
-
-  SignalAboutToRunApplication m_AboutToRun;
-  SignalFinishedRunApplication m_FinishedRun;
-  SignalModInstalled m_ModInstalled;
-
-  ModList m_ModList;
-  PluginList m_PluginList;
-
-  QList<std::function<void()>> m_PostLoginTasks;
-  QList<std::function<void()>> m_PostRefreshTasks;
-
-  ExecutablesList m_ExecutablesList;
-  QStringList m_PendingDownloads;
-  QStringList m_DefaultArchives;
-  QStringList m_ActiveArchives;
-
-  DirectoryRefresher m_DirectoryRefresher;
-  MOShared::DirectoryEntry *m_DirectoryStructure;
-
-  DownloadManager m_DownloadManager;
-  InstallationManager m_InstallationManager;
-
-  QThread m_RefresherThread;
-
-  bool m_AskForNexusPW;
-  bool m_DirectoryUpdate;
-  bool m_ArchivesInit;
-
-  MOBase::DelayedFileWriter m_PluginListsWriter;
-
+    MOBase::DelayedFileWriter m_PluginListsWriter;
 };
 
 #endif // ORGANIZERCORE_H

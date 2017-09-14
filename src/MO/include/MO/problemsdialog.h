@@ -1,40 +1,36 @@
 #ifndef PROBLEMSDIALOG_H
 #define PROBLEMSDIALOG_H
 
-
 #include <QDialog>
 #include <QUrl>
 #include <iplugindiagnose.h>
-
 
 namespace Ui {
 class ProblemsDialog;
 }
 
+class ProblemsDialog : public QDialog {
+    Q_OBJECT
 
-class ProblemsDialog : public QDialog
-{
-  Q_OBJECT
-  
-public:
-  explicit ProblemsDialog(std::vector<MOBase::IPluginDiagnose*> diagnosePlugins, QWidget *parent = 0);
-  ~ProblemsDialog();
+  public:
+    explicit ProblemsDialog(std::vector<MOBase::IPluginDiagnose*> diagnosePlugins, QWidget* parent = 0);
+    ~ProblemsDialog();
 
-  bool hasProblems() const;
-private:
+    bool hasProblems() const;
 
-  void runDiagnosis();
+  private:
+    void runDiagnosis();
 
-private slots:
+  private slots:
 
-  void selectionChanged();
-  void urlClicked(const QUrl &url);
+    void selectionChanged();
+    void urlClicked(const QUrl& url);
 
-  void startFix();
-private:
+    void startFix();
 
-  Ui::ProblemsDialog *ui;
-  std::vector<MOBase::IPluginDiagnose *> m_DiagnosePlugins;
+  private:
+    Ui::ProblemsDialog* ui;
+    std::vector<MOBase::IPluginDiagnose*> m_DiagnosePlugins;
 };
 
 #endif // PROBLEMSDIALOG_H

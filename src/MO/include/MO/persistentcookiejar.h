@@ -3,22 +3,18 @@
 
 #include <QNetworkCookieJar>
 
-
 class PersistentCookieJar : public QNetworkCookieJar {
-public:
-  PersistentCookieJar(const QString &fileName, QObject *parent = 0);
-  virtual ~PersistentCookieJar();
-private:
+  public:
+    PersistentCookieJar(const QString& fileName, QObject* parent = 0);
+    virtual ~PersistentCookieJar();
 
-  void save();
+  private:
+    void save();
 
-  void restore();
+    void restore();
 
-private:
-
-  QString m_FileName;
-
+  private:
+    QString m_FileName;
 };
-
 
 #endif // PERSISTENTCOOKIEJAR_H

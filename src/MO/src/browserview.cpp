@@ -17,59 +17,54 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "browserview.h"
+#include "MO/browserview.h"
 
+#include "utility.h"
 #include <QEvent>
 #include <QKeyEvent>
-#include <QWebFrame>
-#include <QWebElement>
-#include <QNetworkDiskCache>
 #include <QMenu>
+#include <QNetworkDiskCache>
+#include <QWebElement>
+#include <QWebFrame>
 #include <Shlwapi.h>
-#include "utility.h"
 
+BrowserView::BrowserView(QWidget* parent) : QWebView(parent) {
+    installEventFilter(this);
 
-BrowserView::BrowserView(QWidget *parent)
-  : QWebView(parent)
-{
-  installEventFilter(this);
-
-  page()->settings()->setMaximumPagesInCache(10);
+    page()->settings()->setMaximumPagesInCache(10);
 }
 
-QWebView *BrowserView::createWindow(QWebPage::WebWindowType)
-{
-  BrowserView *newView = new BrowserView(parentWidget());
-  emit initTab(newView);
-  return newView;
+QWebView* BrowserView::createWindow(QWebPage::WebWindowType) {
+    BrowserView* newView = new BrowserView(parentWidget());
+    emit initTab(newView);
+    return newView;
 }
 
-bool BrowserView::eventFilter(QObject *obj, QEvent *event)
-{
-  if (event->type() == QEvent::ShortcutOverride) {
-    QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-    if (keyEvent->matches(QKeySequence::Find)) {
-      emit startFind();
-    } else if (keyEvent->matches(QKeySequence::FindNext)) {
-      emit findAgain();
-    }
-  } else if (event->type() == QEvent::MouseButtonPress) {
-    QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-    if (mouseEvent->button() == Qt::MidButton) {
-      mouseEvent->ignore();
-      return true;
-    }
-  } else if (event->type() == QEvent::MouseButtonRelease) {
-    QMouseEvent *mouseEvent = static_cast<QMouseEvent*>(event);
-    if (mouseEvent->button() == Qt::MidButton) {
-      QWebHitTestResult hitTest = page()->frameAt(mouseEvent->pos())->hitTestContent(mouseEvent->pos());
-      if (hitTest.linkUrl().isValid()) {
-        emit openUrlInNewTab(hitTest.linkUrl());
-      }
-      mouseEvent->ignore();
+bool BrowserView::eventFilter(QObject* obj, QEvent* event) {
+    if (event->type() == QEvent::ShortcutOverride) {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->matches(QKeySequence::Find)) {
+            emit startFind();
+        } else if (keyEvent->matches(QKeySequence::FindNext)) {
+            emit findAgain();
+        }
+    } else if (event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+        if (mouseEvent->button() == Qt::MidButton) {
+            mouseEvent->ignore();
+            return true;
+        }
+    } else if (event->type() == QEvent::MouseButtonRelease) {
+        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
+        if (mouseEvent->button() == Qt::MidButton) {
+            QWebHitTestResult hitTest = page()->frameAt(mouseEvent->pos())->hitTestContent(mouseEvent->pos());
+            if (hitTest.linkUrl().isValid()) {
+                emit openUrlInNewTab(hitTest.linkUrl());
+            }
+            mouseEvent->ignore();
 
-      return true;
+            return true;
+        }
     }
-  }
-  return QWebView::eventFilter(obj, event);
+    return QWebView::eventFilter(obj, event);
 }

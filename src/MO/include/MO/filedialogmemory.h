@@ -20,39 +20,32 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef FILEDIALOGMEMORY_H
 #define FILEDIALOGMEMORY_H
 
-
-#include <map>
-#include <QString>
-#include <QSettings>
 #include <QFileDialog>
+#include <QSettings>
+#include <QString>
+#include <map>
 
+class FileDialogMemory {
 
-class FileDialogMemory
-{
+  public:
+    static void save(QSettings& settings);
+    static void restore(QSettings& settings);
 
-public:
+    static QString getOpenFileName(const QString& dirID, QWidget* parent = 0, const QString& caption = QString(),
+                                   const QString& dir = QString(), const QString& filter = QString(),
+                                   QString* selectedFilter = 0, QFileDialog::Options options = 0);
 
-  static void save(QSettings &settings);
-  static void restore(QSettings &settings);
+    static QString getExistingDirectory(const QString& dirID, QWidget* parent = 0, const QString& caption = QString(),
+                                        const QString& dir = QString(),
+                                        QFileDialog::Options options = QFileDialog::ShowDirsOnly);
 
-  static QString getOpenFileName(const QString &dirID, QWidget *parent = 0, const QString &caption = QString(),
-                                 const QString &dir = QString(), const QString &filter = QString(),
-                                 QString *selectedFilter = 0, QFileDialog::Options options = 0);
+  private:
+    FileDialogMemory();
 
-  static QString getExistingDirectory(const QString &dirID, QWidget *parent = 0, const QString &caption = QString(),
-                                      const QString &dir = QString(),
-                                      QFileDialog::Options options = QFileDialog::ShowDirsOnly);
+    static FileDialogMemory& instance();
 
-private:
-
-  FileDialogMemory();
-
-  static FileDialogMemory &instance();
-
-private:
-
-  std::map<QString, QString> m_Cache;
-
+  private:
+    std::map<QString, QString> m_Cache;
 };
 
 #endif // FILEDIALOGMEMORY_H

@@ -17,41 +17,32 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 #ifndef SAFEWRITEFILE_H
 #define SAFEWRITEFILE_H
 
-
-#include <utility.h>
-#include <QTemporaryFile>
 #include <QString>
+#include <QTemporaryFile>
+#include <utility.h>
 
 /**
  * @brief a wrapper for QFile that ensures the file is only actually (over-)written if writing was successful
  */
 class SafeWriteFile {
-public:
-  SafeWriteFile(const QString &fileName);
+  public:
+    SafeWriteFile(const QString& fileName);
 
-  QFile *operator->();
+    QFile* operator->();
 
-  void commit();
+    void commit();
 
-  bool commitIfDifferent(QByteArray &hash);
+    bool commitIfDifferent(QByteArray& hash);
 
-private:
+  private:
+    QByteArray hash();
 
-  QByteArray hash();
-
-private:
-  QString m_FileName;
-  QTemporaryFile m_TempFile;
+  private:
+    QString m_FileName;
+    QTemporaryFile m_TempFile;
 };
 
-
 #endif // SAFEWRITEFILE_H
-
-
-
-
-

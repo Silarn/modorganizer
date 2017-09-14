@@ -17,55 +17,46 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-#include "safewritefile.h"
-#include <QStringList>
+#include "MO/safewritefile.h"
 #include <QCryptographicHash>
-
+#include <QStringList>
 
 using namespace MOBase;
 
-
-SafeWriteFile::SafeWriteFile(const QString &fileName)
-: m_FileName(fileName)
-{
-  if (!m_TempFile.open()) {
-    throw MyException(QObject::tr("failed to open temporary file"));
-  }
+SafeWriteFile::SafeWriteFile(const QString& fileName) : m_FileName(fileName) {
+    if (!m_TempFile.open()) {
+        throw MyException(QObject::tr("failed to open temporary file"));
+    }
 }
 
-
-QFile *SafeWriteFile::operator->() {
-  Q_ASSERT(m_TempFile.isOpen());
-  return &m_TempFile;
+QFile* SafeWriteFile::operator->() {
+    Q_ASSERT(m_TempFile.isOpen());
+    return &m_TempFile;
 }
-
 
 void SafeWriteFile::commit() {
-  shellDeleteQuiet(m_FileName);
-  m_TempFile.rename(m_FileName);
-  m_TempFile.setAutoRemove(false);
-  m_TempFile.close();
+    shellDeleteQuiet(m_FileName);
+    m_TempFile.rename(m_FileName);
+    m_TempFile.setAutoRemove(false);
+    m_TempFile.close();
 }
 
-bool SafeWriteFile::commitIfDifferent(QByteArray &inHash) {
-  QByteArray newHash = hash();
-  if (newHash != inHash
-      || !QFile::exists(m_FileName)) {
-    commit();
-    inHash = newHash;
-    return true;
-  } else {
-    return false;
-  }
+bool SafeWriteFile::commitIfDifferent(QByteArray& inHash) {
+    QByteArray newHash = hash();
+    if (newHash != inHash || !QFile::exists(m_FileName)) {
+        commit();
+        inHash = newHash;
+        return true;
+    } else {
+        return false;
+    }
 }
 
-QByteArray SafeWriteFile::hash()
-{
+QByteArray SafeWriteFile::hash() {
 
-  qint64 pos = m_TempFile.pos();
-  m_TempFile.seek(0);
-  QByteArray data = m_TempFile.readAll();
-  m_TempFile.seek(pos);
-  return QCryptographicHash::hash(data, QCryptographicHash::Md5);
+    qint64 pos = m_TempFile.pos();
+    m_TempFile.seek(0);
+    QByteArray data = m_TempFile.readAll();
+    m_TempFile.seek(pos);
+    return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }

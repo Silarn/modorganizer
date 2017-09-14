@@ -20,32 +20,26 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef ICONDELEGATE_H
 #define ICONDELEGATE_H
 
-#include "modinfo.h"
-#include <QStyledItemDelegate>
+#include "MO/modinfo.h"
 #include <QAbstractProxyModel>
+#include <QStyledItemDelegate>
 
+class IconDelegate : public QStyledItemDelegate {
+    Q_OBJECT
+  public:
+    explicit IconDelegate(QObject* parent = 0);
 
-class IconDelegate : public QStyledItemDelegate
-{
-  Q_OBJECT
-public:
+    virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
 
-  explicit IconDelegate(QObject *parent = 0);
+  signals:
 
-  virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
+  public slots:
 
-signals:
-  
-public slots:
+  private:
+    virtual QList<QString> getIcons(const QModelIndex& index) const = 0;
+    virtual size_t getNumIcons(const QModelIndex& index) const = 0;
 
-private:
-
-  virtual QList<QString> getIcons(const QModelIndex &index) const = 0;
-  virtual size_t getNumIcons(const QModelIndex &index) const = 0;
-
-
-private:
-
+  private:
 };
 
 #endif // ICONDELEGATE_H

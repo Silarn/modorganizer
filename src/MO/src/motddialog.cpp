@@ -17,31 +17,22 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "motddialog.h"
+#include "MO/motddialog.h"
 #include "bbcode.h"
-#include "utility.h"
 #include "ui_motddialog.h"
+#include "utility.h"
 #include <Shlwapi.h>
 
-MotDDialog::MotDDialog(const QString &message, QWidget *parent)
-  : QDialog(parent), ui(new Ui::MotDDialog)
-{
-  ui->setupUi(this);
-  ui->motdView->setHtml(BBCode::convertToHTML(message));
-  connect(ui->motdView, SIGNAL(anchorClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
+MotDDialog::MotDDialog(const QString& message, QWidget* parent) : QDialog(parent), ui(new Ui::MotDDialog) {
+    ui->setupUi(this);
+    ui->motdView->setHtml(BBCode::convertToHTML(message));
+    connect(ui->motdView, SIGNAL(anchorClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
 }
 
-MotDDialog::~MotDDialog()
-{
-  delete ui;
-}
+MotDDialog::~MotDDialog() { delete ui; }
 
-void MotDDialog::on_okButton_clicked()
-{
-  this->close();
-}
+void MotDDialog::on_okButton_clicked() { this->close(); }
 
-void MotDDialog::linkClicked(const QUrl &url)
-{
-  ::ShellExecuteW(nullptr, L"open", MOBase::ToWString(url.toString()).c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+void MotDDialog::linkClicked(const QUrl& url) {
+    ::ShellExecuteW(nullptr, L"open", MOBase::ToWString(url.toString()).c_str(), nullptr, nullptr, SW_SHOWNORMAL);
 }

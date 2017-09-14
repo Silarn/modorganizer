@@ -20,12 +20,13 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SELFUPDATER_H
 #define SELFUPDATER_H
 
-
 #include <versioninfo.h>
 
 class Archive;
 class NexusInterface;
-namespace MOBase { class IPluginGame; }
+namespace MOBase {
+class IPluginGame;
+}
 
 #include <QFile>
 #include <QObject>
@@ -35,7 +36,6 @@ namespace MOBase { class IPluginGame; }
 
 class QNetworkReply;
 class QProgressDialog;
-
 
 /**
  * @brief manages updates for Mod Organizer itself
@@ -56,102 +56,97 @@ class QProgressDialog;
  *
  * @todo use NexusBridge
  **/
-class SelfUpdater : public QObject
-{
+class SelfUpdater : public QObject {
 
-  Q_OBJECT
+    Q_OBJECT
 
-public:
+  public:
+    /**
+     * @brief constructor
+     *
+     * @param nexusInterface interface to query information from nexus
+     * @param parent parent widget
+     * @todo passing the nexus interface is unneccessary
+     **/
+    explicit SelfUpdater(NexusInterface* nexusInterface);
 
-  /**
-   * @brief constructor
-   *
-   * @param nexusInterface interface to query information from nexus
-   * @param parent parent widget
-   * @todo passing the nexus interface is unneccessary
-   **/
-  explicit SelfUpdater(NexusInterface *nexusInterface);
+    virtual ~SelfUpdater();
 
-  virtual ~SelfUpdater();
+    void setUserInterface(QWidget* widget);
 
-  void setUserInterface(QWidget *widget);
+    /**
+     * @brief start the update process
+     * @note this should not be called if there is no update available
+     **/
+    void startUpdate();
 
-  /**
-   * @brief start the update process
-   * @note this should not be called if there is no update available
-   **/
-  void startUpdate();
+    /**
+     * @return current version of Mod Organizer
+     **/
+    MOBase::VersionInfo getVersion() const { return m_MOVersion; }
 
-  /**
-   * @return current version of Mod Organizer
-   **/
-  MOBase::VersionInfo getVersion() const { return m_MOVersion; }
+    /** Set the game check for updates */
+    void setNexusDownload(MOBase::IPluginGame const* game);
 
-  /** Set the game check for updates */
-  void setNexusDownload(MOBase::IPluginGame const *game);
+  public slots:
 
-public slots:
+    /**
+     * @brief request information about the current version
+     **/
+    void testForUpdate();
 
-  /**
-   * @brief request information about the current version
-   **/
-  void testForUpdate();
+    void nxmDescriptionAvailable(int modID, QVariant userData, QVariant resultData, int requestID);
+    void nxmFilesAvailable(int modID, QVariant userData, QVariant resultData, int requestID);
+    void nxmRequestFailed(int modID, int fileID, QVariant userData, int requestID, const QString& errorMessage);
+    void nxmDownloadURLsAvailable(int modID, int fileID, QVariant userData, QVariant resultData, int requestID);
 
-  void nxmDescriptionAvailable(int modID, QVariant userData, QVariant resultData, int requestID);
-  void nxmFilesAvailable(int modID, QVariant userData, QVariant resultData, int requestID);
-  void nxmRequestFailed(int modID, int fileID, QVariant userData, int requestID, const QString &errorMessage);
-  void nxmDownloadURLsAvailable(int modID, int fileID, QVariant userData, QVariant resultData, int requestID);
+  signals:
 
-signals:
+    /**
+     * @brief emitted if a restart of the client is necessary to complete the update
+     **/
+    void restart();
 
-  /**
-   * @brief emitted if a restart of the client is necessary to complete the update
-   **/
-  void restart();
+    /**
+     * @brief emitted if an update is available
+     **/
+    void updateAvailable();
 
-  /**
-   * @brief emitted if an update is available
-   **/
-  void updateAvailable();
+    /**
+     * @brief emitted if a message of the day was received
+     **/
+    void motdAvailable(const QString& motd);
 
-  /**
-   * @brief emitted if a message of the day was received
-   **/
-  void motdAvailable(const QString &motd);
+  private:
+    void download(const QString& downloadLink, const QString& fileName);
+    void installUpdate();
+    void report7ZipError(const QString& errorMessage);
+    QString retrieveNews(const QString& description);
+    void showProgress();
+    void closeProgress();
 
-private:
+  private slots:
 
-  void download(const QString &downloadLink, const QString &fileName);
-  void installUpdate();
-  void report7ZipError(const QString &errorMessage);
-  QString retrieveNews(const QString &description);
-  void showProgress();
-  void closeProgress();
+    void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
+    void downloadReadyRead();
+    void downloadFinished();
+    void downloadCancel();
 
-private slots:
+  private:
+    QWidget* m_Parent;
+    MOBase::VersionInfo m_MOVersion;
+    NexusInterface* m_Interface;
+    int m_UpdateRequestID;
+    QString m_NewestVersion;
+    QFile m_UpdateFile;
+    QNetworkReply* m_Reply;
+    QProgressDialog* m_Progress{nullptr};
+    bool m_Canceled;
+    int m_Attempts;
 
-  void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
-  void downloadReadyRead();
-  void downloadFinished();
-  void downloadCancel();
+    Archive* m_ArchiveHandler;
 
-private:
-
-  QWidget *m_Parent;
-  MOBase::VersionInfo m_MOVersion;
-  NexusInterface *m_Interface;
-  int m_UpdateRequestID;
-  QString m_NewestVersion;
-  QFile m_UpdateFile;
-  QNetworkReply *m_Reply;
-  QProgressDialog *m_Progress { nullptr };
-  bool m_Canceled;
-  int m_Attempts;
-
-  Archive *m_ArchiveHandler;
-
-  MOBase::IPluginGame const *m_NexusDownload;
+    MOBase::IPluginGame const* m_NexusDownload;
 };
-
 
 #endif // SELFUPDATER_H

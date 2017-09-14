@@ -17,37 +17,19 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "credentialsdialog.h"
+#include "MO/credentialsdialog.h"
 #include "ui_credentialsdialog.h"
 
-CredentialsDialog::CredentialsDialog(QWidget *parent) :
-  QDialog(parent),
-  ui(new Ui::CredentialsDialog)
-{
-  ui->setupUi(this);
+CredentialsDialog::CredentialsDialog(QWidget* parent) : QDialog(parent), ui(new Ui::CredentialsDialog) {
+    ui->setupUi(this);
 }
 
-CredentialsDialog::~CredentialsDialog()
-{
-  delete ui;
-}
+CredentialsDialog::~CredentialsDialog() { delete ui; }
 
-QString CredentialsDialog::username() const
-{
-  return ui->usernameEdit->text();
-}
+QString CredentialsDialog::username() const { return ui->usernameEdit->text(); }
 
-QString CredentialsDialog::password() const
-{
-  return ui->passwordEdit->text();
-}
+QString CredentialsDialog::password() const { return ui->passwordEdit->text(); }
 
-bool CredentialsDialog::store() const
-{
-  return ui->rememberCheck->isChecked();
-}
+bool CredentialsDialog::store() const { return ui->rememberCheck->isChecked(); }
 
-bool CredentialsDialog::neverAsk() const
-{
-  return ui->dontaskBox->isChecked();
-}
+bool CredentialsDialog::neverAsk() const { return ui->dontaskBox->isChecked(); }

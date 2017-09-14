@@ -20,120 +20,104 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MODLISTSORTPROXY_H
 #define MODLISTSORTPROXY_H
 
+#include "modlist.h"
 #include <QSortFilterProxyModel>
 #include <bitset>
-#include "modlist.h"
 
 class Profile;
 
-class ModListSortProxy : public QSortFilterProxyModel
-{
-  Q_OBJECT
+class ModListSortProxy : public QSortFilterProxyModel {
+    Q_OBJECT
 
-public:
+  public:
+    enum FilterMode { FILTER_AND, FILTER_OR };
 
-  enum FilterMode {
-    FILTER_AND,
-    FILTER_OR
-  };
+    enum FilterType { TYPE_SPECIAL, TYPE_CATEGORY, TYPE_CONTENT };
 
-  enum FilterType {
-    TYPE_SPECIAL,
-    TYPE_CATEGORY,
-    TYPE_CONTENT
-  };
+  public:
+    explicit ModListSortProxy(Profile* profile, QObject* parent = 0);
 
-public:
+    void setProfile(Profile* profile);
 
-  explicit ModListSortProxy(Profile *profile, QObject *parent = 0);
+    void setCategoryFilter(const std::vector<int>& categories);
+    std::vector<int> categoryFilter() const { return m_CategoryFilter; }
 
-  void setProfile(Profile *profile);
+    void setContentFilter(const std::vector<int>& content);
 
-  void setCategoryFilter(const std::vector<int> &categories);
-  std::vector<int> categoryFilter() const { return m_CategoryFilter; }
+    virtual Qt::ItemFlags flags(const QModelIndex& modelIndex) const;
+    virtual bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column,
+                              const QModelIndex& parent);
 
-  void setContentFilter(const std::vector<int> &content);
+    virtual void setSourceModel(QAbstractItemModel* sourceModel) override;
 
-  virtual Qt::ItemFlags flags(const QModelIndex &modelIndex) const;
-  virtual bool dropMimeData(const QMimeData *data, Qt::DropAction action,
-                            int row, int column, const QModelIndex &parent);
+    /**
+     * @brief enable all mods visible under the current filter
+     **/
+    void enableAllVisible();
 
-  virtual void setSourceModel(QAbstractItemModel *sourceModel) override;
+    /**
+     * @brief disable all mods visible under the current filter
+     **/
+    void disableAllVisible();
 
-  /**
-   * @brief enable all mods visible under the current filter
-   **/
-  void enableAllVisible();
+    /**
+     * @brief tests if a filtere matches for a mod
+     * @param info mod information
+     * @param enabled true if the mod is currently active
+     * @return true if current active filters match for the specified mod
+     */
+    bool filterMatchesMod(ModInfo::Ptr info, bool enabled) const;
 
-  /**
-   * @brief disable all mods visible under the current filter
-   **/
-  void disableAllVisible();
+    /**
+     * @return true if a filter is currently active
+     */
+    bool isFilterActive() const { return m_FilterActive; }
 
-  /**
-   * @brief tests if a filtere matches for a mod
-   * @param info mod information
-   * @param enabled true if the mod is currently active
-   * @return true if current active filters match for the specified mod
-   */
-  bool filterMatchesMod(ModInfo::Ptr info, bool enabled) const;
+    void setFilterMode(FilterMode mode);
 
-  /**
-   * @return true if a filter is currently active
-   */
-  bool isFilterActive() const { return m_FilterActive; }
+    /**
+     * @brief tests if the specified index has child nodes
+     * @param parent the node to test
+     * @return true if there are child nodes
+     */
+    virtual bool hasChildren(const QModelIndex& parent = QModelIndex()) const { return rowCount(parent) > 0; }
 
-  void setFilterMode(FilterMode mode);
+  public slots:
 
-  /**
-   * @brief tests if the specified index has child nodes
-   * @param parent the node to test
-   * @return true if there are child nodes
-   */
-  virtual bool hasChildren ( const QModelIndex & parent = QModelIndex() ) const {
-    return rowCount(parent) > 0;
-  }
+    void updateFilter(const QString& filter);
 
-public slots:
+  signals:
 
-  void updateFilter(const QString &filter);
+    void filterActive(bool active);
 
-signals:
+  protected:
+    virtual bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
+    virtual bool filterAcceptsRow(int row, const QModelIndex& parent) const;
 
-  void filterActive(bool active);
+  private:
+    unsigned long flagsId(const std::vector<ModInfo::EFlag>& flags) const;
+    bool hasConflictFlag(const std::vector<ModInfo::EFlag>& flags) const;
+    void updateFilterActive();
+    bool filterMatchesModAnd(ModInfo::Ptr info, bool enabled) const;
+    bool filterMatchesModOr(ModInfo::Ptr info, bool enabled) const;
 
-protected:
+  private slots:
 
-  virtual bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
-  virtual bool filterAcceptsRow(int row, const QModelIndex &parent) const;
+    void aboutToChangeData();
+    void postDataChanged();
 
-private:
+  private:
+    Profile* m_Profile;
 
-  unsigned long flagsId(const std::vector<ModInfo::EFlag> &flags) const;
-  bool hasConflictFlag(const std::vector<ModInfo::EFlag> &flags) const;
-  void updateFilterActive();
-  bool filterMatchesModAnd(ModInfo::Ptr info, bool enabled) const;
-  bool filterMatchesModOr(ModInfo::Ptr info, bool enabled) const;
+    std::vector<int> m_CategoryFilter;
+    std::vector<int> m_ContentFilter;
+    std::bitset<ModList::COL_LASTCOLUMN + 1> m_EnabledColumns;
+    QString m_CurrentFilter;
 
-private slots:
+    bool m_FilterActive;
+    FilterMode m_FilterMode;
 
-  void aboutToChangeData();
-  void postDataChanged();
-
-private:
-
-  Profile *m_Profile;
-
-  std::vector<int> m_CategoryFilter;
-  std::vector<int> m_ContentFilter;
-  std::bitset<ModList::COL_LASTCOLUMN + 1> m_EnabledColumns;
-  QString m_CurrentFilter;
-
-  bool m_FilterActive;
-  FilterMode m_FilterMode;
-
-  std::vector<int> m_PreChangeFilters;
-
+    std::vector<int> m_PreChangeFilters;
 };
 
 #endif // MODLISTSORTPROXY_H

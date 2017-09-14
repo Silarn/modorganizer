@@ -20,10 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef LOADMECHANISM_H
 #define LOADMECHANISM_H
 
-
 #include <QDir>
 #include <QString>
-
 
 /**
  * @brief manages the various load mechanisms supported by Mod Organizer
@@ -38,83 +36,72 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
  * chain-load the original dll. This currently only works with steam-versions of games and
  * is intended as a last resort solution.
  **/
-class LoadMechanism
-{
-public:
+class LoadMechanism {
+  public:
+    enum EMechanism { LOAD_MODORGANIZER = 0, LOAD_SCRIPTEXTENDER, LOAD_PROXYDLL };
 
-  enum EMechanism {
-    LOAD_MODORGANIZER = 0,
-    LOAD_SCRIPTEXTENDER,
-    LOAD_PROXYDLL
-  };
+  public:
+    /**
+     * @brief constructor
+     *
+     **/
+    LoadMechanism();
 
-public:
+    /**
+     * activate the specified mechanism. This automatically disables any other mechanism active
+     *
+     * @param mechanism the mechanism to activate
+     **/
+    void activate(EMechanism mechanism);
 
-  /**
-   * @brief constructor
-   *
-   **/
-  LoadMechanism();
+    /**
+     * @brief test whether the "Mod Organizer" load mechanism is supported for the current game
+     *
+     * @return true if the load mechanism is supported
+     **/
+    bool isDirectLoadingSupported();
 
-  /**
-   * activate the specified mechanism. This automatically disables any other mechanism active
-   *
-   * @param mechanism the mechanism to activate
-   **/
-  void activate(EMechanism mechanism);
+    /**
+     * @brief test whether the "Script Extender" load mechanism is supported for the current game
+     *
+     * @return true if the load mechanism is supported
+     **/
+    bool isScriptExtenderSupported();
 
-  /**
-   * @brief test whether the "Mod Organizer" load mechanism is supported for the current game
-   *
-   * @return true if the load mechanism is supported
-   **/
-  bool isDirectLoadingSupported();
+    /**
+     * @brief test whether the "Proxy DLL" load mechanism is supported for the current game
+     *
+     * @return true if the load mechanism is supported
+     **/
+    bool isProxyDLLSupported();
 
-  /**
-   * @brief test whether the "Script Extender" load mechanism is supported for the current game
-   *
-   * @return true if the load mechanism is supported
-   **/
-  bool isScriptExtenderSupported();
+  private:
+    // write a hint file that is required for certain loading mechanisms for the dll to find
+    // the mod organizer installation
+    void writeHintFile(const QDir& targetDirectory);
 
-  /**
-   * @brief test whether the "Proxy DLL" load mechanism is supported for the current game
-   *
-   * @return true if the load mechanism is supported
-   **/
-  bool isProxyDLLSupported();
+    // remove the hint file if it exists. does nothing if the file doesn't exist
+    void removeHintFile(QDir targetDirectory);
 
-private:
+    // compare the two files by md5-hash, returns true if they are identical
+    bool hashIdentical(const QString& fileNameLHS, const QString& fileNameRHS);
 
-  // write a hint file that is required for certain loading mechanisms for the dll to find
-  // the mod organizer installation
-  void writeHintFile(const QDir &targetDirectory);
+    // deactivate loading through script extender. does nothing if se-loading wasn't active
+    void deactivateScriptExtender();
 
-  // remove the hint file if it exists. does nothing if the file doesn't exist
-  void removeHintFile(QDir targetDirectory);
+    // deactivate loading through proxy-dll. does nothing if se-loading wasn't active
+    void deactivateProxyDLL();
 
-  // compare the two files by md5-hash, returns true if they are identical
-  bool hashIdentical(const QString &fileNameLHS, const QString &fileNameRHS);
+    // activate loading through script extender. does nothing if already active. updates
+    // the dll if necessary
+    void activateScriptExtender();
 
-  // deactivate loading through script extender. does nothing if se-loading wasn't active
-  void deactivateScriptExtender();
+    // activate loading through proxy-dll. does nothing if already active. updates
+    // the dll if necessary
+    void activateProxyDLL();
 
-  // deactivate loading through proxy-dll. does nothing if se-loading wasn't active
-  void deactivateProxyDLL();
-
-  // activate loading through script extender. does nothing if already active. updates
-  // the dll if necessary
-  void activateScriptExtender();
-
-  // activate loading through proxy-dll. does nothing if already active. updates
-  // the dll if necessary
-  void activateProxyDLL();
-
-private:
-
-  EMechanism m_SelectedMechanism;
-
+  private:
+    EMechanism m_SelectedMechanism;
 };
-
 
 #endif // LOADMECHANISM_H

@@ -27,20 +27,19 @@ namespace Ui {
 class MotDDialog;
 }
 
-class MotDDialog : public QDialog
-{
-  Q_OBJECT
-  
-public:
-  explicit MotDDialog(const QString &message, QWidget *parent = 0);
-  ~MotDDialog();
-  
-private slots:
-  void on_okButton_clicked();
-  void linkClicked(const QUrl &url);
+class MotDDialog : public QDialog {
+    Q_OBJECT
 
-private:
-  Ui::MotDDialog *ui;
+  public:
+    explicit MotDDialog(const QString& message, QWidget* parent = 0);
+    ~MotDDialog();
+
+  private slots:
+    void on_okButton_clicked();
+    void linkClicked(const QUrl& url);
+
+  private:
+    Ui::MotDDialog* ui;
 };
 
 #endif // MOTDDIALOG_H

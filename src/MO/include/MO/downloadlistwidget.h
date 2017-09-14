@@ -21,100 +21,93 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #define DOWNLOADLISTWIDGET_H
 
 #include "downloadmanager.h"
-#include <QWidget>
 #include <QItemDelegate>
 #include <QLabel>
 #include <QProgressBar>
 #include <QTreeView>
+#include <QWidget>
 
 namespace Ui {
-    class DownloadListWidget;
+class DownloadListWidget;
 }
 
-class DownloadListWidget : public QWidget
-{
+class DownloadListWidget : public QWidget {
     Q_OBJECT
 
-public:
-    explicit DownloadListWidget(QWidget *parent = 0);
+  public:
+    explicit DownloadListWidget(QWidget* parent = 0);
     ~DownloadListWidget();
 
-
-private:
-    Ui::DownloadListWidget *ui;
+  private:
+    Ui::DownloadListWidget* ui;
 };
 
 class DownloadManager;
 
-class DownloadListWidgetDelegate : public QItemDelegate
-{
+class DownloadListWidgetDelegate : public QItemDelegate {
 
-  Q_OBJECT
+    Q_OBJECT
 
-public:
+  public:
+    DownloadListWidgetDelegate(DownloadManager* manager, bool metaDisplay, QTreeView* view, QObject* parent = 0);
+    ~DownloadListWidgetDelegate();
 
-  DownloadListWidgetDelegate(DownloadManager *manager, bool metaDisplay, QTreeView *view, QObject *parent = 0);
-  ~DownloadListWidgetDelegate();
+    virtual void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const;
+    virtual QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const;
 
-  virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-  virtual QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    void paintPendingDownload(int downloadIndex) const;
+    void paintRegularDownload(int downloadIndex) const;
 
-  void paintPendingDownload(int downloadIndex) const;
-  void paintRegularDownload(int downloadIndex) const;
+  signals:
 
-signals:
+    void installDownload(int index);
+    void queryInfo(int index);
+    void removeDownload(int index, bool deleteFile);
+    void restoreDownload(int index);
+    void cancelDownload(int index);
+    void pauseDownload(int index);
+    void resumeDownload(int index);
 
-  void installDownload(int index);
-  void queryInfo(int index);
-  void removeDownload(int index, bool deleteFile);
-  void restoreDownload(int index);
-  void cancelDownload(int index);
-  void pauseDownload(int index);
-  void resumeDownload(int index);
+  protected:
+    bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option,
+                     const QModelIndex& index);
 
-protected:
+  private:
+    void drawCache(QPainter* painter, const QStyleOptionViewItem& option, const QPixmap& cache) const;
 
-  bool editorEvent(QEvent *event, QAbstractItemModel *model,
-                   const QStyleOptionViewItem &option, const QModelIndex &index);
+  private slots:
 
-private:
+    void issueInstall();
+    void issueDelete();
+    void issueRemoveFromView();
+    void issueRestoreToView();
+    void issueCancel();
+    void issuePause();
+    void issueResume();
+    void issueDeleteAll();
+    void issueDeleteCompleted();
+    void issueRemoveFromViewAll();
+    void issueRemoveFromViewCompleted();
+    void issueQueryInfo();
 
-  void drawCache(QPainter *painter, const QStyleOptionViewItem &option, const QPixmap &cache) const;
+    void stateChanged(int row, DownloadManager::DownloadState);
+    void resetCache(int);
 
-private slots:
+  private:
+    DownloadListWidget* m_ItemWidget;
+    DownloadManager* m_Manager;
 
-  void issueInstall();
-  void issueDelete();
-  void issueRemoveFromView();
-  void issueRestoreToView();
-  void issueCancel();
-  void issuePause();
-  void issueResume();
-  void issueDeleteAll();
-  void issueDeleteCompleted();
-  void issueRemoveFromViewAll();
-  void issueRemoveFromViewCompleted();
-  void issueQueryInfo();
+    bool m_MetaDisplay;
 
-  void stateChanged(int row, DownloadManager::DownloadState);
-  void resetCache(int);
+    QLabel* m_NameLabel;
+    QLabel* m_SizeLabel;
+    QProgressBar* m_Progress;
+    QLabel* m_InstallLabel;
+    int m_ContextRow;
 
-private:
+    QTreeView* m_View;
 
-  DownloadListWidget *m_ItemWidget;
-  DownloadManager *m_Manager;
-
-  bool m_MetaDisplay;
-
-  QLabel *m_NameLabel;
-  QLabel *m_SizeLabel;
-  QProgressBar *m_Progress;
-  QLabel *m_InstallLabel;
-  int m_ContextRow;
-
-  QTreeView *m_View;
-
-  mutable QMap<int, QPixmap> m_Cache;
+    mutable QMap<int, QPixmap> m_Cache;
 };
 
 #endif // DOWNLOADLISTWIDGET_H

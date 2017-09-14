@@ -20,18 +20,17 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef BROWSERDIALOG_H
 #define BROWSERDIALOG_H
 
+#include <QAtomicInt>
 #include <QDialog>
-#include <QNetworkRequest>
 #include <QNetworkReply>
-#include <QTimer>
-#include <QWebView>
+#include <QNetworkRequest>
 #include <QQueue>
 #include <QTabWidget>
-#include <QAtomicInt>
-
+#include <QTimer>
+#include <QWebView>
 
 namespace Ui {
-    class BrowserDialog;
+class BrowserDialog;
 }
 
 class BrowserView;
@@ -39,88 +38,81 @@ class BrowserView;
 /**
  * @brief a dialog containing a webbrowser that is intended to browse the nexus network
  **/
-class BrowserDialog : public QDialog
-{
+class BrowserDialog : public QDialog {
     Q_OBJECT
 
-public:
+  public:
+    /**
+     * @brief constructor
+     *
+     * @param accessManager the access manager to use for network requests
+     * @param parent parent widget
+     **/
+    explicit BrowserDialog(QWidget* parent = 0);
+    ~BrowserDialog();
 
- /**
-  * @brief constructor
-  *
-  * @param accessManager the access manager to use for network requests
-  * @param parent parent widget
-  **/
-  explicit BrowserDialog(QWidget *parent = 0);
-  ~BrowserDialog();
+    /**
+     * @brief set the url to open. If automatic login is enabled, the url is opened after login
+     *
+     * @param url the url to open
+     **/
+    void openUrl(const QUrl& url);
 
-  /**
-   * @brief set the url to open. If automatic login is enabled, the url is opened after login
-   *
-   * @param url the url to open
-   **/
-  void openUrl(const QUrl &url);
+    virtual bool eventFilter(QObject* object, QEvent* event);
+  signals:
 
-  virtual bool eventFilter(QObject *object, QEvent *event);
-signals:
+    /**
+     * @brief emitted when the user starts a download
+     * @param pageUrl url of the current web site from which the download was started
+     * @param reply network reply of the started download
+     */
+    void requestDownload(const QUrl& pageUrl, QNetworkReply* reply);
 
-  /**
-   * @brief emitted when the user starts a download
-   * @param pageUrl url of the current web site from which the download was started
-   * @param reply network reply of the started download
-   */
-  void requestDownload(const QUrl &pageUrl, QNetworkReply *reply);
+  protected:
+    virtual void closeEvent(QCloseEvent*);
 
-protected:
+  private slots:
 
-  virtual void closeEvent(QCloseEvent *);
+    void initTab(BrowserView* newView);
+    void openInNewTab(const QUrl& url);
 
-private slots:
+    void progress(int value);
 
-  void initTab(BrowserView *newView);
-  void openInNewTab(const QUrl &url);
+    void titleChanged(const QString& title);
+    void unsupportedContent(QNetworkReply* reply);
+    void downloadRequested(const QNetworkRequest& request);
 
-  void progress(int value);
+    void tabCloseRequested(int index);
 
-  void titleChanged(const QString &title);
-  void unsupportedContent(QNetworkReply *reply);
-  void downloadRequested(const QNetworkRequest &request);
+    void urlChanged(const QUrl& url);
 
-  void tabCloseRequested(int index);
+    void on_backBtn_clicked();
 
-  void urlChanged(const QUrl &url);
+    void on_fwdBtn_clicked();
 
-  void on_backBtn_clicked();
+    void on_searchEdit_returnPressed();
 
-  void on_fwdBtn_clicked();
+    void startSearch();
 
-  void on_searchEdit_returnPressed();
+    void on_refreshBtn_clicked();
 
-  void startSearch();
+    void on_browserTabWidget_currentChanged(int index);
 
-  void on_refreshBtn_clicked();
+    void on_urlEdit_returnPressed();
 
-  void on_browserTabWidget_currentChanged(int index);
+  private:
+    QString guessFileName(const QString& url);
 
-  void on_urlEdit_returnPressed();
+    BrowserView* getCurrentView();
 
-private:
+    void maximizeWidth();
 
-  QString guessFileName(const QString &url);
+  private:
+    Ui::BrowserDialog* ui;
 
-  BrowserView *getCurrentView();
+    QNetworkAccessManager* m_AccessManager;
 
-  void maximizeWidth();
-
-private:
-
-  Ui::BrowserDialog *ui;
-
-  QNetworkAccessManager *m_AccessManager;
-
-  QTabWidget *m_Tabs;
-
-
+    QTabWidget* m_Tabs;
 };
 
 #endif // BROWSERDIALOG_H

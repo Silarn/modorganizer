@@ -20,57 +20,55 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef LOCKEDDIALOG_H
 #define LOCKEDDIALOG_H
 
-#include <QDialog>  // for QDialog
-#include <QObject>  // for Q_OBJECT, slots
-#include <QString>  // for QString
+#include <QDialog> // for QDialog
+#include <QObject> // for Q_OBJECT, slots
+#include <QString> // for QString
 
 class QResizeEvent;
 class QWidget;
 
 namespace Ui {
-    class LockedDialog;
+class LockedDialog;
 }
 
 /**
  * a small borderless dialog displayed while the Mod Organizer UI is locked
  * The dialog contains only a label and a button to force the UI to be unlocked
- * 
+ *
  * The UI gets locked while running external applications since they may modify the
  * data on which Mod Organizer works. After the UI is unlocked (manually or after the
  * external application closed) MO will refresh all of its data sources
  **/
-class LockedDialog : public QDialog
-{
+class LockedDialog : public QDialog {
     Q_OBJECT
 
-public:
-  explicit LockedDialog(QWidget *parent = 0, const QString &text = "", bool unlockButton = true);
-  ~LockedDialog();
+  public:
+    explicit LockedDialog(QWidget* parent = 0, const QString& text = "", bool unlockButton = true);
+    ~LockedDialog();
 
-  /**
-   * @brief see if the user clicked the unlock-button
-   *
-   * @return true if the user clicked the unlock button
-   **/
-  bool unlockClicked() const { return m_UnlockClicked; }
+    /**
+     * @brief see if the user clicked the unlock-button
+     *
+     * @return true if the user clicked the unlock button
+     **/
+    bool unlockClicked() const { return m_UnlockClicked; }
 
-  /**
-   * @brief set the name of the process being run
-   * @param name of process
-   */
-  void setProcessName(const QString &name);
+    /**
+     * @brief set the name of the process being run
+     * @param name of process
+     */
+    void setProcessName(const QString& name);
 
-protected:
+  protected:
+    virtual void resizeEvent(QResizeEvent* event);
 
-  virtual void resizeEvent(QResizeEvent *event);
+  private slots:
 
-private slots:
+    void on_unlockButton_clicked();
 
-  void on_unlockButton_clicked();
-
-private:
-  Ui::LockedDialog *ui;
-  bool m_UnlockClicked;
+  private:
+    Ui::LockedDialog* ui;
+    bool m_UnlockClicked;
 };
 
 #endif // LOCKEDDIALOG_H

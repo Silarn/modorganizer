@@ -20,39 +20,30 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DOWNLOADLISTSORTPROXY_H
 #define DOWNLOADLISTSORTPROXY_H
 
-
 #include <QSortFilterProxyModel>
-
 
 class DownloadManager;
 
+class DownloadListSortProxy : public QSortFilterProxyModel {
+    Q_OBJECT
+  public:
+    explicit DownloadListSortProxy(const DownloadManager* manager, QObject* parent = 0);
 
-class DownloadListSortProxy : public QSortFilterProxyModel
-{
-  Q_OBJECT
-public:
+  public slots:
 
-  explicit DownloadListSortProxy(const DownloadManager *manager, QObject *parent = 0);
+    void updateFilter(const QString& filter);
 
-public slots:
+  protected:
+    bool lessThan(const QModelIndex& left, const QModelIndex& right) const;
+    bool filterAcceptsRow(int sourceRow, const QModelIndex& source_parent) const;
 
-  void updateFilter(const QString &filter);
+  signals:
 
-protected:
+  public slots:
 
-  bool lessThan(const QModelIndex &left, const QModelIndex &right) const;
-  bool filterAcceptsRow(int sourceRow, const QModelIndex &source_parent) const;
-
-signals:
-  
-public slots:
-
-private:
-
-  const DownloadManager *m_Manager;
-  QString m_CurrentFilter;
-
-
+  private:
+    const DownloadManager* m_Manager;
+    QString m_CurrentFilter;
 };
 
 #endif // DOWNLOADLISTSORTPROXY_H
