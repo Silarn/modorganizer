@@ -44,6 +44,7 @@ namespace fs = std::experimental::filesystem;
 
 namespace usvfs {
 namespace shared {
+
 template <typename T, typename U>
 struct SHMDataCreator {
     static T create(const U& source, const VoidAllocatorT& allocator) { return T(source, allocator); }
@@ -101,26 +102,24 @@ class DirectoryTree {
     };
 
   public:
-    typedef DirectoryTree<NodeDataT> NodeT;
-    typedef NodeDataT DataT;
+    using NodeT = DirectoryTree<NodeDataT>;
+    using DataT = NodeDataT;
 
-    typedef std::shared_ptr<NodeT> NodePtrT;
-    typedef std::weak_ptr<NodeT> WeakPtrT;
+    using NodePtrT = std::shared_ptr<NodeT>;
+    using WeakPtrT = std::weak_ptr<NodeT>;
 
-    typedef std::allocator<std::pair<const StringT, NodePtrT>> NodeEntryAllocatorT;
+    using NodeEntryAllocatorT = std::allocator<std::pair<const StringT, NodePtrT>>;
 
     using NodeMapT = std::map<StringT, NodePtrT, CILess, NodeEntryAllocatorT>;
 
-    typedef typename NodeMapT::iterator file_iterator;
-    typedef typename NodeMapT::const_iterator const_file_iterator;
+    using file_iterator = typename NodeMapT::iterator;
+    using const_file_iterator = typename NodeMapT::const_iterator;
 
-    typedef std::function<void(const NodePtrT&)> VisitorFunction;
+    using VisitorFunction = std::function<void(const NodePtrT&)>;
 
   public:
     DirectoryTree() = delete;
-
-    DirectoryTree(const NodeT& reference) = delete;
-
+    
     /**
      * @brief construct a new node to be inserted in an existing tree
      **/
