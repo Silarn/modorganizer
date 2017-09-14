@@ -23,9 +23,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define NOMINMAX
 #include "hookdll/dllmain.h"
 #include "MO/Shared/appconfig.h"
+#include "MO/Shared/directoryentry.h"
 #include "MO/Shared/inject.h"
 #include "MO/Shared/util.h"
-#include "MO/Shared/directoryentry.h"
 #include "hookdll/apihook.h"
 #include "hookdll/gameinfo.h"
 #include "hookdll/hooklock.h"
