@@ -5,7 +5,7 @@ set(library_name "thooklib")
 ## Files ##
 # Main
 SET(thooklib_HDRS
-	include/${library_name}/asmjit_sane.h
+    include/${library_name}/asmjit_sane.h
     include/${library_name}/utility.h
     include/${library_name}/hooklib.h
     include/${library_name}/udis86wrapper.h
@@ -28,7 +28,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC spdlog usvfs_shared) # TODO: Asmjit and UDIS86, whatever that is.
+target_link_libraries(${library_name} PUBLIC spdlog usvfs_shared AsmJit) # TODO: UDIS86, whatever that is.
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.
