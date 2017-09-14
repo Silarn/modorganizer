@@ -1,10 +1,10 @@
-#include "usvfs/ole32.h"
-#include "usvfs/cogetserverpid.h"
+#include "usvfs/hooks/ole32.h"
 #include "usvfs/hookcallcontext.h"
 #include "usvfs/hookcontext.h"
+#include "usvfs/hooks/cogetserverpid.h"
 #include "usvfs/inject.h"
 #include "usvfs/loghelpers.h"
-#include "usvfs/winapi.h"
+#include "usvfs_shared/winapi.h"
 #include <future>
 
 HRESULT WINAPI usvfs::hooks::CoCreateInstance(const IID& rclsid, LPUNKNOWN pUnkOuter, DWORD dwClsContext,
