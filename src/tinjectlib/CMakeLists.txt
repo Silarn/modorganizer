@@ -38,7 +38,7 @@ install(EXPORT ${library_name}Config DESTINATION cmake)
 export(TARGETS ${library_name} FILE ${library_name}Config.cmake)
 
 ## Tests ##
-add_executable(${library_name}TestExe test/testexe.cpp EXCLUDE_FROM_ALL)
+add_executable(${library_name}TestExe EXCLUDE_FROM_ALL test/testexe.cpp)
 add_library(${library_name}TestDll SHARED EXCLUDE_FROM_ALL
     test/testdll.cpp
     test/testdll.h
