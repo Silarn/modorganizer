@@ -19,29 +19,15 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
-#include <ostream>
 #include <cstdint>
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <ostream>
 
-#undef ERROR
-
-enum class LogLevel : uint8_t {
-  Debug,
-  Info,
-  Warning,
-  Error
-};
+enum class LogLevel : uint8_t { Debug, Info, Warning, Error };
 
 // TODO according to the standard (17.4.3.1) I shouldn't add these to std but if they are in global namespace
 // the lookup seems to fail?
 namespace std {
-ostream &operator<<(ostream &os, LPCWSTR str);
-ostream &operator<<(ostream &os, LPWSTR str);
-ostream &operator<<(ostream &os, const wstring &str);
-}
-
+ostream& operator<<(ostream& os, const wchar_t* str);
+ostream& operator<<(ostream& os, wchar_t* str);
+ostream& operator<<(ostream& os, const std::wstring& str);
+} // namespace std

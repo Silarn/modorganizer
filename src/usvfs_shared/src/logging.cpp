@@ -21,64 +21,58 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/logging.h"
 #include "usvfs_shared/stringcast.h"
 
-
 namespace ush = usvfs::shared;
 
 namespace std {
-ostream &operator<<(ostream &os, LPCWSTR str);
-ostream &operator<<(ostream &os, LPWSTR str);
-ostream &operator<<(ostream &os, const wstring &str);
-}
+ostream& operator<<(ostream& os, const wchar_t* str);
+ostream& operator<<(ostream& os, wchar_t* str);
+ostream& operator<<(ostream& os, const wstring& str);
+} // namespace std
 
-std::ostream &std::operator<<(ostream &os, LPCWSTR str)
-{
+std::ostream& std::operator<<(ostream& os, const wchar_t* str) {
 
-  try {
-    // TODO this does not correctly support surrogate pairs since the size used here
-    // is the number of 16-bit characters in the buffer whereas toNarrow expects the
-    // actual number of characters.
-    if (str == nullptr) {
-      os << "<null>";
-    } else {
-      //os << ush::string_cast_impl<std::string, const wchar_t*>::cast(str, ush::CodePage::UTF8, 32);
+    try {
+        // TODO this does not correctly support surrogate pairs since the size used here
+        // is the number of 16-bit characters in the buffer whereas toNarrow expects the
+        // actual number of characters.
+        if (str == nullptr) {
+            os << "<null>";
+        } else {
+            // os << ush::string_cast_impl<std::string, const wchar_t*>::cast(str, ush::CodePage::UTF8, 32);
 
-      os << ush::string_cast<string>(str, ush::CodePage::UTF8);
+            os << ush::string_cast<string>(str, ush::CodePage::UTF8);
+        }
+    } catch (const exception& e) {
+        os << "ERR: " << e.what();
     }
-  } catch (const exception &e) {
-    os << "ERR: " << e.what();
-  }
 
-  return os;
+    return os;
 }
 
-std::ostream &std::operator<<(ostream &os, const wstring &str)
-{
-  try {
-    os << ush::string_cast<string>(str, ush::CodePage::UTF8);
-  }
-  catch (const exception &e) {
-    os << "ERR: " << e.what();
-  }
-
-  return os;
-}
-
-std::ostream &std::operator<<(ostream &os, LPWSTR str)
-{
-  try {
-    // TODO this does not correctly support surrogate pairs since the size used here
-    // is the number of 16-bit characters in the buffer whereas toNarrow expects the
-    // actual number of characters. It will always underestimate though, so worst
-    // case scenario we truncate the string
-    if (str == nullptr) {
-      os << "<null>";
-    } else {
-      os << ush::string_cast<string>(str, ush::CodePage::UTF8);
+std::ostream& std::operator<<(ostream& os, const std::wstring& str) {
+    try {
+        os << ush::string_cast<string>(str, ush::CodePage::UTF8);
+    } catch (const exception& e) {
+        os << "ERR: " << e.what();
     }
-  } catch (const exception &e) {
-    os << "ERR: " << e.what();
-  }
 
-  return os;
+    return os;
 }
 
+std::ostream& std::operator<<(ostream& os, wchar_t* str) {
+    try {
+        // TODO this does not correctly support surrogate pairs since the size used here
+        // is the number of 16-bit characters in the buffer whereas toNarrow expects the
+        // actual number of characters. It will always underestimate though, so worst
+        // case scenario we truncate the string
+        if (str == nullptr) {
+            os << "<null>";
+        } else {
+            os << ush::string_cast<string>(str, ush::CodePage::UTF8);
+        }
+    } catch (const exception& e) {
+        os << "ERR: " << e.what();
+    }
+
+    return os;
+}
