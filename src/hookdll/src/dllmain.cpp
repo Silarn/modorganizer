@@ -19,7 +19,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 // dllmain.cpp : Defines the entry point for the DLL application.
+#define WIN32_LEAN_AND_MEAN
+#define NOMINMAX
 #include "hookdll/dllmain.h"
+#include "MO/Shared/appconfig.h"
+#include "MO/Shared/inject.h"
+#include "MO/Shared/util.h"
+#include "MO/Shared/directoryentry.h"
 #include "hookdll/apihook.h"
 #include "hookdll/gameinfo.h"
 #include "hookdll/hooklock.h"
@@ -29,9 +35,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "hookdll/profile.h"
 #include "hookdll/reroutes.h"
 #include "hookdll/utility.h"
-#include "MO/Shared/inject.h"
-#include "MO/Shared/util.h"
-#include "MO/Shared/appconfig.h"
 #include <DbgHelp.h>
 #include <Psapi.h>
 #include <Shellapi.h>
@@ -42,15 +45,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>
+#include <deque>
 #include <fstream>
+#include <mutex>
 #include <regex>
 #include <sstream>
 #include <stdio.h>
 #include <tchar.h>
 #include <tuple>
 #include <vector>
-#include <mutex>
-#include <deque>
 
 using namespace MOShared;
 
@@ -1162,7 +1165,7 @@ DWORD WINAPI GetPrivateProfileStringA_rep(LPCSTR lpAppName, LPCSTR lpKeyName, LP
         lpReturnedString[0] = '\0';
         return 0;
     } else {
-        boost::scoped_array<char> temp(new char[static_cast<size_t>(nSize)]);
+        std::unique_ptr<char[]> temp(new char[static_cast<size_t>(nSize)]);
 
         DWORD res = GetPrivateProfileStringA_reroute(lpAppName, lpKeyName, "DUMMY_VALUE", temp.get(), nSize,
                                                      modInfo->getTweakedIniA().c_str());
