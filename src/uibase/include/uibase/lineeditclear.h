@@ -10,30 +10,28 @@
 #ifndef LINEEDITCLEAR_H
 #define LINEEDITCLEAR_H
 
-#include "dllimport.h"
+#include "uibase/dllimport.h"
 #include <QLineEdit>
 
 class QToolButton;
 
 namespace MOBase {
 
-class QDLLEXPORT LineEditClear : public QLineEdit
-{
+class QDLLEXPORT LineEditClear : public QLineEdit {
     Q_OBJECT
 
-public:
-    LineEditClear(QWidget *parent = 0);
+  public:
+    LineEditClear(QWidget* parent = 0);
 
-protected:
-    void resizeEvent(QResizeEvent *);
+  protected:
+    void resizeEvent(QResizeEvent*);
 
-private slots:
-    void updateCloseButton(const QString &text);
+  private slots:
+    void updateCloseButton(const QString& text);
 
-private:
-    QToolButton *clearButton;
+  private:
+    QToolButton* clearButton;
 };
-
 
 } // namespace MOBase
 

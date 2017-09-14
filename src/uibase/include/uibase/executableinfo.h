@@ -1,61 +1,50 @@
 #ifndef EXECUTABLEINFO_H
 #define EXECUTABLEINFO_H
 
-
-#include "dllimport.h"
-#include <QString>
-#include <QFileInfo>
+#include "uibase/dllimport.h"
 #include <QDir>
-
+#include <QFileInfo>
+#include <QString>
 
 namespace MOBase {
 
-class QDLLEXPORT ExecutableInfo
-{
-public:
+class QDLLEXPORT ExecutableInfo {
+  public:
+    enum class CloseMOStyle { DEFAULT_CLOSE = 1, DEFAULT_STAY = 2, NEVER_CLOSE = 3 };
 
-  enum class CloseMOStyle {
-    DEFAULT_CLOSE = 1,
-    DEFAULT_STAY = 2,
-    NEVER_CLOSE = 3
-  };
+  public:
+    ExecutableInfo(const QString& title, const QFileInfo& binary);
 
-public:
+    ExecutableInfo& withArgument(const QString& argument);
 
-  ExecutableInfo(const QString &title, const QFileInfo &binary);
+    ExecutableInfo& withWorkingDirectory(const QDir& workingDirectory);
 
-  ExecutableInfo &withArgument(const QString &argument);
+    ExecutableInfo& withSteamAppId(const QString& appId);
 
-  ExecutableInfo &withWorkingDirectory(const QDir &workingDirectory);
+    ExecutableInfo& withDefaultClose();
 
-  ExecutableInfo &withSteamAppId(const QString &appId);
+    ExecutableInfo& withNeverClose();
 
-  ExecutableInfo &withDefaultClose();
+    ExecutableInfo& asCustom();
 
-  ExecutableInfo &withNeverClose();
+    bool isValid() const;
 
-  ExecutableInfo &asCustom();
+    QString title() const;
+    QFileInfo binary() const;
+    QStringList arguments() const;
+    QDir workingDirectory() const;
+    CloseMOStyle closeMO() const;
+    QString steamAppID() const;
+    bool isCustom() const;
 
-  bool isValid() const;
-
-  QString title() const;
-  QFileInfo binary() const;
-  QStringList arguments() const;
-  QDir workingDirectory() const;
-  CloseMOStyle closeMO() const;
-  QString steamAppID() const;
-  bool isCustom() const;
-
-private:
-
-  QString m_Title;
-  QFileInfo m_Binary;
-  QStringList m_Arguments;
-  QDir m_WorkingDirectory;
-  CloseMOStyle m_CloseMO { CloseMOStyle::DEFAULT_STAY };
-  QString m_SteamAppID;
-  bool m_Custom { false };
-
+  private:
+    QString m_Title;
+    QFileInfo m_Binary;
+    QStringList m_Arguments;
+    QDir m_WorkingDirectory;
+    CloseMOStyle m_CloseMO{CloseMOStyle::DEFAULT_STAY};
+    QString m_SteamAppID;
+    bool m_Custom{false};
 };
 
 } // namespace MOBase

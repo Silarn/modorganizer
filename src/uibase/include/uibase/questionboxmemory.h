@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef QUESTIONBOXMEMORY_H
 #define QUESTIONBOXMEMORY_H
 
-#include "dllimport.h"
+#include "uibase/dllimport.h"
 
 #include <QDialog>
 #include <QDialogButtonBox>
@@ -34,61 +34,56 @@ class QSettings;
 class QWidget;
 
 namespace Ui {
-  class QuestionBoxMemory;
+class QuestionBoxMemory;
 }
-
 
 namespace MOBase {
 
+class QDLLEXPORT QuestionBoxMemory : public QDialog {
+    Q_OBJECT
 
-class QDLLEXPORT QuestionBoxMemory : public QDialog
-{
-  Q_OBJECT
-  
-public:
+  public:
+    virtual ~QuestionBoxMemory();
 
-  virtual ~QuestionBoxMemory();
+    static void init(const QString& fileName);
 
-  static void init(const QString &fileName);
+    static void resetDialogs();
 
-  static void resetDialogs();
+    static QDialogButtonBox::StandardButton
+    query(QWidget* parent, const QString& windowName, const QString& title, const QString& text,
+          QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes | QDialogButtonBox::No,
+          QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
 
-  static QDialogButtonBox::StandardButton query(QWidget *parent, const QString &windowName,
-                                                const QString &title, const QString &text,
-                                                QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes | QDialogButtonBox::No,
-                                                QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
+    static QDialogButtonBox::StandardButton
+    query(QWidget* parent, const QString& windowName, const QString& fileName, const QString& title,
+          const QString& text, QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes | QDialogButtonBox::No,
+          QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
 
-  static QDialogButtonBox::StandardButton query(QWidget *parent, const QString &windowName, const QString &fileName,
-                                                const QString &title, const QString &text,
-                                                QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes | QDialogButtonBox::No,
-                                                QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
+  private slots:
 
-private slots:
+    void buttonClicked(QAbstractButton* button);
 
-  void buttonClicked(QAbstractButton *button);
+  private:
+    explicit QuestionBoxMemory(QWidget* parent, const QString& title, const QString& text, const QString* filename,
+                               const QDialogButtonBox::StandardButtons buttons,
+                               QDialogButtonBox::StandardButton defaultButton);
 
-private:
+    static void cleanup();
 
-  explicit QuestionBoxMemory(QWidget *parent, const QString &title, const QString &text, const QString *filename, const QDialogButtonBox::StandardButtons buttons,
-                             QDialogButtonBox::StandardButton defaultButton);
+  private:
+    static QMutex s_SettingsMutex;
+    static QSettings* s_SettingFile;
 
-  static void cleanup();
+    static QDialogButtonBox::StandardButton
+    queryImpl(QWidget* parent, const QString& windowName, const QString* fileName, const QString& title,
+              const QString& text,
+              QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes | QDialogButtonBox::No,
+              QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
 
-private:
-
-  static QMutex s_SettingsMutex;
-  static QSettings *s_SettingFile;
-
-  static QDialogButtonBox::StandardButton queryImpl(QWidget *parent, const QString &windowName, const QString *fileName,
-                                                const QString &title, const QString &text,
-                                                QDialogButtonBox::StandardButtons buttons = QDialogButtonBox::Yes | QDialogButtonBox::No,
-                                                QDialogButtonBox::StandardButton defaultButton = QDialogButtonBox::NoButton);
-
-  Ui::QuestionBoxMemory *ui;
-  QDialogButtonBox::StandardButton m_Button;
-
+    Ui::QuestionBoxMemory* ui;
+    QDialogButtonBox::StandardButton m_Button;
 };
 
-}
+} // namespace MOBase
 
 #endif // QUESTIONBOXMEMORY_H

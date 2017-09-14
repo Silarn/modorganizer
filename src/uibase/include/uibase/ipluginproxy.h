@@ -21,46 +21,40 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IPLUGINPROXY_H
 #define IPLUGINPROXY_H
 
-#include "iplugin.h"
-
+#include "uibase/iplugin.h"
 
 namespace MOBase {
 
 class IPluginProxy : public IPlugin {
-public:
+  public:
+    IPluginProxy() : m_ParentWidget(nullptr) {}
 
-  IPluginProxy() : m_ParentWidget(nullptr) {}
+    /**
+     * @param pluginPath path to plugins
+     * @return list of plugins that supported by this proxy
+     */
+    virtual QStringList pluginList(const QString& pluginPath) const = 0;
 
-  /**
-   * @param pluginPath path to plugins
-   * @return list of plugins that supported by this proxy
-   */
-  virtual QStringList pluginList(const QString &pluginPath) const = 0;
+    /**
+     * @brief instantiate a proxied plugin
+     * @param pluginName name of the proxied plugin to instantiate
+     * @return plugin object
+     */
+    virtual QObject* instantiate(const QString& pluginName) = 0;
 
-  /**
-   * @brief instantiate a proxied plugin
-   * @param pluginName name of the proxied plugin to instantiate
-   * @return plugin object
-   */
-  virtual QObject *instantiate(const QString &pluginName) = 0;
+    /**
+     * @brief sets the widget that the tool should use as the parent whenever
+     *        it creates a new modal dialog
+     * @param widget the new parent widget
+     */
+    void setParentWidget(QWidget* widget) { m_ParentWidget = widget; }
 
-  /**
-   * @brief sets the widget that the tool should use as the parent whenever
-   *        it creates a new modal dialog
-   * @param widget the new parent widget
-   */
-  void setParentWidget(QWidget *widget) { m_ParentWidget = widget; }
+  protected:
+    QWidget* parentWidget() const { return m_ParentWidget; }
 
-protected:
-
-  QWidget *parentWidget() const { return m_ParentWidget; }
-
-private:
-
-  QWidget *m_ParentWidget;
-
+  private:
+    QWidget* m_ParentWidget;
 };
-
 
 } // namespace MOBase
 

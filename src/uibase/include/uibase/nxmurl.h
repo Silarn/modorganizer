@@ -20,52 +20,48 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef NXMURL_H
 #define NXMURL_H
 
-#include <QString>
+#include "uibase/dllimport.h"
 #include <QObject>
-#include "dllimport.h"
-
+#include <QString>
 
 /**
  * @brief represents a nxm:// url
  * @todo the game name encoded into the url is not interpreted
  **/
-class QDLLEXPORT NXMUrl : public QObject
-{
-  Q_OBJECT
+class QDLLEXPORT NXMUrl : public QObject {
+    Q_OBJECT
 
-public:
+  public:
+    /**
+     * @brief constructor
+     *
+     * @param url url following the nxm-protocol
+     **/
+    NXMUrl(const QString& url);
 
-  /**
-   * @brief constructor
-   *
-   * @param url url following the nxm-protocol
-   **/
-  NXMUrl(const QString &url);
+    /**
+     * @return name of the game
+     */
+    QString game() const { return m_Game; }
 
-  /**
-   * @return name of the game
-   */
-  QString game() const { return m_Game; }
+    /**
+     * @brief retrieve the mod id encoded into the url
+     *
+     * @return mod id
+     **/
+    int modId() const { return m_ModId; }
 
-  /**
-   * @brief retrieve the mod id encoded into the url
-   *
-   * @return mod id
-   **/
-  int modId() const { return m_ModId; }
+    /**
+     * @brief retrieve the file id encoded into the url
+     *
+     * @return file id
+     **/
+    int fileId() const { return m_FileId; }
 
-  /**
-   * @brief retrieve the file id encoded into the url
-   *
-   * @return file id
-   **/
-  int fileId() const { return m_FileId; }
-
-private:
-
-  QString m_Game;
-  int m_ModId;
-  int m_FileId;
+  private:
+    QString m_Game;
+    int m_ModId;
+    int m_FileId;
 };
 
 #endif // NXMURL_H

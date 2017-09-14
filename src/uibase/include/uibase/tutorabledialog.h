@@ -18,15 +18,14 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef TUTORABLEDIALOG_H
 #define TUTORABLEDIALOG_H
 
-#include "dllimport.h"
-#include "tutorialcontrol.h"
+#include "uibase/dllimport.h"
+#include "uibase/tutorialcontrol.h"
 #include <QDialog>
-#include <QShowEvent>
 #include <QResizeEvent>
+#include <QShowEvent>
 
 namespace MOBase {
 
@@ -35,32 +34,27 @@ namespace MOBase {
  * instead of QDialog and delegate all showEvent- and resizeEvent-calls to TutorableDialog
  * for tutorials to work
  */
-class QDLLEXPORT TutorableDialog : public QDialog
-{
-  Q_OBJECT
+class QDLLEXPORT TutorableDialog : public QDialog {
+    Q_OBJECT
 
-public:
+  public:
+    /**
+     * @brief constructor
+     * @param name a unique name for this dialog type. This is used to refer to the dialog from tutorials
+     * @param parent the parent widget of the dialog
+     */
+    explicit TutorableDialog(const QString& name, QWidget* parent = 0);
 
-  /**
-   * @brief constructor
-   * @param name a unique name for this dialog type. This is used to refer to the dialog from tutorials
-   * @param parent the parent widget of the dialog
-   */
-  explicit TutorableDialog(const QString &name, QWidget *parent = 0);
-  
-signals:
-  
-public slots:
+  signals:
 
-protected:
+  public slots:
 
-  void showEvent(QShowEvent *event);
-  void resizeEvent(QResizeEvent *event);
+  protected:
+    void showEvent(QShowEvent* event);
+    void resizeEvent(QResizeEvent* event);
 
-private:
-
-  TutorialControl m_Tutorial;
-
+  private:
+    TutorialControl m_Tutorial;
 };
 
 } // namespace MOBase

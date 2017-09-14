@@ -18,64 +18,60 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IINSTALLATIONMANAGER_H
 #define IINSTALLATIONMANAGER_H
-
 
 #include <iplugininstaller.h>
 
 namespace MOBase {
 
-
-template <typename T> class GuessedValue;
-
+template <typename T>
+class GuessedValue;
 
 /**
  * @brief The IInstallationManager class
  */
 class IInstallationManager {
 
-public:
+  public:
+    virtual ~IInstallationManager() {}
 
-  virtual ~IInstallationManager() {}
+    /**
+     * @brief extract the specified file from the currently open archive to a temporary location
+     * @param (relative) name of the file within the archive
+     * @return the absolute name of the temporary file
+     * @note the call will fail with an exception if no archive is open (plugins deriving
+     *       from IPluginInstallerSimple can rely on that, custom installers shouldn't)
+     * @note the temporary file is automatically cleaned up after the installation
+     * @note This call can be very slow if the archive is large and "solid"
+     */
+    virtual QString extractFile(const QString& fileName) = 0;
 
-  /**
-   * @brief extract the specified file from the currently open archive to a temporary location
-   * @param (relative) name of the file within the archive
-   * @return the absolute name of the temporary file
-   * @note the call will fail with an exception if no archive is open (plugins deriving
-   *       from IPluginInstallerSimple can rely on that, custom installers shouldn't)
-   * @note the temporary file is automatically cleaned up after the installation
-   * @note This call can be very slow if the archive is large and "solid"
-   */
-  virtual QString extractFile(const QString &fileName) = 0;
+    /**
+     * @brief extract the specified files from the currently open archive to a temporary location
+     * @param files (relative) names of files within the archive
+     * @param flatten if true (default) all files go to the same same directory, no subdirectories.
+     * @return the absolute names of the temporary files
+     * @note the call will fail with an exception if no archive is open (plugins deriving
+     *       from IPluginInstallerSimple can rely on that, custom installers shouldn't)
+     * @note the temporary file is automatically cleaned up after the installation
+     * @note This call can be very slow if the archive is large and "solid"
+     */
+    virtual QStringList extractFiles(const QStringList& files, bool flatten) = 0;
 
-  /**
-   * @brief extract the specified files from the currently open archive to a temporary location
-   * @param files (relative) names of files within the archive
-   * @param flatten if true (default) all files go to the same same directory, no subdirectories.
-   * @return the absolute names of the temporary files
-   * @note the call will fail with an exception if no archive is open (plugins deriving
-   *       from IPluginInstallerSimple can rely on that, custom installers shouldn't)
-   * @note the temporary file is automatically cleaned up after the installation
-   * @note This call can be very slow if the archive is large and "solid"
-   */
-  virtual QStringList extractFiles(const QStringList &files, bool flatten) = 0;
+    /**
+     * @brief installs an archive
+     * @param modName suggested name of the mod
+     * @param archiveFile path to the archive to install
+     * @return the installation result
+     */
+    virtual IPluginInstaller::EInstallResult installArchive(MOBase::GuessedValue<QString>& modName,
+                                                            const QString& archiveFile) = 0;
 
-  /**
-   * @brief installs an archive
-   * @param modName suggested name of the mod
-   * @param archiveFile path to the archive to install
-   * @return the installation result
-   */
-  virtual IPluginInstaller::EInstallResult installArchive(MOBase::GuessedValue<QString> &modName, const QString &archiveFile) = 0;
-
-  /**
-   * @brief set the url associated with a mod
-   */
-  virtual void setURL(QString const &url) = 0;
-
+    /**
+     * @brief set the url associated with a mod
+     */
+    virtual void setURL(QString const& url) = 0;
 };
 
 } // namespace MOBase

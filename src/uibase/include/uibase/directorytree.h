@@ -21,9 +21,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef DIRECTORYTREE_H
 #define DIRECTORYTREE_H
 
-#include "mytree.h"
-#include "dllimport.h"
-#include "filenamestring.h"
+#include "uibase/dllimport.h"
+#include "uibase/filenamestring.h"
+#include "uibase/mytree.h"
 
 #include <QMetaType>
 #include <QString>
@@ -31,41 +31,42 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 namespace MOBase {
 
 class FileTreeInformation {
-  friend QDLLEXPORT bool operator<(const FileTreeInformation &LHS, const FileTreeInformation &RHS);
-public:
-  FileTreeInformation() : m_Name(), m_Index(0) {}
-  FileTreeInformation(const FileTreeInformation &reference) : m_Name(reference.m_Name), m_Index(reference.m_Index) {}
-  FileTreeInformation(const QString &name, size_t index) : m_Name(name), m_Index(index) {}
-  const FileNameString &getName() const { return m_Name; }
-  void setName(const QString &name) { m_Name = name; }
-  size_t getIndex() const { return m_Index; }
-private:
-  FileNameString m_Name;
-  size_t m_Index;
+    friend QDLLEXPORT bool operator<(const FileTreeInformation& LHS, const FileTreeInformation& RHS);
+
+  public:
+    FileTreeInformation() : m_Name(), m_Index(0) {}
+    FileTreeInformation(const FileTreeInformation& reference) : m_Name(reference.m_Name), m_Index(reference.m_Index) {}
+    FileTreeInformation(const QString& name, size_t index) : m_Name(name), m_Index(index) {}
+    const FileNameString& getName() const { return m_Name; }
+    void setName(const QString& name) { m_Name = name; }
+    size_t getIndex() const { return m_Index; }
+
+  private:
+    FileNameString m_Name;
+    size_t m_Index;
 };
 
-//Q_DECLARE_METATYPE(FileTreeInformation)
-
+// Q_DECLARE_METATYPE(FileTreeInformation)
 
 struct DirectoryTreeInformation {
-  DirectoryTreeInformation() : name(), index(-1) { }
-  DirectoryTreeInformation(const DirectoryTreeInformation &reference) : name(reference.name), index(reference.index) { }
-  DirectoryTreeInformation(const QString &name) : name(name), index(-1) { }
-  DirectoryTreeInformation(const QString &name, int index) : name(name), index(index) { }
-  DirectoryTreeInformation &operator=(const DirectoryTreeInformation &reference) {
-    if (this != &reference) {
-      name = reference.name;
-      index = reference.index;
+    DirectoryTreeInformation() : name(), index(-1) {}
+    DirectoryTreeInformation(const DirectoryTreeInformation& reference)
+        : name(reference.name), index(reference.index) {}
+    DirectoryTreeInformation(const QString& name) : name(name), index(-1) {}
+    DirectoryTreeInformation(const QString& name, int index) : name(name), index(index) {}
+    DirectoryTreeInformation& operator=(const DirectoryTreeInformation& reference) {
+        if (this != &reference) {
+            name = reference.name;
+            index = reference.index;
+        }
+        return *this;
     }
-    return *this;
-  }
 
-  FileNameString name;
-  int index;
+    FileNameString name;
+    int index;
 };
 
-QDLLEXPORT bool operator<(const DirectoryTreeInformation &LHS, const DirectoryTreeInformation &RHS);
-
+QDLLEXPORT bool operator<(const DirectoryTreeInformation& LHS, const DirectoryTreeInformation& RHS);
 
 /**
  * A tree representing the content of a directory structures with subdirectories as the nodes

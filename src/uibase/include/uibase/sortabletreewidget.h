@@ -18,42 +18,44 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef SORTABLETREEWIDGET_H
 #define SORTABLETREEWIDGET_H
 
-#include "dllimport.h"
+#include "uibase/dllimport.h"
 #include <QTreeWidget>
 
 namespace MOBase {
 
-class QDLLEXPORT SortableTreeWidget : public QTreeWidget
-{
-  Q_OBJECT
+class QDLLEXPORT SortableTreeWidget : public QTreeWidget {
+    Q_OBJECT
 
-public:
-  SortableTreeWidget(QWidget *parent = nullptr);
+  public:
+    SortableTreeWidget(QWidget* parent = nullptr);
 
-  /**
-   * @brief sets whether sorting is allowed only within the branch of a tree
-   * @param localOnly if true, objects can only be moved within a branch. if false (default) they can be moved to a different branch
-   */
-  void setLocalMoveOnly(bool localOnly);
-signals:
-  /**
-   * @brief signaled when items got moved. minimal atm
-   */
-  void itemsMoved();
-protected:
-  virtual void dropEvent(QDropEvent *event);
-  virtual bool dropMimeData(QTreeWidgetItem *parent, int index, const QMimeData *data, Qt::DropAction action);
-  virtual Qt::DropActions supportedDropActions() const;
-private:
-  bool moveSelection(QTreeWidgetItem *parent, int index);
-private:
-  bool m_LocalMoveOnly;
+    /**
+     * @brief sets whether sorting is allowed only within the branch of a tree
+     * @param localOnly if true, objects can only be moved within a branch. if false (default) they can be moved to a
+     * different branch
+     */
+    void setLocalMoveOnly(bool localOnly);
+  signals:
+    /**
+     * @brief signaled when items got moved. minimal atm
+     */
+    void itemsMoved();
+
+  protected:
+    virtual void dropEvent(QDropEvent* event);
+    virtual bool dropMimeData(QTreeWidgetItem* parent, int index, const QMimeData* data, Qt::DropAction action);
+    virtual Qt::DropActions supportedDropActions() const;
+
+  private:
+    bool moveSelection(QTreeWidgetItem* parent, int index);
+
+  private:
+    bool m_LocalMoveOnly;
 };
 
-}
+} // namespace MOBase
 
 #endif // SORTABLETREEWIDGET_H

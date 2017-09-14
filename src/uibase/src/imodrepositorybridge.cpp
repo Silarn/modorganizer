@@ -1,2 +1,1 @@
-#include "imodrepositorybridge.h"
-
+#include "uibase/imodrepositorybridge.h"

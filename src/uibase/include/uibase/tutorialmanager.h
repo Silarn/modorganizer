@@ -18,98 +18,88 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef TUTORIALMANAGER_H
 #define TUTORIALMANAGER_H
 
-
-#include "dllimport.h"
+#include "uibase/dllimport.h"
 #include <QObject>
 #include <map>
 
 namespace MOBase {
 
-
 class TutorialControl;
 
+class QDLLEXPORT TutorialManager : public QObject {
 
-class QDLLEXPORT TutorialManager : public QObject
-{
+    Q_OBJECT
 
-  Q_OBJECT
+  public:
+    /**
+     * @brief set up the tutorial manager
+     * @param path to where the tutorials are stored
+     */
+    static void init(const QString& tutorialPath, QObject* organizerCore);
 
-public:
+    static TutorialManager& instance();
 
-  /**
-   * @brief set up the tutorial manager
-   * @param path to where the tutorials are stored
-   */
-  static void init(const QString &tutorialPath, QObject *organizerCore);
+    QObject* organizerCore() { return m_OrganizerCore; }
 
-  static TutorialManager &instance();
+    /**
+     * @brief registers a control that can be used to display tutorial messages in one window. This
+     *        this called when the window becomes visible
+     * @param windowName name of the window. This is used to reference the window from qml/js files,
+     *        as well as for the unregister-call
+     * @param control the control to register
+     */
+    void registerControl(const QString& windowName, TutorialControl* control);
 
-  QObject *organizerCore() { return m_OrganizerCore; }
+    /**
+     * @brief unregister a tutorial control. This is called when the window to which the control
+     *        belongs gets closed
+     * @param windowName name of the control to hide
+     */
+    void unregisterControl(const QString& windowName);
 
-  /**
-   * @brief registers a control that can be used to display tutorial messages in one window. This
-   *        this called when the window becomes visible
-   * @param windowName name of the window. This is used to reference the window from qml/js files,
-   *        as well as for the unregister-call
-   * @param control the control to register
-   */
-  void registerControl(const QString &windowName, TutorialControl *control);
+    /**
+     * @brief tests if the specified tutorial exists
+     * @param tutorialName name of the tutorial to test
+     * @return true if there is a tutorial with the specified name
+     */
+    bool hasTutorial(const QString& tutorialName);
 
-  /**
-   * @brief unregister a tutorial control. This is called when the window to which the control
-   *        belongs gets closed
-   * @param windowName name of the control to hide
-   */
-  void unregisterControl(const QString &windowName);
+    /**
+     * @brief start a tutorial for the specified window
+     * @param windowName window for which to start the tutorial
+     * @param tutorialName name of the tutorial script to run
+     */
+    Q_INVOKABLE void activateTutorial(const QString& windowName, const QString& tutorialName);
 
-  /**
-   * @brief tests if the specified tutorial exists
-   * @param tutorialName name of the tutorial to test
-   * @return true if there is a tutorial with the specified name
-   */
-  bool hasTutorial(const QString &tutorialName);
+    /**
+     * @brief mark a window tutorial as completed. It will not show up again
+     * @param windowName name of the window for which the tutorial completed
+     */
+    Q_INVOKABLE void finishWindowTutorial(const QString& windowName);
 
-  /**
-   * @brief start a tutorial for the specified window
-   * @param windowName window for which to start the tutorial
-   * @param tutorialName name of the tutorial script to run
-   */
-  Q_INVOKABLE void activateTutorial(const QString &windowName, const QString &tutorialName);
+    Q_INVOKABLE QWidget* findControl(const QString& controlName);
+  signals:
 
-  /**
-   * @brief mark a window tutorial as completed. It will not show up again
-   * @param windowName name of the window for which the tutorial completed
-   */
-  Q_INVOKABLE void finishWindowTutorial(const QString &windowName);
+    void windowTutorialFinished(const QString& windowName);
 
-  Q_INVOKABLE QWidget *findControl(const QString &controlName);
-signals:
+    void tabChanged(int index);
 
-  void windowTutorialFinished(const QString &windowName);
+  private:
+    TutorialManager(const QString& tutorialPath, QObject* organizerCore);
 
-  void tabChanged(int index);
+  private:
+    static TutorialManager* s_Instance;
 
-private:
+    //  QScriptEngine m_ScriptEngine;
+    QString m_TutorialPath;
+    QObject* m_OrganizerCore;
 
-  TutorialManager(const QString &tutorialPath, QObject *organizerCore);
-
-private:
-
-  static TutorialManager *s_Instance;
-
-//  QScriptEngine m_ScriptEngine;
-  QString m_TutorialPath;
-  QObject *m_OrganizerCore;
-
-  std::map<QString, TutorialControl*> m_Controls;
-  std::map<QString, QString> m_PendingTutorials;
-
+    std::map<QString, TutorialControl*> m_Controls;
+    std::map<QString, QString> m_PendingTutorials;
 };
-
 
 } // namespace MOBase
 

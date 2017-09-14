@@ -17,25 +17,19 @@ You should have received a copy of the GNU Lesser General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "tutorabledialog.h"
+#include "uibase/tutorabledialog.h"
 
 namespace MOBase {
 
-TutorableDialog::TutorableDialog(const QString &name, QWidget *parent)
-  : QDialog(parent)
-  , m_Tutorial(this, name)
-{
+TutorableDialog::TutorableDialog(const QString& name, QWidget* parent) : QDialog(parent), m_Tutorial(this, name) {}
+
+void TutorableDialog::showEvent(QShowEvent* event) {
+    m_Tutorial.registerControl();
+    QDialog::showEvent(event);
 }
 
-void TutorableDialog::showEvent(QShowEvent *event)
-{
-  m_Tutorial.registerControl();
-  QDialog::showEvent(event);
-}
-
-void TutorableDialog::resizeEvent(QResizeEvent *event)
-{
-  m_Tutorial.resize(event->size());
-  QDialog::resizeEvent(event);
+void TutorableDialog::resizeEvent(QResizeEvent* event) {
+    m_Tutorial.resize(event->size());
+    QDialog::resizeEvent(event);
 }
 } // namespace MOBase

@@ -18,78 +18,71 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IPLUGINMODPAGE_H
 #define IPLUGINMODPAGE_H
 
-#include "iplugin.h"
-#include "modrepositoryfileinfo.h"
+#include "uibase/iplugin.h"
+#include "uibase/modrepositoryfileinfo.h"
 #include <QIcon>
 
 namespace MOBase {
 
-
 class IPluginModPage : public QObject, public IPlugin {
-  Q_INTERFACES(IPlugin)
-public:
+    Q_INTERFACES(IPlugin)
+  public:
+    /**
+     * @return name of the Page as displayed in the ui
+     */
+    virtual QString displayName() const = 0;
 
-  /**
-   * @return name of the Page as displayed in the ui
-   */
-  virtual QString displayName() const = 0;
+    /**
+     * @return icon to be displayed with the page
+     */
+    virtual QIcon icon() const = 0;
 
-  /**
-   * @return icon to be displayed with the page
-   */
-  virtual QIcon icon() const = 0;
+    /**
+     * @return url to open when the user wants to visit this mod page
+     */
+    virtual QUrl pageURL() const = 0;
 
-  /**
-   * @return url to open when the user wants to visit this mod page
-   */
-  virtual QUrl pageURL() const = 0;
+    /**
+     * @return true if the page should be opened in the integrated browser
+     * @note unless the page provides a special means of starting downloads (like the nxm:// url schema on nexus)
+     *       it will not be possible to handle downloads unless the integrated browser is used!
+     */
+    virtual bool useIntegratedBrowser() const = 0;
 
-  /**
-   * @return true if the page should be opened in the integrated browser
-   * @note unless the page provides a special means of starting downloads (like the nxm:// url schema on nexus)
-   *       it will not be possible to handle downloads unless the integrated browser is used!
-   */
-  virtual bool useIntegratedBrowser() const = 0;
+    /**
+     * @brief test if the plugin handles a download
+     * @param pageURL url of the page that contained the donwload link
+     * @param downloadURL the actual download link
+     * @param fileInfo if the plugin can derive information from the urls it can store them here and they will be passed
+     * along with the download and be made available on installation
+     * @return true if this plugin wants to handle the specified download
+     */
+    virtual bool handlesDownload(const QUrl& pageURL, const QUrl& downloadURL,
+                                 ModRepositoryFileInfo& fileInfo) const = 0;
 
-  /**
-   * @brief test if the plugin handles a download
-   * @param pageURL url of the page that contained the donwload link
-   * @param downloadURL the actual download link
-   * @param fileInfo if the plugin can derive information from the urls it can store them here and they will be passed along
-   *                 with the download and be made available on installation
-   * @return true if this plugin wants to handle the specified download
-   */
-  virtual bool handlesDownload(const QUrl &pageURL, const QUrl &downloadURL, ModRepositoryFileInfo &fileInfo) const = 0;
+    /**
+     * @brief sets the widget that the tool should use as the parent whenever
+     *        it creates a new modal dialog
+     * @param widget the new parent widget
+     */
+    virtual void setParentWidget(QWidget* widget) { m_ParentWidget = widget; }
 
-  /**
-   * @brief sets the widget that the tool should use as the parent whenever
-   *        it creates a new modal dialog
-   * @param widget the new parent widget
-   */
-  virtual void setParentWidget(QWidget *widget) { m_ParentWidget = widget; }
+  protected:
+    /**
+     * @brief getter for the parent widget
+     * @return parent widget
+     */
+    QWidget* parentWidget() const { return m_ParentWidget; }
 
-protected:
-
-  /**
-   * @brief getter for the parent widget
-   * @return parent widget
-   */
-  QWidget *parentWidget() const { return m_ParentWidget; }
-
-private:
-
-  QWidget *m_ParentWidget;
-
+  private:
+    QWidget* m_ParentWidget;
 };
-
 
 } // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginModPage, "com.tannin.ModOrganizer.PluginModPage/1.0")
-
 
 #endif // IPLUGINMODPAGE_H

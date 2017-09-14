@@ -18,21 +18,14 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IPLUGINDIAGNOSE_H
 #define IPLUGINDIAGNOSE_H
 
-
-#include <vector>
-#include <functional>
 #include <QString>
-#pragma warning(push)
-#pragma warning(disable: 4100)
-#include <boost/signals2.hpp>
-#pragma warning(pop)
+#include <functional>
+#include <vector>
 
 namespace MOBase {
-
 
 /**
  * brief A plugin that creates problem reports to be displayed in the UI.
@@ -42,69 +35,61 @@ namespace MOBase {
  * diagnosis plugins, derive from IPlugin and IPluginDiagnose
  */
 class IPluginDiagnose {
-public:
+  public:
+    /// signal to be emitted when the diagnosis information of the plugin is invalidated
+    typedef boost::signals2::signal<void(void)> SignalInvalidated;
 
-  /// signal to be emitted when the diagnosis information of the plugin is invalidated
-  typedef boost::signals2::signal<void (void)> SignalInvalidated;
+  public:
+    /**
+     * @return a list of keys of active problems
+     * @note a plugin must be able to report problems even if it isn't active (i.e. it may want to
+     *       report WHY it's inactive)
+     */
+    virtual std::vector<unsigned int> activeProblems() const = 0;
 
-public:
+    /**
+     * @brief retrieve a short description for the specified problem for the overview page. HTML syntax is supported.
+     * @param key the identifier of the problem as reported by activeProblems()
+     * @return a (short) description text
+     * @throw should shrow an exception if the key is not valid
+     */
+    virtual QString shortDescription(unsigned int key) const = 0;
 
-  /**
-   * @return a list of keys of active problems
-   * @note a plugin must be able to report problems even if it isn't active (i.e. it may want to
-   *       report WHY it's inactive)
-   */
-  virtual std::vector<unsigned int> activeProblems() const = 0;
+    /**
+     * @brief retrieve the full description for the specified problem. HTML syntax is supported.
+     * @param key the identifier of the problem as reported by activeProblems()
+     * @return a (long) description text
+     * @throw should shrow an exception if the key is not valid
+     */
+    virtual QString fullDescription(unsigned int key) const = 0;
 
-  /**
-   * @brief retrieve a short description for the specified problem for the overview page. HTML syntax is supported.
-   * @param key the identifier of the problem as reported by activeProblems()
-   * @return a (short) description text
-   * @throw should shrow an exception if the key is not valid
-   */
-  virtual QString shortDescription(unsigned int key) const = 0;
+    /**
+     * @param key the identifier of the problem as reported by activeProblems()
+     * @return true if this plugin provides a guide to fix the issue
+     * @throw should shrow an exception if the key is not valid
+     */
+    virtual bool hasGuidedFix(unsigned int key) const = 0;
 
-  /**
-   * @brief retrieve the full description for the specified problem. HTML syntax is supported.
-   * @param key the identifier of the problem as reported by activeProblems()
-   * @return a (long) description text
-   * @throw should shrow an exception if the key is not valid
-   */
-  virtual QString fullDescription(unsigned int key) const = 0;
+    /**
+     * @brief start the guided fix for the specified problem
+     * @param key the identifier of the problem as reported by activeProblems()
+     * @throw should shrow an exception if the key is not valid or if there is no guided fix for the issue
+     */
+    virtual void startGuidedFix(unsigned int key) const = 0;
 
-  /**
-   * @param key the identifier of the problem as reported by activeProblems()
-   * @return true if this plugin provides a guide to fix the issue
-   * @throw should shrow an exception if the key is not valid
-   */
-  virtual bool hasGuidedFix(unsigned int key) const = 0;
+    /**
+     * @brief the application will use this to register callbacks to be called when
+     *        the diagnosis information needs to be re-evaluated
+     */
+    virtual boost::signals2::connection onInvalidated(std::function<void()> callback) {
+        return m_OnInvalidated.connect(callback);
+    }
 
-  /**
-   * @brief start the guided fix for the specified problem
-   * @param key the identifier of the problem as reported by activeProblems()
-   * @throw should shrow an exception if the key is not valid or if there is no guided fix for the issue
-   */
-  virtual void startGuidedFix(unsigned int key) const = 0;
+  protected:
+    void invalidate() { m_OnInvalidated(); }
 
-  /**
-   * @brief the application will use this to register callbacks to be called when
-   *        the diagnosis information needs to be re-evaluated
-   */
-  virtual boost::signals2::connection onInvalidated(std::function<void()> callback) {
-    return m_OnInvalidated.connect(callback);
-  }
-
-
-protected:
-
-  void invalidate() {
-    m_OnInvalidated();
-  }
-
-private:
-
-  SignalInvalidated m_OnInvalidated;
-
+  private:
+    SignalInvalidated m_OnInvalidated;
 };
 
 } // namespace MOBase

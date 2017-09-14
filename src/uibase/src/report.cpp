@@ -18,23 +18,21 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
-#include "report.h"
-#include "utility.h"
-#include <QMessageBox>
+#include "uibase/report.h"
+#include "uibase/utility.h"
 #include <QApplication>
+#include <QMessageBox>
 #include <Windows.h>
 
 namespace MOBase {
 
-
-void reportError(const QString &message)
-{
-  if (QApplication::topLevelWidgets().count() != 0) {
-    QMessageBox messageBox(QMessageBox::Warning, QObject::tr("Error"), message, QMessageBox::Ok);
-    messageBox.exec();
-  } else {
-    ::MessageBoxW(nullptr, message.toStdWString().c_str(), QObject::tr("Error").toStdWString().c_str(), MB_ICONERROR | MB_OK);
-  }
+void reportError(const QString& message) {
+    if (QApplication::topLevelWidgets().count() != 0) {
+        QMessageBox messageBox(QMessageBox::Warning, QObject::tr("Error"), message, QMessageBox::Ok);
+        messageBox.exec();
+    } else {
+        ::MessageBoxW(nullptr, message.toStdWString().c_str(), QObject::tr("Error").toStdWString().c_str(),
+                      MB_ICONERROR | MB_OK);
+    }
 }
 } // namespace MOBase

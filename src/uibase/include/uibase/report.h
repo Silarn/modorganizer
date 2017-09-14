@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef REPORT_H
 #define REPORT_H
 
-#include "dllimport.h"
+#include "uibase/dllimport.h"
 #include <QString>
 #include <wchar.h>
 
@@ -31,7 +31,7 @@ namespace MOBase {
  * Convenience function displaying an error message box. This function uses WinAPI if no Qt Window is available
  * yet or QMessageBox otherwise.
  */
-QDLLEXPORT void reportError(const QString &message);
+QDLLEXPORT void reportError(const QString& message);
 
 } // namespace MOBase
 

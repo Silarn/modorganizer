@@ -1,7 +1,3 @@
-#include "scopeguard.h"
+#include "uibase/scopeguard.h"
 
-namespace MOBase {
-
-
-
-} // namespace MOBase
+namespace MOBase {} // namespace MOBase

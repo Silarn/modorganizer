@@ -17,19 +17,18 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "nxmurl.h"
-#include "utility.h"
+#include "uibase/nxmurl.h"
+#include "uibase/utility.h"
 #include <QRegExp>
 #include <QStringList>
 
-NXMUrl::NXMUrl(const QString &url)
-{
-  QRegExp exp("nxm://([a-z0-9]+)/mods/(\\d+)/files/(\\d+)", Qt::CaseInsensitive);
-  exp.indexIn(url);
-  if (exp.captureCount() != 3) {
-    throw MOBase::MyException(tr("invalid nxm-link: %1").arg(url));
-  }
-  m_Game = exp.cap(1);
-  m_ModId = exp.cap(2).toInt();
-  m_FileId = exp.cap(3).toInt();
+NXMUrl::NXMUrl(const QString& url) {
+    QRegExp exp("nxm://([a-z0-9]+)/mods/(\\d+)/files/(\\d+)", Qt::CaseInsensitive);
+    exp.indexIn(url);
+    if (exp.captureCount() != 3) {
+        throw MOBase::MyException(tr("invalid nxm-link: %1").arg(url));
+    }
+    m_Game = exp.cap(1);
+    m_ModId = exp.cap(2).toInt();
+    m_FileId = exp.cap(3).toInt();
 }

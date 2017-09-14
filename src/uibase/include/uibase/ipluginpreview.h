@@ -18,37 +18,31 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IPLUGINPREVIEW_H
 #define IPLUGINPREVIEW_H
 
-
-#include "iplugin.h"
+#include "uibase/iplugin.h"
 
 namespace MOBase {
 
-
 class IPluginPreview : public QObject, public IPlugin {
-  Q_INTERFACES(IPlugin)
-public:
+    Q_INTERFACES(IPlugin)
+  public:
+    /**
+     * @return returns a set of file extensions that may be supported
+     */
+    virtual std::set<QString> supportedExtensions() const = 0;
 
-  /**
-   * @return returns a set of file extensions that may be supported
-   */
-  virtual std::set<QString> supportedExtensions() const = 0;
+    /**
+     * @brief generate a preview widget for the specified file
+     * @param fileName name of the file to preview
+     * @param maxSize maximum size of the generated widget
+     * @return a widget showing the file
+     */
+    virtual QWidget* genFilePreview(const QString& fileName, const QSize& maxSize) const = 0;
 
-  /**
-   * @brief generate a preview widget for the specified file
-   * @param fileName name of the file to preview
-   * @param maxSize maximum size of the generated widget
-   * @return a widget showing the file
-   */
-  virtual QWidget *genFilePreview(const QString &fileName, const QSize &maxSize) const = 0;
-
-private:
-
+  private:
 };
-
 
 } // namespace MOBase
 

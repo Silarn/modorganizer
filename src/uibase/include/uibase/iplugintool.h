@@ -18,67 +18,59 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IPLUGINTOOL_H
 #define IPLUGINTOOL_H
 
-
-#include "iplugin.h"
+#include "uibase/iplugin.h"
 #include <QIcon>
 
 namespace MOBase {
 
-
 class IPluginTool : public QObject, public virtual IPlugin {
-  Q_INTERFACES(IPlugin)
-public:
+    Q_INTERFACES(IPlugin)
+  public:
+    IPluginTool() : m_ParentWidget(nullptr) {}
 
-  IPluginTool() : m_ParentWidget(nullptr) {}
+    /**
+     * @return name of the tool as displayed in the ui
+     */
+    virtual QString displayName() const = 0;
 
-  /**
-   * @return name of the tool as displayed in the ui
-   */
-  virtual QString displayName() const = 0;
+    /**
+     * @return tooltip string
+     */
 
-  /**
-   * @return tooltip string
-   */
+    virtual QString tooltip() const = 0;
+    /**
+     * @return icon to be displayed with the tool
+     */
+    virtual QIcon icon() const = 0;
 
-  virtual QString tooltip() const = 0;
-  /**
-   * @return icon to be displayed with the tool
-   */
-  virtual QIcon icon() const = 0;
+    /**
+     * @brief sets the widget that the tool should use as the parent whenever
+     *        it creates a new modal dialog
+     * @param widget the new parent widget
+     */
+    virtual void setParentWidget(QWidget* widget) { m_ParentWidget = widget; }
 
-  /**
-   * @brief sets the widget that the tool should use as the parent whenever
-   *        it creates a new modal dialog
-   * @param widget the new parent widget
-   */
-  virtual void setParentWidget(QWidget *widget) { m_ParentWidget = widget; }
+  public slots:
 
-public slots:
+    /**
+     * @brief called when the user clicks to start the tool.
+     * @note This must not throw an exception!
+     */
+    virtual void display() const = 0;
 
-  /**
-   * @brief called when the user clicks to start the tool.
-   * @note This must not throw an exception!
-   */
-  virtual void display() const = 0;
+  protected:
+    /**
+     * @brief getter for the parent widget
+     * @return parent widget
+     */
+    QWidget* parentWidget() const { return m_ParentWidget; }
 
-protected:
-
-  /**
-   * @brief getter for the parent widget
-   * @return parent widget
-   */
-  QWidget *parentWidget() const { return m_ParentWidget; }
-
-private:
-
-  QWidget *m_ParentWidget;
-
+  private:
+    QWidget* m_ParentWidget;
 };
-
 
 } // namespace MOBase
 

@@ -17,45 +17,37 @@ You should have received a copy of the GNU Lesser General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "installationtester.h"
-#include "filenamestring.h"
+#include "uibase/installationtester.h"
+#include "uibase/filenamestring.h"
 
 #include <QFileInfo>
 #include <set>
 
 namespace MOBase {
 
+InstallationTester::InstallationTester() {}
 
-InstallationTester::InstallationTester()
-{
+bool InstallationTester::isTopLevelDirectory(const FileNameString& dirName) {
+    static std::set<FileNameString> tlDirectoryNames = {
+        "distantlod", "facegen", "fonts", "interface", "menus",    "meshes",          "music",
+        "scripts",    "shaders", "sound", "strings",   "textures", "trees",           "video",
+        "skse",       "obse",    "nvse",  "fose",      "asi",      "SkyProc Patchers"};
+
+    return tlDirectoryNames.count(dirName) != 0;
 }
 
+bool InstallationTester::isTopLevelDirectoryBain(const FileNameString& dirName) {
+    static std::set<FileNameString> tlDirectoryNames = {
+        "distantlod", "facegen", "fonts",   "interface",        "menus", "meshes",    "music", "scripts",
+        "shaders",    "sound",   "strings", "textures",         "trees", "video",     "skse",  "obse",
+        "nvse",       "fose",    "asi",     "SkyProc Patchers", "Docs",  "INI Tweaks"};
 
-bool InstallationTester::isTopLevelDirectory(const FileNameString &dirName)
-{
-  static std::set<FileNameString> tlDirectoryNames = {
-    "distantlod", "facegen", "fonts", "interface", "menus", "meshes", "music", "scripts", "shaders", "sound",
-    "strings", "textures", "trees", "video", "skse", "obse", "nvse", "fose", "asi", "SkyProc Patchers" };
-
-  return tlDirectoryNames.count(dirName) != 0;
+    return tlDirectoryNames.count(dirName) != 0;
 }
 
-
-bool InstallationTester::isTopLevelDirectoryBain(const FileNameString &dirName)
-{
-  static std::set<FileNameString> tlDirectoryNames = {
-    "distantlod", "facegen", "fonts", "interface", "menus", "meshes", "music", "scripts", "shaders", "sound",
-    "strings", "textures", "trees", "video", "skse", "obse", "nvse", "fose", "asi", "SkyProc Patchers",
-    "Docs", "INI Tweaks" };
-
-  return tlDirectoryNames.count(dirName) != 0;
-}
-
-
-bool InstallationTester::isTopLevelSuffix(const FileNameString &fileName)
-{
-  static std::set<FileNameString> tlSuffixes = { "esp", "esm", "bsa" };
-  return tlSuffixes.count(QFileInfo(fileName.toQString()).suffix()) != 0;
+bool InstallationTester::isTopLevelSuffix(const FileNameString& fileName) {
+    static std::set<FileNameString> tlSuffixes = {"esp", "esm", "bsa"};
+    return tlSuffixes.count(QFileInfo(fileName.toQString()).suffix()) != 0;
 }
 
 } // namespace MOBase

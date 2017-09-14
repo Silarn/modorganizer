@@ -18,133 +18,125 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef GUESSEDVALUE_H
 #define GUESSEDVALUE_H
-
 
 #include <functional>
 #include <set>
 
-
 namespace MOBase {
-
 
 /**
  * @brief describes how good the code considers a guess (i.e. for a mod name)
  *        this is used to determine if a name from another source should overwrite or not
  */
 enum EGuessQuality {
-  GUESS_INVALID,    /// no valid value has been set yet
-  GUESS_FALLBACK,   /// the guess is very basic and should only be used if no other source is available
-  GUESS_GOOD,       /// considered a good guess
-  GUESS_META,       /// the value comes from meta data and is usually what the author intended
-  GUESS_PRESET,  /// the value comes from a previous install of the same data and usually represents what the user chose before
-  GUESS_USER        /// the user selection. Always overrules other sources
+    GUESS_INVALID,  /// no valid value has been set yet
+    GUESS_FALLBACK, /// the guess is very basic and should only be used if no other source is available
+    GUESS_GOOD,     /// considered a good guess
+    GUESS_META,     /// the value comes from meta data and is usually what the author intended
+    GUESS_PRESET,   /// the value comes from a previous install of the same data and usually represents what the user
+                    /// chose before
+    GUESS_USER      /// the user selection. Always overrules other sources
 };
-
 
 /**
  * Represents a value that may be set from different places. Each time the value is changed a "quality" is specified
- * to say how probable it is the value is the best choice. Only the best choice should be used in the end but alternatives can be queried.
- * This class also allows a filter to be set. If a "guess" doesn't pass the filter, it is ignored.
+ * to say how probable it is the value is the best choice. Only the best choice should be used in the end but
+ * alternatives can be queried. This class also allows a filter to be set. If a "guess" doesn't pass the filter, it is
+ * ignored.
  */
-template <typename T> class GuessedValue
-{
-public:
+template <typename T>
+class GuessedValue {
+  public:
+  public:
+    /**
+     * @brief default constructor
+     */
+    GuessedValue();
 
-public:
+    /**
+     * @brief constructor with initial value
+     *
+     * @param reference the initial value to set
+     * @param quality quality of the guess
+     */
+    GuessedValue(const T& reference, EGuessQuality quality = GUESS_USER);
 
-/**
- * @brief default constructor
- */
-  GuessedValue();
+    /**
+     * @brief
+     *
+     * @param reference
+     * @return GuessedValue<T>
+     */
+    GuessedValue<T>& operator=(const GuessedValue<T>& reference);
 
-/**
- * @brief constructor with initial value
- *
- * @param reference the initial value to set
- * @param quality quality of the guess
- */
-  GuessedValue(const T &reference, EGuessQuality quality = GUESS_USER);
+    /**
+     * install a filter function. This filter is applied on every update and can
+     * refuse the update altogether or modify the value.
+     * @param filterFunction the filter to apply
+     */
+    /**
+     * @brief
+     *
+     * @param filterFunction
+     */
+    void setFilter(std::function<bool(T&)> filterFunction);
 
-  /**
-   * @brief
-   *
-   * @param reference
-   * @return GuessedValue<T>
-   */
-  GuessedValue<T> &operator=(const GuessedValue<T> &reference);
+    /**
+     * @brief
+     *
+     * @return operator const T
+     */
+    operator const T&() const { return m_Value; }
 
-  /**
-   * install a filter function. This filter is applied on every update and can
-   * refuse the update altogether or modify the value.
-   * @param filterFunction the filter to apply
-   */
-  /**
-   * @brief
-   *
-   * @param filterFunction
-   */
-  void setFilter(std::function<bool(T&)> filterFunction);
+    /**
+     * @brief
+     *
+     * @return T *operator ->
+     */
+    T* operator->() { return &m_Value; }
+    /**
+     * @brief
+     *
+     * @return const T *operator ->
+     */
+    /**
+     * @brief
+     *
+     * @return const T *operator ->
+     */
+    const T* operator->() const { return &m_Value; }
 
-/**
- * @brief
- *
- * @return operator const T
- */
-  operator const T&() const { return m_Value; }
+    /**
+     * @brief
+     *
+     * @param value
+     * @return GuessedValue<T>
+     */
+    GuessedValue<T>& update(const T& value);
+    /**
+     * @brief
+     *
+     * @param value
+     * @param quality
+     * @return GuessedValue<T>
+     */
+    GuessedValue<T>& update(const T& value, EGuessQuality quality);
 
-  /**
-   * @brief
-   *
-   * @return T *operator ->
-   */
-  T *operator->() { return &m_Value; }
-  /**
-   * @brief
-   *
-   * @return const T *operator ->
-   */
-  /**
-   * @brief
-   *
-   * @return const T *operator ->
-   */
-  const T *operator->() const { return &m_Value; }
+    /**
+     * @brief
+     *
+     * @return const std::set<T>
+     */
+    const std::set<T>& variants() const { return m_Variants; }
 
-  /**
-   * @brief
-   *
-   * @param value
-   * @return GuessedValue<T>
-   */
-  GuessedValue<T> &update(const T &value);
-  /**
-   * @brief
-   *
-   * @param value
-   * @param quality
-   * @return GuessedValue<T>
-   */
-  GuessedValue<T> &update(const T &value, EGuessQuality quality);
-
-  /**
-   * @brief
-   *
-   * @return const std::set<T>
-   */
-  const std::set<T> &variants() const { return m_Variants; }
-
-private:
-
-  T m_Value; /**< TODO */
-  std::set<T> m_Variants; /**< TODO */
-  EGuessQuality m_Quality; /**< TODO */
-  std::function<bool(T&)> m_Filter;
-
+  private:
+    T m_Value;               /**< TODO */
+    std::set<T> m_Variants;  /**< TODO */
+    EGuessQuality m_Quality; /**< TODO */
+    std::function<bool(T&)> m_Filter;
 };
-
 
 template <typename T>
 /**
@@ -154,20 +146,15 @@ template <typename T>
  * @return bool
  */
 bool nullFilter(T&) {
-  return true;
+    return true;
 }
-
-
 
 /**
  * @brief
  *
  */
 template <typename T>
-GuessedValue<T>::GuessedValue()
-  : m_Value(), m_Quality(GUESS_INVALID), m_Filter(nullFilter<T>)
-{
-}
+GuessedValue<T>::GuessedValue() : m_Value(), m_Quality(GUESS_INVALID), m_Filter(nullFilter<T>) {}
 
 /**
  * @brief
@@ -176,10 +163,8 @@ GuessedValue<T>::GuessedValue()
  * @param quality
  */
 template <typename T>
-GuessedValue<T>::GuessedValue(const T &reference, EGuessQuality quality)
-  : m_Value(reference), m_Quality(quality), m_Filter(nullFilter<T>)
-{
-}
+GuessedValue<T>::GuessedValue(const T& reference, EGuessQuality quality)
+    : m_Value(reference), m_Quality(quality), m_Filter(nullFilter<T>) {}
 
 /**
  * @brief
@@ -188,17 +173,16 @@ GuessedValue<T>::GuessedValue(const T &reference, EGuessQuality quality)
  * @return GuessedValue<T> &GuessedValue<T>
  */
 template <typename T>
-GuessedValue<T> &GuessedValue<T>::operator=(const GuessedValue<T> &reference)
-{
-  if (this != &reference) {
-    if (reference.m_Quality >= m_Quality) {
-      m_Value = reference.m_Value;
-      m_Quality = reference.m_Quality;
-      m_Filter = reference.m_Filter;
-      m_Variants = reference.m_Variants;
+GuessedValue<T>& GuessedValue<T>::operator=(const GuessedValue<T>& reference) {
+    if (this != &reference) {
+        if (reference.m_Quality >= m_Quality) {
+            m_Value = reference.m_Value;
+            m_Quality = reference.m_Quality;
+            m_Filter = reference.m_Filter;
+            m_Variants = reference.m_Variants;
+        }
     }
-  }
-  return *this;
+    return *this;
 }
 
 /**
@@ -207,11 +191,9 @@ GuessedValue<T> &GuessedValue<T>::operator=(const GuessedValue<T> &reference)
  * @param filterFunction
  */
 template <typename T>
-void GuessedValue<T>::setFilter(std::function<bool(T&)> filterFunction)
-{
-  m_Filter = filterFunction;
+void GuessedValue<T>::setFilter(std::function<bool(T&)> filterFunction) {
+    m_Filter = filterFunction;
 }
-
 
 /**
  * @brief
@@ -220,16 +202,14 @@ void GuessedValue<T>::setFilter(std::function<bool(T&)> filterFunction)
  * @return GuessedValue<T> &GuessedValue<T>
  */
 template <typename T>
-GuessedValue<T> &GuessedValue<T>::update(const T &value)
-{
-  T temp = value;
-  if (m_Filter(temp)) {
-    m_Variants.insert(temp);
-    m_Value = temp;
-  }
-  return *this;
+GuessedValue<T>& GuessedValue<T>::update(const T& value) {
+    T temp = value;
+    if (m_Filter(temp)) {
+        m_Variants.insert(temp);
+        m_Value = temp;
+    }
+    return *this;
 }
-
 
 /**
  * @brief
@@ -239,19 +219,18 @@ GuessedValue<T> &GuessedValue<T>::update(const T &value)
  * @return GuessedValue<T> &GuessedValue<T>
  */
 template <typename T>
-GuessedValue<T> &GuessedValue<T>::update(const T &value, EGuessQuality quality)
-{
-  T temp = value;
-  if (m_Filter(temp)) {
-    m_Variants.insert(temp);
-    if (quality >= m_Quality) {
-      m_Value = temp;
-      m_Quality = quality;
+GuessedValue<T>& GuessedValue<T>::update(const T& value, EGuessQuality quality) {
+    T temp = value;
+    if (m_Filter(temp)) {
+        m_Variants.insert(temp);
+        if (quality >= m_Quality) {
+            m_Value = temp;
+            m_Quality = quality;
+        }
     }
-  }
-  return *this;
+    return *this;
 }
 
-} // namespace MOBase;
+} // namespace MOBase
 
 #endif // GUESSEDVALUE_H

@@ -18,12 +18,11 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef IPLUGININSTALLERSIMPLE_H
 #define IPLUGININSTALLERSIMPLE_H
 
-#include "iplugininstaller.h"
-#include "guessedvalue.h"
+#include "uibase/guessedvalue.h"
+#include "uibase/iplugininstaller.h"
 
 namespace MOBase {
 
@@ -36,26 +35,24 @@ namespace MOBase {
  */
 class IPluginInstallerSimple : public QObject, public IPluginInstaller {
 
-  Q_INTERFACES(IPluginInstaller)
+    Q_INTERFACES(IPluginInstaller)
 
-public:
-
-  /**
-   * install call for the simple mode. The installer only needs to restructure the tree parameter,
-   * the caller does the rest
-   * @param modName name of the mod to install. As an input parameter this is the suggested name
-   *        (i.e. from meta data) The installer may change this parameter to rename the mod)
-   * @param tree in-memory representation of the archive content
-   * @param version version of the mod. May be empty if the version is not yet known. Can be updated if the
-   *        plugin can determine the version
-   * @param nexusID id of the mod or -1 if unknown. May be updated if the plugin can determine the mod id
-   * @return the result of the installation process. If "ERROR_NOTATTEMPTED" is returned, further
-   *         installers will work with the modified tree. This may be useful when implementing a sort
-   *         of filter, but usually tree should remain unchanged in that case.
-   */
-  virtual EInstallResult install(GuessedValue<QString> &modName,  DirectoryTree &tree,
-                                 QString &version, int &nexusID) = 0;
-
+  public:
+    /**
+     * install call for the simple mode. The installer only needs to restructure the tree parameter,
+     * the caller does the rest
+     * @param modName name of the mod to install. As an input parameter this is the suggested name
+     *        (i.e. from meta data) The installer may change this parameter to rename the mod)
+     * @param tree in-memory representation of the archive content
+     * @param version version of the mod. May be empty if the version is not yet known. Can be updated if the
+     *        plugin can determine the version
+     * @param nexusID id of the mod or -1 if unknown. May be updated if the plugin can determine the mod id
+     * @return the result of the installation process. If "ERROR_NOTATTEMPTED" is returned, further
+     *         installers will work with the modified tree. This may be useful when implementing a sort
+     *         of filter, but usually tree should remain unchanged in that case.
+     */
+    virtual EInstallResult install(GuessedValue<QString>& modName, DirectoryTree& tree, QString& version,
+                                   int& nexusID) = 0;
 };
 
 } // namespace MOBase
