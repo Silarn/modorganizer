@@ -184,7 +184,6 @@ TEST_F(HookingTest, Threading) {
     // NOTE: the hooklib currently does not claim that hook installation or removal
     //   is thread-safe, only the hooked functions shouldn't become less thread-safe by
     //   being hooked!
-
     static const int NUM_THREADS = 100;
     static const int NUM_TRIES = 1000;
 
