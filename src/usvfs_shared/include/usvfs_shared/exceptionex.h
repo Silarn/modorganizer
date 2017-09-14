@@ -67,6 +67,6 @@ struct node_missing_error : MyBoost::exception {};
 
 #define USVFS_S1(x) #x
 #define USVFS_S2(x) USVFS_S1(x)
-#define USVFS_THROW_EXCEPTION(x) debug_throw((x), (USVFS_S2(__FILE__)), (USVFS_S2(__LINE__)))
+#define USVFS_THROW_EXCEPTION(x) ::MyBoost::debug_throw((x), (USVFS_S2(__FILE__)), (USVFS_S2(__LINE__)))
 
 void logExtInfo(const std::exception& e, LogLevel logLevel = LogLevel::Warning);
