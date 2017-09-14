@@ -19,119 +19,108 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs_shared/stringutils.h"
+#include "usvfs_shared/windows_error.h"
+#include "usvfs_shared/windows_sane.h"
+#include <cctype>
 #include <cstring>
+#include <fmt/format.h>
 #include <iomanip>
 #include <sstream>
-#include <boost/algorithm/string/case_conv.hpp>
-#include <boost/algorithm/string.hpp>
-#include <boost/locale.hpp>
-#include "usvfs_shared/windows_sane.h"
-#include "usvfs_shared/windows_error.h"
 
-#pragma warning ( disable : 4996 )
-
-void usvfs::shared::strncpy_sz(char *dest, const char *src, size_t destSize)
-{
-  if (destSize > 0) {
-    strncpy(dest, src, destSize - 1);
-    dest[destSize - 1] = '\0';
-  }
-}
-
-void usvfs::shared::wcsncpy_sz(wchar_t *dest, const wchar_t *src, size_t destSize)
-{
-  if ((destSize > 0) && (dest != nullptr)) {
-    wcsncpy(dest, src, destSize - 1);
-    dest[destSize - 1] = L'\0';
-  }
-}
-
-
-bool usvfs::shared::startswith(const wchar_t *string, const wchar_t *subString)
-{
-  while ((*string != '\0') && (*subString != '\0')) {
-    if (towlower(*string) != towlower(*subString)) {
-      return false;
+void usvfs::shared::strncpy_sz(char* dest, const char* src, size_t destSize) {
+    if (destSize > 0) {
+        strncpy(dest, src, destSize - 1);
+        dest[destSize - 1] = '\0';
     }
-    ++string;
-    ++subString;
-  }
-
-  return *subString == '\0';
 }
 
-static fs::path normalize(const fs::path &path)
-{
-  fs::path result;
-
-  boost::locale::generator gen;
-  auto loc = gen("en_US.UTF-8");
-  for (fs::path::iterator iter = path.begin(); iter != path.end(); ++iter) {
-    if (*iter == "..") {
-      result = result.parent_path();
-    } else if (*iter != ".") {
-      result /= boost::to_lower_copy(iter->string(), loc);
-    } // single dot is ignored
-  }
-  return result;
-}
-
-fs::path usvfs::shared::make_relative(const fs::path &fromIn,
-                                      const fs::path &toIn) {
-  // converting path to lower case to make iterator comparison work correctly
-  // on case-insenstive filesystems
-  fs::path from(fs::absolute(fromIn));
-  fs::path to(fs::absolute(toIn));
-
-  // find common base
-  fs::path::const_iterator fromIter(from.begin());
-  fs::path::const_iterator toIter(to.begin());
-
-  // TODO the following equivalent test is probably quite expensive as new
-  // paths are created for each iteration but the case sensitivity depends on
-  // the fs
-  while ((fromIter != from.end()) && (toIter != to.end()) &&
-         (boost::iequals(fromIter->string(), toIter->string()))) {
-    ++fromIter;
-    ++toIter;
-  }
-
-  // Navigate backwards in directory to reach previously found base
-  fs::path result;
-  for (; fromIter != from.end(); ++fromIter) {
-    if (*fromIter != ".") {
-      result /= "..";
+void usvfs::shared::wcsncpy_sz(wchar_t* dest, const wchar_t* src, size_t destSize) {
+    if ((destSize > 0) && (dest != nullptr)) {
+        wcsncpy(dest, src, destSize - 1);
+        dest[destSize - 1] = L'\0';
     }
-  }
-
-  // Now navigate down the directory branch
-  for (; toIter != to.end(); ++toIter) {
-    result /= *toIter;
-  }
-  return result;
 }
 
-std::string usvfs::shared::to_hex(void *bufferIn, size_t bufferSize)
-{
-  unsigned char *buffer = static_cast<unsigned char *>(bufferIn);
-  std::ostringstream temp;
-  temp << std::hex;
-  for (size_t i = 0; i < bufferSize; ++i) {
-    temp << std::setfill('0') << std::setw(2) << (unsigned int)buffer[i];
-    if ((i % 16) == 15) {
-      temp << "\n";
-    } else {
-      temp << " ";
+bool usvfs::shared::startswith(const wchar_t* string, const wchar_t* subString) {
+    while ((*string != '\0') && (*subString != '\0')) {
+        if (towlower(*string) != towlower(*subString)) {
+            return false;
+        }
+        ++string;
+        ++subString;
     }
-  }
-  return temp.str();
+
+    return *subString == '\0';
 }
 
-std::wstring usvfs::shared::to_upper(const std::wstring &input) {
-  std::wstring result;
-  result.resize(input.size());
-  ::LCMapStringW(LOCALE_INVARIANT, LCMAP_UPPERCASE, input.c_str(),
-                 static_cast<int>(input.size()), &result[0],
-                 static_cast<int>(result.size()));
-  return result;
+static fs::path normalize(const fs::path& path) { return fs::canonical(path); }
+
+// Two string case isentive equal
+static bool iequals(std::string a, std::string b) {
+    // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
+    // This will fail on unicode.
+    std::transform(a.begin(), a.end(), a.begin(), std::tolower);
+    std::transform(b.begin(), b.end(), b.begin(), std::tolower);
+    return a == b;
+}
+
+fs::path usvfs::shared::make_relative(const fs::path& fromIn, const fs::path& toIn) {
+    // TODO: Use std::filesystem::relative when MSVC Implements it.
+    // return fs::relative(fromIn, toIn);
+    // converting path to lower case to make iterator comparison work correctly
+    // on case-insenstive filesystems
+    fs::path from(fs::absolute(fromIn));
+    fs::path to(fs::absolute(toIn));
+
+    // find common base
+    fs::path::const_iterator fromIter(from.begin());
+    fs::path::const_iterator toIter(to.begin());
+    fs::path::const_iterator fromIterEnd = from.end();
+    fs::path::const_iterator toIterEnd = to.end();
+
+    // TODO the following equivalent test is probably quite expensive as new
+    // paths are created for each iteration but the case sensitivity depends on the fs
+    while ((fromIter != fromIterEnd) && (toIter != toIterEnd) && (iequals(fromIter->string(), toIter->string()))) {
+        ++fromIter;
+        ++toIter;
+    }
+
+    // Navigate backwards in directory to reach previously found base
+    fs::path result;
+    for (; fromIter != fromIterEnd; ++fromIter) {
+        if (*fromIter != ".") {
+            result /= "..";
+        }
+    }
+
+    // Now navigate down the directory branch
+    for (; toIter != toIterEnd; ++toIter) {
+        result /= *toIter;
+    }
+    return result;
+}
+
+std::string usvfs::shared::to_hex(void* bufferIn, size_t bufferSize) {
+    unsigned char* buffer = static_cast<unsigned char*>(bufferIn);
+    std::ostringstream temp;
+    temp << std::hex;
+    for (size_t i = 0; i < bufferSize; ++i) {
+        fmt::format("{:0>2X}", static_cast<unsigned int>(buffer[i]));
+        if ((i % 16) == 15) {
+            temp << "\n";
+        } else {
+            temp << " ";
+        }
+    }
+    return temp.str();
+}
+
+std::wstring usvfs::shared::to_upper(const std::wstring& input) {
+    std::wstring result;
+    result.resize(input.size());
+    // TODO: Switch to LCMapStringEx
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/dd318702(v=vs.85).aspx
+    ::LCMapStringW(LOCALE_INVARIANT, LCMAP_UPPERCASE, input.c_str(), static_cast<int>(input.size()), &result[0],
+                   static_cast<int>(result.size()));
+    return result;
 }
