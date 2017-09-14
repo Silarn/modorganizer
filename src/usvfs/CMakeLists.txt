@@ -59,7 +59,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC fmt::fmt-header-only spdlog usvfs_shared)
+target_link_libraries(${library_name} PUBLIC fmt::fmt-header-only spdlog usvfs_shared thooklib)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.
@@ -88,22 +88,12 @@ add_test(${library_name}_Tests Tests)
 SET_PROPERTY(SOURCE logger.cpp PROPERTY COMPILE_DEFINITIONS A DEFAULT_LOG_FILE=L"usvfs.log")
 
 
-INCLUDE_DIRECTORIES("${Boost_INCLUDE_DIRS}"
-                    "${CMAKE_SOURCE_DIR}/shared"
-                    "${CMAKE_SOURCE_DIR}/thooklib"
                     "${CMAKE_SOURCE_DIR}/tinjectlib"
-                    "${CMAKE_SOURCE_DIR}/usvfs_helper"
                     "${ASMJIT_SOURCE_DIR}/AsmJit"
-                    "${SPDLOG_INCLUDE_DIR}"
-                    "${CPPFORMAT_SOURCE_DIR}"
                     )
 
 LINK_DIRECTORIES(${LINK_DIRECTORIES}
-                 "${Boost_LIBRARY_DIRS}"
                  "${ASMJIT_BINARY_DIR}"
-                 "${CMAKE_BINARY_DIR}/shared"
-                 "${CMAKE_BINARY_DIR}/usvfs"
-                 "${CMAKE_BINARY_DIR}/usvfs_helper"
                  "${UDIS86_BINARY_DIR}"
   )
 
