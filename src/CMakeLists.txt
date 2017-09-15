@@ -220,6 +220,7 @@ set_property(TARGET UDIS86 PROPERTY IMPORTED_LOCATION_DEBUG ${UDIS86_LIBRARY_D})
 # add_subdirectory(usvfs)
 ##
 add_subdirectory(common)
+add_subdirectory(bsatk)
 add_subdirectory(uibase)
 add_subdirectory(MO)
 add_subdirectory(hookdll)
