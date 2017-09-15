@@ -25,7 +25,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 namespace MOShared {
 
 class Fallout3Info : public GameInfo {
-
     friend class GameInfo;
 
   public:
