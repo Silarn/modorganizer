@@ -1,5 +1,8 @@
 // Provides windows typedefs and forward declareations.
 #pragma once
+// Only if Windows.h isn't already included.
+#if !defined(WINAPI)
+
 using WCHAR = wchar_t;
 using CHAR = char;
 using LPWSTR = WCHAR*;
@@ -40,4 +43,7 @@ using DWORD = ULONG;
 using LONGLONG = __int64;
 #else
 using LONGLONG = double;
+#endif
+#else
+#pragma message ("Warning: This isn't very nice for fwd_windows.h")
 #endif
