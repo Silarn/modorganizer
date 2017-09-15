@@ -135,7 +135,7 @@ class FilesOrigin {
 
   private:
     FilesOrigin(int ID, const std::wstring& name, const std::wstring& path, int priority,
-                boost::shared_ptr<FileRegister> fileRegister, boost::shared_ptr<OriginConnection> originConnection);
+                std::shared_ptr<FileRegister> fileRegister, std::shared_ptr<OriginConnection> originConnection);
 
   private:
     int m_ID;
@@ -146,14 +146,14 @@ class FilesOrigin {
     std::wstring m_Name;
     std::wstring m_Path;
     int m_Priority;
-    boost::weak_ptr<FileRegister> m_FileRegister;
-    boost::weak_ptr<OriginConnection> m_OriginConnection;
+    std::weak_ptr<FileRegister> m_FileRegister;
+    std::weak_ptr<OriginConnection> m_OriginConnection;
 };
 
 class FileRegister {
 
   public:
-    FileRegister(boost::shared_ptr<OriginConnection> originConnection);
+    FileRegister(std::shared_ptr<OriginConnection> originConnection);
     ~FileRegister();
 
     bool indexValid(FileEntry::Index index) const;
@@ -177,7 +177,7 @@ class FileRegister {
   private:
     std::map<FileEntry::Index, FileEntry::Ptr> m_Files;
 
-    boost::shared_ptr<OriginConnection> m_OriginConnection;
+    std::shared_ptr<OriginConnection> m_OriginConnection;
 };
 
 class DirectoryEntry {
@@ -185,7 +185,7 @@ class DirectoryEntry {
     DirectoryEntry(const std::wstring& name, DirectoryEntry* parent, int originID);
 
     DirectoryEntry(const std::wstring& name, DirectoryEntry* parent, int originID,
-                   boost::shared_ptr<FileRegister> fileRegister, boost::shared_ptr<OriginConnection> originConnection);
+                   std::shared_ptr<FileRegister> fileRegister, std::shared_ptr<OriginConnection> originConnection);
 
     ~DirectoryEntry();
 
@@ -205,7 +205,7 @@ class DirectoryEntry {
 
     const std::wstring& getName() const;
 
-    boost::shared_ptr<FileRegister> getFileRegister() { return m_FileRegister; }
+    std::shared_ptr<FileRegister> getFileRegister() { return m_FileRegister; }
 
     bool originExists(const std::wstring& name) const;
     FilesOrigin& getOriginByID(int ID) const;
@@ -301,8 +301,8 @@ class DirectoryEntry {
     void removeDirRecursive();
 
   private:
-    boost::shared_ptr<FileRegister> m_FileRegister;
-    boost::shared_ptr<OriginConnection> m_OriginConnection;
+    std::shared_ptr<FileRegister> m_FileRegister;
+    std::shared_ptr<OriginConnection> m_OriginConnection;
 
     std::wstring m_Name;
     std::map<std::wstring, FileEntry::Index> m_Files;
