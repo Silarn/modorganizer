@@ -237,8 +237,8 @@ target_include_directories(${library_name}Shared PUBLIC
 # Dependencies
 target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets Qt5::WinExtras
 					  # Qt5::WebKitWidgets
-					  Zlib fmt::fmt-header-only uibase
-					  # uibase esptk bsatk
+					  Zlib fmt::fmt-header-only uibase bsatk
+					  # esptk
                       Dbghelp advapi32 Version Shlwapi)
 
 ## Executable ##
