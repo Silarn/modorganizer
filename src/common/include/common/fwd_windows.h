@@ -44,6 +44,8 @@ using LONGLONG = __int64;
 #else
 using LONGLONG = double;
 #endif
+using PVOID = void*;
+using HANDLE = PVOID;
 #else
-#pragma message ("Warning: This isn't very nice for fwd_windows.h")
+#pragma message("Warning: This isn't very nice for fwd_windows.h")
 #endif

@@ -36,7 +36,6 @@ class File;
  * @brief top level structure to represent a bsa file
  */
 class Archive {
-
   public:
     enum EType { TYPE_OBLIVION, TYPE_FALLOUT3, TYPE_FALLOUTNV = TYPE_FALLOUT3, TYPE_SKYRIM = TYPE_FALLOUT3 };
 
