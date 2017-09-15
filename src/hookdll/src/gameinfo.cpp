@@ -24,6 +24,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "hookdll/oblivioninfo.h"
 #include "hookdll/skyriminfo.h"
 #include <cassert>
+#include <common/sane_windows.h>
 #include <fmt/format.h>
 #include <shlobj.h>
 #include <sstream>

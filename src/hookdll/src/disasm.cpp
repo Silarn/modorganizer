@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "hookdll/disasm.h"
 #include "hookdll/disasm_table.h"
 #include "hookdll/logger.h"
+#include <common/sane_windows.h>
 #include <stdexcept>
 #include <vector>
 
@@ -148,7 +149,6 @@ PBYTE Disasm::GetAbsoluteDestination() {
 }
 
 BOOL Disasm::JumpTargets(PBYTE begin, PBYTE end) {
-
     if (!IsJump()) {
         return FALSE;
     }

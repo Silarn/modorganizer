@@ -21,11 +21,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/shared/util.h"
 #include "MO/shared/windows_error.h"
 #include <ShlObj.h>
+#include <Shlwapi.h>
+#include <common/sane_windows.h>
 #include <sstream>
 #include <tchar.h>
-#define WIN32_LEAN_AND_MEAN
-#include <Shlwapi.h>
-#include <Windows.h>
 
 namespace MOShared {
 

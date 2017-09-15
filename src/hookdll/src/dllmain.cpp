@@ -19,8 +19,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 // dllmain.cpp : Defines the entry point for the DLL application.
-#define WIN32_LEAN_AND_MEAN
-#define NOMINMAX
 #include "hookdll/dllmain.h"
 #include "MO/Shared/appconfig.h"
 #include "MO/Shared/directoryentry.h"
@@ -40,8 +38,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <Shellapi.h>
 #include <ShlObj.h>
 #include <Shlwapi.h>
-#include <Windows.h>
 #include <algorithm>
+#include <common/sane_windows.h>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdlib>

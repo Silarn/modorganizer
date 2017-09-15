@@ -1,5 +1,6 @@
 #include "hookdll/hooklock.h"
 #include "hookdll/logger.h"
+#include <common/sane_windows.h>
 
 class __tlsCleanup {
   public:

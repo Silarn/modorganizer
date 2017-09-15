@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "hookdll/logger.h"
 #include <MO/Shared/windows_error.h>
 #include <cassert>
+#include <common/sane_windows.h>
 #include <exception>
 #include <stdexcept>
 

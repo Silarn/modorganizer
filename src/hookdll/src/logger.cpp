@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <MO/shared/error_report.h>
 #include <MO/shared/util.h>
 #include <Shlwapi.h>
+#include <common/sane_windows.h>
 #include <cstdio>
 #include <cstdlib>
 #include <ctime>
