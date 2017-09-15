@@ -535,11 +535,12 @@ EErrorCode Archive::extractAll(const char* outputDirectory,
     // boost::interprocess::interprocess_semaphore bufferCount(0);
     // boost::interprocess::interprocess_semaphore queueFree(100);
 
+    // FIXME: std::ref(filesDone) is all temp fakes.
     std::thread readerThread(std::bind(&Archive::readFiles, this, std::ref(buffers), std::ref(queueMutex),
-                                       std::ref(bufferCount), std::ref(queueFree), fileList.begin(), fileList.end()));
+                                       std::ref(filesDone), std::ref(filesDone), fileList.begin(), fileList.end()));
 
     std::thread extractThread(std::bind(&Archive::extractFiles, this, outputDirectory, std::ref(buffers),
-                                        std::ref(queueMutex), std::ref(bufferCount), std::ref(queueFree),
+                                        std::ref(queueMutex), std::ref(filesDone), std::ref(filesDone),
                                         static_cast<int>(fileList.size()), overwrite, std::ref(filesDone)));
 
     bool readerDone = false;
@@ -547,20 +548,24 @@ EErrorCode Archive::extractAll(const char* outputDirectory,
     bool canceled = false;
     while (!readerDone || !extractDone) {
         if (!readerDone) {
-            readerDone = readerThread.timed_join(boost::posix_time::millisec(100));
+            readerThread.join();
+            readerDone = true;
+            // readerDone = readerThread.timed_join(boost::posix_time::millisec(100));
         }
         if (readerDone) {
-            extractDone = extractThread.timed_join(boost::posix_time::millisec(100));
+            extractThread.join();
+            extractDone = true;
+            // extractDone = extractThread.timed_join(boost::posix_time::millisec(100));
             // don't cancel extractor before reader is done or else reader may be stuck trying to write to a queue
             if (canceled) {
                 // ensure the extract thread wakes up.
-                extractThread.interrupt();
-                bufferCount.post();
+                // extractThread.interrupt();
+                // bufferCount.post();
             }
         }
         size_t index = (std::min)(static_cast<size_t>(filesDone), fileList.size() - 1);
         if (!progress((filesDone * 100) / static_cast<int>(fileList.size()), fileList[index]->getName()) && !canceled) {
-            readerThread.interrupt();
+            // readerThread.interrupt();
             canceled = true; // don't interrupt repeatedly
         }
     }
