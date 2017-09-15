@@ -18,17 +18,6 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #pragma once
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
-#ifdef _WINDLL
-#define DLLEXPORT __declspec(dllexport)
-#else
-#define DLLEXPORT __declspec(dllimport)
-#endif
-
-#undef DLLEXPORT // FIXME: This
-#define DLLEXPORT
+#include <common/dllmain.h>
 
 extern "C" DLLEXPORT bool __cdecl Init(int logLevel, const wchar_t* profileName);
