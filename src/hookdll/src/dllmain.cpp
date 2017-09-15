@@ -19,6 +19,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
 // dllmain.cpp : Defines the entry point for the DLL application.
+#define NOMINMAX
 #include "hookdll/dllmain.h"
 #include "MO/Shared/appconfig.h"
 #include "MO/Shared/directoryentry.h"
