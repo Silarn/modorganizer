@@ -6,7 +6,7 @@ set(library_name "MO")
 # Main
 #if HDRs
 set(SHARED_HDRS
-	include/${library_name}/shared/inject.h
+    include/${library_name}/shared/inject.h
     include/${library_name}/shared/windows_error.h
     include/${library_name}/shared/error_report.h
     include/${library_name}/shared/directoryentry.h
@@ -17,7 +17,7 @@ set(SHARED_HDRS
     include/${library_name}/shared/stackdata.h
 )
 SET(HDRS
-	include/${library_name}/transfersavesdialog.h
+    include/${library_name}/transfersavesdialog.h
     include/${library_name}/syncoverwritedialog.h
     include/${library_name}/spawn.h
     include/${library_name}/singleinstance.h
@@ -38,11 +38,11 @@ SET(HDRS
     include/${library_name}/modlist.h
     include/${library_name}/modinfodialog.h
     include/${library_name}/modinfo.h
-	include/${library_name}/modinfobackup.h
-	include/${library_name}/modinfoforeign.h
-	include/${library_name}/modinfooverwrite.h
-	include/${library_name}/modinforegular.h
-	include/${library_name}/modinfowithconflictinfo.h
+    include/${library_name}/modinfobackup.h
+    include/${library_name}/modinfoforeign.h
+    include/${library_name}/modinfooverwrite.h
+    include/${library_name}/modinforegular.h
+    include/${library_name}/modinfowithconflictinfo.h
     include/${library_name}/messagedialog.h
     include/${library_name}/mainwindow.h
     include/${library_name}/loghighlighter.h
@@ -94,7 +94,7 @@ SET(HDRS
 #endif
 #if SRCs
 set(SHARED_SRCS
-	src/shared/inject.cpp
+    src/shared/inject.cpp
     src/shared/windows_error.cpp
     src/shared/error_report.cpp
     src/shared/directoryentry.cpp
@@ -125,11 +125,11 @@ SET(SRCS
     src/modlist.cpp
     src/modinfodialog.cpp
     src/modinfo.cpp
-	src/modinfobackup.cpp
-	src/modinfoforeign.cpp
-	src/modinfooverwrite.cpp
-	src/modinforegular.cpp
-	src/modinfowithconflictinfo.cpp
+    src/modinfobackup.cpp
+    src/modinfoforeign.cpp
+    src/modinfooverwrite.cpp
+    src/modinforegular.cpp
+    src/modinfowithconflictinfo.cpp
     src/messagedialog.cpp
     src/mainwindow.cpp
     src/main.cpp
@@ -182,7 +182,7 @@ SET(SRCS
 
 #if QTs
 SET(QTs
-	src/transfersavesdialog.ui
+    src/transfersavesdialog.ui
     src/syncoverwritedialog.ui
     src/simpleinstalldialog.ui
     src/settingsdialog.ui
@@ -209,11 +209,11 @@ SET(QTs
     src/previewdialog.ui
     src/browserdialog.ui
     src/aboutdialog.ui
-	#
-	src/resources.qrc
+    #
+    src/resources.qrc
     src/stylesheet_resource.qrc
-	#
-	src/app_icon.rc
+    #
+    src/app_icon.rc
     src/version.rc
 )
 #endif
@@ -236,9 +236,9 @@ target_include_directories(${library_name}Shared PUBLIC
 )
 # Dependencies
 target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets Qt5::WinExtras
-					  # Qt5::WebKitWidgets
-					  Zlib fmt::fmt-header-only uibase bsatk
-					  # esptk
+                      # Qt5::WebKitWidgets
+                      Zlib fmt::fmt-header-only uibase bsatk common
+                      # esptk
                       Dbghelp advapi32 Version Shlwapi)
 
 ## Executable ##
@@ -251,10 +251,10 @@ target_include_directories(${library_name} PUBLIC
 )
 # Dependencies
 target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras
-					  # Qt5::WebKitWidgets
-					  Zlib
-					  common uibase
-					  # esptk bsatk
+                      # Qt5::WebKitWidgets
+                      Zlib
+                      common uibase
+                      # esptk bsatk
                       Dbghelp advapi32 Version Shlwapi)
 # QT
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
@@ -262,8 +262,8 @@ if(WIN32)
    # Run winddeployqt if it can be found
     find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${QTDIR} ENV QTDIR PATH_SUFFIXES bin)
     add_custom_command(TARGET ${library_name} POST_BUILD
-		COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:${library_name}>
-	)
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} $<TARGET_FILE:${library_name}>
+    )
 endif()
 # Install Targets
 install(TARGETS ${library_name}Shared EXPORT ${library_name}SharedConfig
