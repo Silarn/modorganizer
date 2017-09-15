@@ -21,12 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "bsatk/bsafolder.h"
 #include "bsatk/bsatypes.h"
 #include "bsatk/errorcodes.h"
+#include <any>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <vector>
-#include <mutex>
-#include <any>
 
 namespace BSA {
 
@@ -40,7 +40,7 @@ class Archive {
   public:
     enum EType { TYPE_OBLIVION, TYPE_FALLOUT3, TYPE_FALLOUTNV = TYPE_FALLOUT3, TYPE_SKYRIM = TYPE_FALLOUT3 };
 
-    typedef std::pair<std::shared_ptr<unsigned char[]>, BSAULong> DataBuffer;
+    typedef std::pair<std::vector<unsigned char>, BSAULong> DataBuffer;
 
   private:
     static const unsigned int FLAG_HASDIRNAMES = 0x00000001;
@@ -146,8 +146,8 @@ class Archive {
 
     static EType typeFromID(BSAULong typeID);
 
-    static std::shared_ptr<unsigned char[]> decompress(unsigned char* inBuffer, BSAULong inSize, EErrorCode& result,
-                                                       BSAULong& outSize);
+    static std::vector<unsigned char> decompress(unsigned char* inBuffer, BSAULong inSize, EErrorCode& result,
+                                                 BSAULong& outSize);
 
     BSAULong typeToID(EType type);
 
@@ -176,15 +176,11 @@ class Archive {
 
     void createFolders(const std::string& targetDirectory, Folder::Ptr folder);
 
-    void readFiles(std::queue<FileInfo>& queue, std::mutex& mutex,
-                   std::any& bufferCount,
-                   std::any& queueFree, std::vector<File::Ptr>::iterator begin,
+    void readFiles(std::queue<FileInfo>& queue, std::mutex& mutex, std::vector<File::Ptr>::iterator begin,
                    std::vector<File::Ptr>::iterator end);
 
     void extractFiles(const std::string& targetDirectory, std::queue<FileInfo>& queue, std::mutex& mutex,
-                      std::any& bufferCount,
-                      std::any& queueFree, int totalFiles, bool overwrite,
-                      int& filesDone);
+                      int totalFiles, bool overwrite, int& filesDone);
 
   private:
     mutable std::fstream m_File;
