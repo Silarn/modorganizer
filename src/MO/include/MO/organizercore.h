@@ -1,21 +1,19 @@
-#ifndef ORGANIZERCORE_H
-#define ORGANIZERCORE_H
+#pragma once
 
-#include "directoryrefresher.h"
-#include "downloadmanager.h"
-#include "executableslist.h"
-#include "installationmanager.h"
-#include "iuserinterface.h" //should be class IUserInterface;
-#include "modinfo.h"
-#include "modlist.h"
-#include "pluginlist.h"
-#include "selfupdater.h"
-#include "settings.h"
-#include <boost/signals2.hpp>
-#include <delayedfilewriter.h>
-#include <imoinfo.h>
-#include <iplugindiagnose.h>
-#include <versioninfo.h>
+#include "MO/directoryrefresher.h"
+#include "MO/downloadmanager.h"
+#include "MO/executableslist.h"
+#include "MO/installationmanager.h"
+#include "MO/iuserinterface.h" //should be class IUserInterface;
+#include "MO/modinfo.h"
+#include "MO/modlist.h"
+#include "MO/pluginlist.h"
+#include "MO/selfupdater.h"
+#include "MO/settings.h"
+#include <uibase/delayedfilewriter.h>
+#include <uibase/imoinfo.h>
+#include <uibase/iplugindiagnose.h>
+#include <uibase/versioninfo.h>
 
 class ModListSortProxy;
 class PluginListSortProxy;
@@ -43,7 +41,7 @@ class QNetworkReply;
 class QUrl;
 class QWidget;
 
-#include <Windows.h> //for HANDLE, LPDWORD
+#include <common/sane_windows.h> // for HANDLE, LPDWORD
 
 #include <functional>
 #include <vector>
@@ -286,5 +284,3 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
 
     MOBase::DelayedFileWriter m_PluginListsWriter;
 };
-
-#endif // ORGANIZERCORE_H
