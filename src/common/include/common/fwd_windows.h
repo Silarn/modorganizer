@@ -35,3 +35,9 @@ using BOOL = int;
 #define FALSE 0
 using DWORD = ULONG;
 #define WINAPI __stdcall
+
+#if !defined(_M_IX86)
+using LONGLONG = __int64;
+#else
+using LONGLONG = double;
+#endif
