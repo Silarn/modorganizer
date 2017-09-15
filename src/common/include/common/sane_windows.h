@@ -85,4 +85,6 @@ using ULONG = unsigned long;
 using BOOL = int;
 #define TRUE 1
 #define FALSE 0
+using DWORD = ULONG;
+#define WINAPI __stdcall
 #endif
