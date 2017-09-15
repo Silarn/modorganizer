@@ -28,7 +28,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #define WIN32_MEAN_AND_LEAN
 #include "MO/shared/util.h"
 #include <Windows.h>
-#include <bsatk.h>
+#include <bsatk/bsatk.h>
 #include <memory>
 
 namespace MOShared {
