@@ -23,9 +23,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <vector>
 #include <wchar.h>
-
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <common/fwd_windows.h>
 
 namespace MOShared {
 

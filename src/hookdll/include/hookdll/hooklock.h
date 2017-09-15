@@ -1,8 +1,5 @@
-#ifndef THOOKLOCK_H
-#define THOOKLOCK_H
-
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#pragma once
+#include <common/fwd_windows.h>
 
 static DWORD tlsIndex = (DWORD)-1;
 
@@ -33,5 +30,3 @@ class HookLock {
     bool m_Owner;
     DWORD m_Group;
 };
-
-#endif // THOOKLOCK_H

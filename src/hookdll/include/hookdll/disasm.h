@@ -17,15 +17,10 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef DISASM_H
-#define DISASM_H
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#pragma once
+#include <common/fwd_windows.h>
 
 class Disasm {
-
   public:
     Disasm() throw();
 
@@ -50,8 +45,9 @@ class Disasm {
     /// Copy current command to target address
     /// \param	target	the target address to copy to
     /// \param	pos1		beginning of the whole copy operation (including previous and future CopyTos)
-    ///									This (and the next parameter) is important to decide whether a relative
-    ///jump 									has to be adjusted
+    ///									This (and the next parameter) is important to decide
+    ///whether  a  relative  jump 									has to be
+    /// adjusted
     /// \param	size		number of bytes that are being copied
     /// \return					the first byte after the copied instruction
     PBYTE CopyTo(PBYTE target, PBYTE pos1, size_t size);
@@ -139,7 +135,6 @@ class Disasm {
 
 // Acquires info on the function that startes at the specific function
 class FuncDisasm {
-
   public:
     FuncDisasm() throw();
 
@@ -171,5 +166,3 @@ class FuncDisasm {
     Disasm _disasm;
     PBYTE _start, _end;
 };
-
-#endif // DISASM_H

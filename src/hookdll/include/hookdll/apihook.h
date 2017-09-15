@@ -18,14 +18,10 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #pragma once
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #include "disasm.h"
+#include <common/fwd_windows.h>
 
 class ApiHook {
-
   public:
     ApiHook(LPCTSTR moduleName, LPCSTR functionName, LPVOID replacement);
     ~ApiHook();
