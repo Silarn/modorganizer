@@ -21,8 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "bsatk/bsafolder.h"
 #include "bsatk/bsatypes.h"
 #include "bsatk/errorcodes.h"
+#include <functional>
+#include <memory>
 #include <queue>
 #include <vector>
+#include <mutex>
+#include <any>
 
 namespace BSA {
 
@@ -36,7 +40,7 @@ class Archive {
   public:
     enum EType { TYPE_OBLIVION, TYPE_FALLOUT3, TYPE_FALLOUTNV = TYPE_FALLOUT3, TYPE_SKYRIM = TYPE_FALLOUT3 };
 
-    typedef std::pair<boost::shared_array<unsigned char>, BSAULong> DataBuffer;
+    typedef std::pair<std::shared_ptr<unsigned char[]>, BSAULong> DataBuffer;
 
   private:
     static const unsigned int FLAG_HASDIRNAMES = 0x00000001;
@@ -102,8 +106,7 @@ class Archive {
      * @return ERROR_NONE on success or an error code
      */
     EErrorCode extractAll(const char* outputDirectory,
-                          const boost::function<bool(int value, std::string fileName)>& progress,
-                          bool overwrite = true);
+                          const std::function<bool(int value, std::string fileName)>& progress, bool overwrite = true);
 
     /**
      * @param file the file to check
@@ -143,8 +146,8 @@ class Archive {
 
     static EType typeFromID(BSAULong typeID);
 
-    static boost::shared_array<unsigned char> decompress(unsigned char* inBuffer, BSAULong inSize, EErrorCode& result,
-                                                         BSAULong& outSize);
+    static std::shared_ptr<unsigned char[]> decompress(unsigned char* inBuffer, BSAULong inSize, EErrorCode& result,
+                                                       BSAULong& outSize);
 
     BSAULong typeToID(EType type);
 
@@ -173,14 +176,14 @@ class Archive {
 
     void createFolders(const std::string& targetDirectory, Folder::Ptr folder);
 
-    void readFiles(std::queue<FileInfo>& queue, boost::mutex& mutex,
-                   boost::interprocess::interprocess_semaphore& bufferCount,
-                   boost::interprocess::interprocess_semaphore& queueFree, std::vector<File::Ptr>::iterator begin,
+    void readFiles(std::queue<FileInfo>& queue, std::mutex& mutex,
+                   std::any& bufferCount,
+                   std::any& queueFree, std::vector<File::Ptr>::iterator begin,
                    std::vector<File::Ptr>::iterator end);
 
-    void extractFiles(const std::string& targetDirectory, std::queue<FileInfo>& queue, boost::mutex& mutex,
-                      boost::interprocess::interprocess_semaphore& bufferCount,
-                      boost::interprocess::interprocess_semaphore& queueFree, int totalFiles, bool overwrite,
+    void extractFiles(const std::string& targetDirectory, std::queue<FileInfo>& queue, std::mutex& mutex,
+                      std::any& bufferCount,
+                      std::any& queueFree, int totalFiles, bool overwrite,
                       int& filesDone);
 
   private:

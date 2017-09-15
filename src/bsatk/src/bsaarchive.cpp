@@ -25,10 +25,16 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <algorithm>
 #include <cstring>
 #include <fstream>
+#include <functional>
 #include <memory>
+#include <mutex>
 #include <queue>
 #include <sys/stat.h>
+#include <utility>
 #include <zlib.h>
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 
 using std::fstream;
 
@@ -325,17 +331,17 @@ EErrorCode Archive::extractDirect(File::Ptr file, std::ofstream& outFile) const 
     return result;
 }
 
-boost::shared_array<unsigned char> Archive::decompress(unsigned char* inBuffer, BSAULong inSize, EErrorCode& result,
-                                                       BSAULong& outSize) {
+std::shared_ptr<unsigned char[]> Archive::decompress(unsigned char* inBuffer, BSAULong inSize, EErrorCode& result,
+                                                     BSAULong& outSize) {
     memcpy(&outSize, inBuffer, sizeof(BSAULong));
     inBuffer += sizeof(BSAULong);
     inSize -= sizeof(BSAULong);
 
     if ((inSize == 0) || (outSize == 0)) {
-        return boost::shared_array<unsigned char>();
+        return std::shared_ptr<unsigned char[]>();
     }
 
-    boost::shared_array<unsigned char> outBuffer(new unsigned char[outSize]);
+    std::shared_ptr<unsigned char[]> outBuffer(new unsigned char[outSize]);
 
     z_stream stream;
     try {
@@ -347,7 +353,7 @@ boost::shared_array<unsigned char> Archive::decompress(unsigned char* inBuffer, 
         int zlibRet = inflateInit(&stream);
         if (zlibRet != Z_OK) {
             result = ERROR_ZLIBINITFAILED;
-            return boost::shared_array<unsigned char>();
+            return std::shared_ptr<unsigned char[]>();
         }
 
         stream.avail_in = inSize;
@@ -368,7 +374,7 @@ boost::shared_array<unsigned char> Archive::decompress(unsigned char* inBuffer, 
     } catch (const std::exception&) {
         result = ERROR_INVALIDDATA;
         inflateEnd(&stream);
-        return boost::shared_array<unsigned char>();
+        return std::shared_ptr<unsigned char[]>();
     }
 }
 
@@ -390,7 +396,7 @@ EErrorCode Archive::extractCompressed(File::Ptr file, std::ofstream& outFile) co
     std::unique_ptr<unsigned char[]> inBuffer(new unsigned char[inSize]);
     m_File.read(reinterpret_cast<char*>(inBuffer.get()), inSize);
     BSAULong length = 0L;
-    boost::shared_array<unsigned char> buffer = decompress(inBuffer.get(), inSize, result, length);
+    std::shared_ptr<unsigned char[]> buffer = decompress(inBuffer.get(), inSize, result, length);
     if (result == ERROR_NONE) {
         outFile.write(reinterpret_cast<char*>(buffer.get()), length);
     }
@@ -415,12 +421,11 @@ EErrorCode Archive::extract(File::Ptr file, const char* outputDirectory) const {
     return result;
 }
 
-void Archive::readFiles(std::queue<FileInfo>& queue, boost::mutex& mutex,
-                        boost::interprocess::interprocess_semaphore& bufferCount,
-                        boost::interprocess::interprocess_semaphore& queueFree, std::vector<File::Ptr>::iterator begin,
-                        std::vector<File::Ptr>::iterator end) {
-    for (; begin != end && !boost::this_thread::interruption_requested(); ++begin) {
-        queueFree.wait();
+void Archive::readFiles(std::queue<FileInfo>& queue, std::mutex& mutex, std::any& bufferCount, std::any& queueFree,
+                        std::vector<File::Ptr>::iterator begin, std::vector<File::Ptr>::iterator end) {
+    // for (; begin != end && !std::this_thread::interruption_requested(); ++begin) {
+    for (; begin != end; ++begin) {
+        // queueFree.wait();
 
         FileInfo fileInfo;
         fileInfo.file = *begin;
@@ -436,14 +441,14 @@ void Archive::readFiles(std::queue<FileInfo>& queue, boost::mutex& mutex,
             size -= fullName.length() + 1;
         }
         fileInfo.data =
-            std::make_pair(boost::shared_array<unsigned char>(new unsigned char[size]), static_cast<BSAULong>(size));
+            std::make_pair(std::shared_ptr<unsigned char[]>(new unsigned char[size]), static_cast<BSAULong>(size));
         m_File.read(reinterpret_cast<char*>(fileInfo.data.first.get()), size);
 
         {
-            boost::interprocess::scoped_lock<boost::mutex> lock(mutex);
+            std::scoped_lock<std::mutex> lock(mutex);
             queue.push(fileInfo);
         }
-        bufferCount.post();
+        // bufferCount.post();
     }
 }
 
@@ -452,25 +457,23 @@ inline bool fileExists(const std::string& name) {
     return stat(name.c_str(), &buffer) != -1;
 }
 
-void Archive::extractFiles(const std::string& targetDirectory, std::queue<FileInfo>& queue, boost::mutex& mutex,
-                           boost::interprocess::interprocess_semaphore& bufferCount,
-                           boost::interprocess::interprocess_semaphore& queueFree, int totalFiles, bool overwrite,
-                           int& filesDone) {
+void Archive::extractFiles(const std::string& targetDirectory, std::queue<FileInfo>& queue, std::mutex& mutex,
+                           std::any& bufferCount, std::any& queueFree, int totalFiles, bool overwrite, int& filesDone) {
     for (int i = 0; i < totalFiles; ++i) {
-        bufferCount.wait();
-        if (boost::this_thread::interruption_requested()) {
-            break;
-        }
+        // bufferCount.wait();
+        // if (boost::this_thread::interruption_requested()) {
+        //    break;
+        //}
 
         FileInfo fileInfo;
 
         {
-            boost::interprocess::scoped_lock<boost::mutex> lock(mutex);
+            std::scoped_lock<std::mutex> lock(mutex);
             fileInfo = queue.front();
             ++filesDone;
             queue.pop();
         }
-        queueFree.post();
+        // queueFree.post();
 
         DataBuffer dataBuffer = fileInfo.data;
 
@@ -491,8 +494,9 @@ void Archive::extractFiles(const std::string& targetDirectory, std::queue<FileIn
             EErrorCode result = ERROR_NONE;
             try {
                 BSAULong length = 0UL;
-                boost::shared_array<unsigned char> buffer =
-                    decompress(dataBuffer.first.get(), dataBuffer.second + sizeof(BSAULong), result, length);
+
+                std::shared_ptr<unsigned char[]> buffer =
+                    decompress(*dataBuffer.first.get(), dataBuffer.second + sizeof(BSAULong), result, length);
                 if (buffer.get() != nullptr) {
                     outputFile.write(reinterpret_cast<char*>(buffer.get()), length);
                 }
@@ -516,7 +520,7 @@ void Archive::createFolders(const std::string& targetDirectory, Folder::Ptr fold
 }
 
 EErrorCode Archive::extractAll(const char* outputDirectory,
-                               const boost::function<bool(int value, std::string fileName)>& progress, bool overwrite) {
+                               const std::function<bool(int value, std::string fileName)>& progress, bool overwrite) {
 #pragma message("report errors")
     createFolders(outputDirectory, m_RootFolder);
 
@@ -526,18 +530,17 @@ EErrorCode Archive::extractAll(const char* outputDirectory,
     m_File.seekg((*(fileList.begin()))->m_DataOffset);
 
     std::queue<FileInfo> buffers;
-    boost::mutex queueMutex;
+    std::mutex queueMutex;
     int filesDone = 0;
-    boost::interprocess::interprocess_semaphore bufferCount(0);
-    boost::interprocess::interprocess_semaphore queueFree(100);
+    // boost::interprocess::interprocess_semaphore bufferCount(0);
+    // boost::interprocess::interprocess_semaphore queueFree(100);
 
-    boost::thread readerThread(boost::bind(&Archive::readFiles, this, boost::ref(buffers), boost::ref(queueMutex),
-                                           boost::ref(bufferCount), boost::ref(queueFree), fileList.begin(),
-                                           fileList.end()));
+    std::thread readerThread(std::bind(&Archive::readFiles, this, std::ref(buffers), std::ref(queueMutex),
+                                       std::ref(bufferCount), std::ref(queueFree), fileList.begin(), fileList.end()));
 
-    boost::thread extractThread(boost::bind(&Archive::extractFiles, this, outputDirectory, boost::ref(buffers),
-                                            boost::ref(queueMutex), boost::ref(bufferCount), boost::ref(queueFree),
-                                            static_cast<int>(fileList.size()), overwrite, boost::ref(filesDone)));
+    std::thread extractThread(std::bind(&Archive::extractFiles, this, outputDirectory, std::ref(buffers),
+                                        std::ref(queueMutex), std::ref(bufferCount), std::ref(queueFree),
+                                        static_cast<int>(fileList.size()), overwrite, std::ref(filesDone)));
 
     bool readerDone = false;
     bool extractDone = false;
