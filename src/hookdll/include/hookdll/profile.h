@@ -4,8 +4,8 @@
 #include <cfloat>
 #include <ctime>
 #include <map>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+// TODO: Refactor into cpp file.
+#include <common/sane_windows.h>
 
 class TProfile {
   public:
