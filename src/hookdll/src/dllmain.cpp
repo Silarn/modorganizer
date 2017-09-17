@@ -767,6 +767,7 @@ static PBYTE s_ReturnAddress = nullptr;
 #define FUNCTION_BUFFER_SIZE 64
 
 #ifdef _MSC_VER
+// FIXME: HACK: THIS.
 #pragma optimize("", off)
 
 #define BOOST_PP_LOCAL_LIMITS (0, FUNCTION_BUFFER_SIZE)
@@ -776,8 +777,8 @@ static PBYTE s_ReturnAddress = nullptr;
 #define BOOST_PP_LOCAL_MACRO NOPEMIT
 
 __declspec(naked) void replacementFunction() {
-    __asm {
-#include BOOST_PP_LOCAL_ITERATE()
+    __asm {// #include BOOST_PP_LOCAL_ITERATE()
+        __asm _emit 0x90
     }
     ;
 }
