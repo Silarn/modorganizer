@@ -1,9 +1,6 @@
 // Provides windows typedefs and forward declareations.
 #pragma once
-#define NOMINMAX
-#include <BaseTsd.h>
-#include <WinDef.h>
-#include <WinNT.h>
+#include "common/sane_windows.h"
 
 #if 0
 // Only if Windows.h isn't already included.
