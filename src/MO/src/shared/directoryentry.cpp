@@ -21,7 +21,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/shared/error_report.h"
 #include "MO/shared/leaktrace.h"
 #include "MO/shared/windows_error.h"
-#include <bsatk.h>
+#include <bsatk/bsatk.h>
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <algorithm>
@@ -285,7 +285,7 @@ FileEntry::~FileEntry() { LEAK_UNTRACE; }
 
 void FileEntry::sortOrigins() {
     m_Alternatives.push_back(m_Origin);
-    std::sort(m_Alternatives.begin(), m_Alternatives.end(), boost::bind(ByOriginPriority, m_Parent, _1, _2));
+    std::sort(m_Alternatives.begin(), m_Alternatives.end(), std::bind(ByOriginPriority, m_Parent, _1, _2));
     m_Origin = m_Alternatives[m_Alternatives.size() - 1];
     m_Alternatives.pop_back();
 }
@@ -327,8 +327,8 @@ DirectoryEntry::DirectoryEntry(const std::wstring& name, DirectoryEntry* parent,
 }
 
 DirectoryEntry::DirectoryEntry(const std::wstring& name, DirectoryEntry* parent, int originID,
-                               boost::shared_ptr<FileRegister> fileRegister,
-                               boost::shared_ptr<OriginConnection> originConnection)
+                               std::shared_ptr<FileRegister> fileRegister,
+                               std::shared_ptr<OriginConnection> originConnection)
     : m_FileRegister(fileRegister), m_OriginConnection(originConnection), m_Name(name), m_Parent(parent),
       m_Populated(false), m_TopLevel(false) {
     LEAK_TRACE;
@@ -363,11 +363,11 @@ FilesOrigin& DirectoryEntry::createOrigin(const std::wstring& originName, const 
 void DirectoryEntry::addFromOrigin(const std::wstring& originName, const std::wstring& directory, int priority) {
     FilesOrigin& origin = createOrigin(originName, directory, priority);
     if (directory.length() != 0) {
-        boost::scoped_array<wchar_t> buffer(new wchar_t[MAXPATH_UNICODE + 1]);
-        memset(buffer.get(), L'\0', MAXPATH_UNICODE + 1);
-        int offset = _snwprintf(buffer.get(), MAXPATH_UNICODE, L"%ls", directory.c_str());
-        buffer.get()[offset] = L'\0';
-        addFiles(origin, buffer.get(), offset);
+        std::vector<wchar_t> buffer(MAXPATH_UNICODE + 1);
+        memset(buffer.data(), L'\0', MAXPATH_UNICODE + 1);
+        int offset = _snwprintf(buffer.data(), MAXPATH_UNICODE, L"%ls", directory.c_str());
+        buffer.data()[offset] = L'\0';
+        addFiles(origin, buffer.data(), offset);
     }
     m_Populated = true;
 }
@@ -714,7 +714,7 @@ DirectoryEntry* DirectoryEntry::getSubDirectoryRecursive(const std::wstring& pat
     }
 }
 
-FileRegister::FileRegister(boost::shared_ptr<OriginConnection> originConnection)
+FileRegister::FileRegister(std::shared_ptr<OriginConnection> originConnection)
     : m_OriginConnection(originConnection) {
     LEAK_TRACE;
 }
