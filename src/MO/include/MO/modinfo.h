@@ -20,8 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MODINFO_H
 #define MODINFO_H
 
-#include "imodinterface.h"
-#include "versioninfo.h"
+#include "uibase/imodinterface.h"
+#include "uibase/versioninfo.h"
 
 class QDateTime;
 class QDir;
