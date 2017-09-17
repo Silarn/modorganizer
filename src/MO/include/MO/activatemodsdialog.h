@@ -21,7 +21,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #define ACTIVATEMODSDIALOG_H
 
 #include "savegameinfo.h"
-#include "tutorabledialog.h"
+#include "uibase/tutorabledialog.h"
 
 #include <QObject>
 

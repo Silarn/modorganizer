@@ -18,9 +18,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MO/singleinstance.h"
-#include "utility.h"
+#include "uibase/utility.h"
 #include <QLocalSocket>
-#include <report.h>
+#include <uibase/report.h>
 
 static const char s_Key[] = "mo-43d1a3ad-eeb0-4818-97c9-eda5216c29b5";
 static const int s_Timeout = 5000;

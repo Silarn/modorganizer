@@ -19,12 +19,12 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/settingsdialog.h"
 
-#include "categoriesdialog.h"
-#include "helper.h"
-#include "iplugingame.h"
-#include "noeditdelegate.h"
-#include "settings.h"
+#include "MO/categoriesdialog.h"
+#include "MO/helper.h"
+#include "MO/noeditdelegate.h"
+#include "MO/settings.h"
 #include "ui_settingsdialog.h"
+#include "uibase/iplugingame.h"
 
 #include <QDirIterator>
 #include <QFileDialog>

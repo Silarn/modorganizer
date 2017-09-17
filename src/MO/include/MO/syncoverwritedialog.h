@@ -20,9 +20,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SYNCOVERWRITEDIALOG_H
 #define SYNCOVERWRITEDIALOG_H
 
-#include "tutorabledialog.h"
+#include "uibase/tutorabledialog.h"
+#include <MO/Shared/directoryentry.h>
 #include <QTreeWidgetItem>
-#include <directoryentry.h>
 
 namespace Ui {
 class SyncOverwriteDialog;

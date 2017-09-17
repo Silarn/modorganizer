@@ -20,8 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef TRANSFERSAVESDIALOG_H
 #define TRANSFERSAVESDIALOG_H
 
-#include "profile.h"
-#include "tutorabledialog.h"
+#include "MO/profile.h"
+#include "uibase/tutorabledialog.h"
 
 class QListWidget;
 #include <QObject>

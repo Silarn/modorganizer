@@ -20,10 +20,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef WORKAROUNDDIALOG_H
 #define WORKAROUNDDIALOG_H
 
-#include "tutorabledialog.h"
+#include "uibase/tutorabledialog.h"
 #include <QDialog>
 #include <QListWidgetItem>
-#include <iplugin.h>
+#include <uibase/iplugin.h>
 
 namespace Ui {
 class SettingsDialog;

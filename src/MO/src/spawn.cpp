@@ -19,19 +19,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/spawn.h"
 
-#include "report.h"
-#include "utility.h"
-#include <appconfig.h>
-#include <inject.h>
-#include <report.h>
-#include <windows_error.h>
-
+#include "uibase/report.h"
+#include "uibase/utility.h"
+#include <MO/Shared/appconfig.h>
+#include <MO/Shared/inject.h>
+#include <MO/Shared/windows_error.h>
 #include <QApplication>
 #include <QMessageBox>
-
 #include <Shellapi.h>
-
-#include <boost/scoped_array.hpp>
+#include <uibase/report.h>
 
 using namespace MOBase;
 using namespace MOShared;
@@ -66,21 +62,22 @@ static bool spawn(LPCWSTR binary, LPCWSTR arguments, LPCWSTR currentDirectory, b
 
     QString moPath = QCoreApplication::applicationDirPath();
 
-    boost::scoped_array<TCHAR> oldPath(new TCHAR[BUFSIZE]);
-    DWORD offset = ::GetEnvironmentVariable(TEXT("PATH"), oldPath.get(), BUFSIZE);
+    std::vector<TCHAR> oldPath(BUFSIZE);
+    DWORD offset = ::GetEnvironmentVariable(TEXT("PATH"), oldPath.data(), BUFSIZE);
     if (offset > BUFSIZE) {
-        oldPath.reset(new TCHAR[offset]);
-        ::GetEnvironmentVariable(TEXT("PATH"), oldPath.get(), offset);
+        oldPath.clear();
+        oldPath.resize(offset);
+        ::GetEnvironmentVariable(TEXT("PATH"), oldPath.data(), offset);
     }
 
     {
-        boost::scoped_array<TCHAR> newPath(new TCHAR[offset + moPath.length() + 2]);
-        _tcsncpy(newPath.get(), oldPath.get(), offset);
-        newPath.get()[offset] = '\0';
-        _tcsncat(newPath.get(), TEXT(";"), 1);
-        _tcsncat(newPath.get(), ToWString(QDir::toNativeSeparators(moPath)).c_str(), moPath.length());
+        std::vector<TCHAR> newPath(offset + moPath.length() + 2);
+        _tcsncpy(newPath.data(), oldPath.data(), offset);
+        newPath.data()[offset] = '\0';
+        _tcsncat(newPath.data(), TEXT(";"), 1);
+        _tcsncat(newPath.data(), ToWString(QDir::toNativeSeparators(moPath)).c_str(), moPath.length());
 
-        ::SetEnvironmentVariable(TEXT("PATH"), newPath.get());
+        ::SetEnvironmentVariable(TEXT("PATH"), newPath.data());
     }
 
     PROCESS_INFORMATION pi;
@@ -94,7 +91,7 @@ static bool spawn(LPCWSTR binary, LPCWSTR arguments, LPCWSTR currentDirectory, b
                         &si, &pi                                // startup and process information
         );
 
-    ::SetEnvironmentVariable(TEXT("PATH"), oldPath.get());
+    ::SetEnvironmentVariable(TEXT("PATH"), oldPath.data());
 
     delete[] commandLine;
 

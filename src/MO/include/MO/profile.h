@@ -20,9 +20,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PROFILE_H
 #define PROFILE_H
 
-#include "modinfo.h"
-#include <delayedfilewriter.h>
-#include <iprofile.h>
+#include "MO/modinfo.h"
+#include <uibase/delayedfilewriter.h>
+#include <uibase/iprofile.h>
 
 #include <QByteArray>
 #include <QDir>
@@ -45,7 +45,7 @@ class Profile : public QObject, public MOBase::IProfile {
     Q_OBJECT
 
   public:
-    typedef std : shared_ptr<Profile> Ptr;
+    typedef std::shared_ptr<Profile> Ptr;
 
   public:
     /**

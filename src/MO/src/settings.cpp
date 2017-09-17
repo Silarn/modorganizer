@@ -19,15 +19,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/settings.h"
 
-#include "appconfig.h"
-#include "pluginsetting.h"
-#include "serverinfo.h"
-#include "settingsdialog.h"
-#include "versioninfo.h"
-#include <iplugin.h>
-#include <iplugingame.h>
-#include <questionboxmemory.h>
-#include <utility.h>
+#include "MO/Shared/appconfig.h"
+#include "MO/serverinfo.h"
+#include "MO/settingsdialog.h"
+#include "uibase/pluginsetting.h"
+#include "uibase/versioninfo.h"
+#include <uibase/iplugin.h>
+#include <uibase/iplugingame.h>
+#include <uibase/questionboxmemory.h>
+#include <uibase/utility.h>
 
 #include <QCheckBox>
 #include <QComboBox>

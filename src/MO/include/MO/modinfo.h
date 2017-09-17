@@ -33,6 +33,7 @@ class QDir;
 #include <map>
 #include <set>
 #include <vector>
+#include <functional>
 
 namespace MOBase {
 class IPluginGame;
@@ -153,7 +154,7 @@ class ModInfo : public QObject, public MOBase::IModInterface {
      * @param filter a function to filter by. should return true for a match
      * @return index of the matching mod or UINT_MAX if there wasn't a match
      */
-    static unsigned int findMod(const boost::function<bool(ModInfo::Ptr)>& filter);
+    static unsigned int findMod(const std::function<bool(ModInfo::Ptr)>& filter);
 
     /**
      * @brief check a bunch of mods for updates

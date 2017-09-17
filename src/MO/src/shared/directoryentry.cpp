@@ -285,7 +285,7 @@ FileEntry::~FileEntry() { LEAK_UNTRACE; }
 
 void FileEntry::sortOrigins() {
     m_Alternatives.push_back(m_Origin);
-    std::sort(m_Alternatives.begin(), m_Alternatives.end(), std::bind(ByOriginPriority, m_Parent, _1, _2));
+    std::sort(m_Alternatives.begin(), m_Alternatives.end(), std::bind(ByOriginPriority, m_Parent));
     m_Origin = m_Alternatives[m_Alternatives.size() - 1];
     m_Alternatives.pop_back();
 }
