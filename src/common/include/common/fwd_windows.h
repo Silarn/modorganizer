@@ -1,5 +1,11 @@
 // Provides windows typedefs and forward declareations.
 #pragma once
+#define NOMINMAX
+#include <BaseTsd.h>
+#include <WinDef.h>
+#include <WinNT.h>
+
+#if 0
 // Only if Windows.h isn't already included.
 #if !defined(WINAPI)
 
@@ -48,4 +54,5 @@ using PVOID = void*;
 using HANDLE = PVOID;
 #else
 #pragma message("Warning: This isn't very nice for fwd_windows.h")
+#endif
 #endif
