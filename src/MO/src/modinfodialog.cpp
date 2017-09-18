@@ -91,7 +91,7 @@ ModInfoDialog::ModInfoDialog(ModInfo::Ptr modInfo, const DirectoryEntry* directo
     // ui->descriptionView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
     // HACK: ugly.
     connect(ui->descriptionView, SIGNAL(acceptNavigationRequest(QWebEnginePage::NavigationType, bool)), this,
-            SLOT(linkClicked(QWebEnginePage::NavigationType, bool)));
+            SLOT(acceptNavigationRequest(QWebEnginePage::NavigationType, bool)));
 
     if (directory->originExists(ToWString(modInfo->name()))) {
         m_Origin = &directory->getOriginByName(ToWString(modInfo->name()));
@@ -635,7 +635,7 @@ void ModInfoDialog::on_visitNexusLabel_linkActivated(const QString& link) {
     emit nexusLinkActivated(link);
 }
 
-bool ModInfoDialog::linkClicked(const QUrl& url, QWebEnginePage::NavigationType type, bool) {
+bool ModInfoDialog::acceptNavigationRequest(const QUrl& url, QWebEnginePage::NavigationType type, bool) {
     if (type != QWebEnginePage::NavigationTypeLinkClicked) {
         return true;
     }
