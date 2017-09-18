@@ -22,7 +22,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/filedialogmemory.h"
 #include "ui_editexecutablesdialog.h"
 #include <QMessageBox>
-#include <Shellapi.h>
 #include <uibase/utility.h>
 
 using namespace MOBase;

@@ -38,7 +38,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QWhatsThis>
 #include <Qt>
 
-#include <Windows.h>
+#include <common/sane_windows.h>
 
 #include <exception>
 

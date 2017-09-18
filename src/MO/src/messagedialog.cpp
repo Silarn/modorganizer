@@ -21,7 +21,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "ui_messagedialog.h"
 #include <QResizeEvent>
 #include <QTimer>
-#include <Windows.h>
+#include <common/sane_windows.h>
 
 MessageDialog::MessageDialog(const QString& text, QWidget* reference) : QDialog(reference), ui(new Ui::MessageDialog) {
     ui->setupUi(this);

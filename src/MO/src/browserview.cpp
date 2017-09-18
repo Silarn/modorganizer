@@ -27,7 +27,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtWebEngineWidgets/QWebEnginePage>
 #include <QtWebEngineWidgets/QWebEngineSettings>
 #include <QtWebEngineWidgets/QWebEngineView>
-#include <Shlwapi.h>
 
 BrowserView::BrowserView(QWidget* parent) : QWebEngineView(parent) {
     installEventFilter(this);

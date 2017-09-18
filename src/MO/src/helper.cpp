@@ -22,8 +22,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <LMCons.h>
 #include <uibase/report.h>
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <common/sane_windows.h>
+#include <shellapi.h>
 
 #include <QDir>
 

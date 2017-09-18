@@ -27,6 +27,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QApplication>
 #include <QMessageBox>
 #include <Shellapi.h>
+#include <common/sane_windows.h>
+#include <tchar.h>
 #include <uibase/report.h>
 
 using namespace MOBase;

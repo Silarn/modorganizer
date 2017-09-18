@@ -3,7 +3,8 @@
 #include <QPushButton>
 #include <uibase/iplugindiagnose.h>
 #include <uibase/utility.h>
-#include <Windows.h>
+#include <common/sane_windows.h>
+#include <shellapi.h>
 
 using namespace MOBase;
 

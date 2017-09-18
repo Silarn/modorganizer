@@ -48,7 +48,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <Qt>      // for Qt::UserRole, etc
 #include <QtDebug> // for qDebug, qWarning
 
-#include <Windows.h> // For ShellExecuteW, HINSTANCE, etc
+#include <common/sane_windows.h> // For ShellExecuteW, HINSTANCE, etc
+#include <shellapi.h>
 
 #include <algorithm> // for sort
 #include <memory>

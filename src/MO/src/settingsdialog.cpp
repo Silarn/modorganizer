@@ -31,8 +31,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 #include <QShortcut>
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <common/sane_windows.h>
 
 using namespace MOBase;
 

@@ -54,7 +54,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtAlgorithms>
 #include <QtDebug>
 
-#include <Windows.h> //for VS_FIXEDFILEINFO, GetLastError
+#include <common/sane_windows.h>
 
 #include <exception>
 #include <functional>

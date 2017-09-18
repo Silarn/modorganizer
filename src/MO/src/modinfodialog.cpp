@@ -38,8 +38,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 #include <QPushButton>
 
-#include <Shlwapi.h>
-
 #include <sstream>
 
 using namespace MOBase;

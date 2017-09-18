@@ -47,8 +47,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QRegExp>
 #include <QSettings>
 
-#include <Shellapi.h>
-
 using namespace MOBase;
 using namespace MOShared;
 

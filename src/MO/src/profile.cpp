@@ -39,7 +39,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtDebug>     // for qDebug, qWarning, etc
 #include <QtGlobal>    // for qPrintable
 
-#include <Windows.h>
+#include <common/sane_windows.h>
 
 #include <assert.h> // for assert
 #include <limits.h> // for UINT_MAX, INT_MAX, etc
