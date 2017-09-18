@@ -1,7 +1,7 @@
 #ifndef MODINFOWITHCONFLICTINFO_H
 #define MODINFOWITHCONFLICTINFO_H
 
-#include "modinfo.h"
+#include "MO/modinfo.h"
 #include <QTime>
 
 class ModInfoWithConflictInfo : public ModInfo {

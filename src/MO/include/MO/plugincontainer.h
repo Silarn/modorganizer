@@ -1,8 +1,8 @@
 #ifndef PLUGINCONTAINER_H
 #define PLUGINCONTAINER_H
 
-#include "organizercore.h"
-#include "previewgenerator.h"
+#include "MO/organizercore.h"
+#include "MO/previewgenerator.h"
 #include <QFile>
 #include <QPluginLoader>
 #include <QtPlugin>

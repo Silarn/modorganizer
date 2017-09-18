@@ -20,7 +20,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef WORKAROUNDS_H
 #define WORKAROUNDS_H
 
-#include "loadmechanism.h"
+#include "MO/loadmechanism.h"
 #include <QList>
 #include <QMap>
 #include <QObject>

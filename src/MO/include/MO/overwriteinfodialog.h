@@ -20,7 +20,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef OVERWRITEINFODIALOG_H
 #define OVERWRITEINFODIALOG_H
 
-#include "modinfo.h"
+#include "MO/modinfo.h"
 #include <QDialog>
 #include <QFileSystemModel>
 

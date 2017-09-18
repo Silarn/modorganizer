@@ -23,7 +23,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/modinfo.h"
 #include "MO/nexusinterface.h"
 #include "MO/profile.h"
-#include "categories.h"
+#include "MO/categories.h"
 #include <QFile>
 #include <QListWidget>
 #include <QNetworkAccessManager>

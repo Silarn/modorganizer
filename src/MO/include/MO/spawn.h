@@ -20,11 +20,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SPAWN_H
 #define SPAWN_H
 
-#define WIN32_LEAN_AND_MEAN
 #include <QDir>
 #include <QFileInfo>
-#include <tchar.h>
-#include <windows.h>
+#include <common/sane_windows.h>
 
 /**
  * @brief a dirty little trick so we can issue a clean restart from startBinary

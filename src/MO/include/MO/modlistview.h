@@ -1,7 +1,7 @@
 #ifndef MODLISTVIEW_H
 #define MODLISTVIEW_H
 
-#include "viewmarkingscrollbar.h"
+#include "MO/viewmarkingscrollbar.h"
 #include <QDragEnterEvent>
 #include <QTreeView>
 
