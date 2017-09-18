@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef IINSTALLATIONMANAGER_H
 #define IINSTALLATIONMANAGER_H
 
-#include <iplugininstaller.h>
+#include <uibase/iplugininstaller.h>
 
 namespace MOBase {
 

@@ -23,7 +23,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QImageReader>
 #include <QLabel>
 #include <QTextEdit>
-#include <utility.h>
+#include <uibase/utility.h>
 
 PreviewGenerator::PreviewGenerator() {
 

@@ -19,8 +19,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/executableslist.h"
 
-#include "iplugingame.h"
-#include "utility.h"
+#include "uibase/iplugingame.h"
+#include "uibase/utility.h"
 
 #include <QDebug>
 #include <QDir>

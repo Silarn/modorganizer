@@ -19,17 +19,17 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/downloadmanager.h"
 
-#include "bbcode.h"
-#include "iplugingame.h"
-#include "nexusinterface.h"
-#include "nxmaccessmanager.h"
-#include "nxmurl.h"
-#include "selectiondialog.h"
-#include "utility.h"
-#include <nxmurl.h>
-#include <report.h>
-#include <taskprogressmanager.h>
-#include <utility.h>
+#include "MO/bbcode.h"
+#include "MO/nexusinterface.h"
+#include "MO/nxmaccessmanager.h"
+#include "MO/selectiondialog.h"
+#include "uibase/iplugingame.h"
+#include "uibase/nxmurl.h"
+#include "uibase/utility.h"
+#include <uibase/nxmurl.h>
+#include <uibase/report.h>
+#include <uibase/taskprogressmanager.h>
+#include <uibase/utility.h>
 
 #include <QCoreApplication>
 #include <QDirIterator>
@@ -40,7 +40,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTextDocument>
 #include <QTimer>
 
-#include <boost/bind.hpp>
+#include <functional>
 #include <regex>
 
 using namespace MOBase;
@@ -1194,7 +1194,8 @@ void DownloadManager::nxmDownloadURLsAvailable(int modID, int fileID, QVariant u
     }
 
     std::sort(resultList.begin(), resultList.end(),
-              boost::bind(&DownloadManager::ServerByPreference, m_PreferredServers, _1, _2));
+              std::bind(&DownloadManager::ServerByPreference, m_PreferredServers, std::placeholders::_1,
+                        std::placeholders::_2));
 
     info->userData["downloadMap"] = resultList;
 

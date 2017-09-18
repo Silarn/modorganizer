@@ -2,9 +2,9 @@
 #define IUSERINTERFACE_H
 
 #include "MO/modinfo.h"
-#include <delayedfilewriter.h>
-#include <ipluginmodpage.h>
-#include <iplugintool.h>
+#include <uibase/delayedfilewriter.h>
+#include <uibase/ipluginmodpage.h>
+#include <uibase/iplugintool.h>
 
 class QSettings;
 

@@ -20,14 +20,14 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/profilesdialog.h"
 #include "ui_profilesdialog.h"
 
-#include "appconfig.h"
-#include "bsainvalidation.h"
-#include "iplugingame.h"
-#include "profile.h"
-#include "profileinputdialog.h"
-#include "report.h"
-#include "transfersavesdialog.h"
-#include "utility.h"
+#include "MO/Shared/appconfig.h"
+#include "MO/profile.h"
+#include "MO/profileinputdialog.h"
+#include "MO/transfersavesdialog.h"
+#include "gamefeatures/bsainvalidation.h"
+#include "uibase/iplugingame.h"
+#include "uibase/report.h"
+#include "uibase/utility.h"
 
 #include <QDir>
 #include <QDirIterator>

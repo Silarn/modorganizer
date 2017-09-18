@@ -20,16 +20,16 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "browserdialog.h"
-#include "bsafolder.h"
-#include "delayedfilewriter.h"
-#include "errorcodes.h"
-#include "imoinfo.h"
+#include "MO/browserdialog.h"
+#include "bsatk/bsafolder.h"
+#include "bsatk/errorcodes.h"
+#include "gamefeatures/savegameinfo.h"
 #include "iuserinterface.h"
 #include "modinfo.h"
 #include "modlistsortproxy.h"
-#include "savegameinfo.h"
-#include "tutorialcontrol.h"
+#include "uibase/delayedfilewriter.h"
+#include "uibase/imoinfo.h"
+#include "uibase/tutorialcontrol.h"
 
 // Note the commented headers here can be replaced with forward references,
 // when I get round to cleaning up main.cpp
@@ -37,12 +37,12 @@ struct Executable;
 class CategoryFactory;
 class LockedDialog;
 class OrganizerCore;
-#include "plugincontainer.h" //class PluginContainer;
+#include "MO/plugincontainer.h" //class PluginContainer;
 class PluginListSortProxy;
 namespace BSA {
 class Archive;
 }
-#include "iplugingame.h" //namespace MOBase { class IPluginGame; }
+#include "uibase/iplugingame.h" //namespace MOBase { class IPluginGame; }
 namespace MOBase {
 class IPluginModPage;
 }
@@ -89,10 +89,6 @@ class QTreeWidgetItem;
 class QUrl;
 class QSettings;
 class QWidget;
-
-#ifndef Q_MOC_RUN
-#include <boost/signals2.hpp>
-#endif
 
 // Sigh - just for HANDLE
 #define WIN32_LEAN_AND_MEAN

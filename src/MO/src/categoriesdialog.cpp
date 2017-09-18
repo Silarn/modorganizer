@@ -20,8 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/categoriesdialog.h"
 #include "ui_categoriesdialog.h"
 
-#include "categories.h"
-#include "utility.h"
+#include "MO/categories.h"
+#include "uibase/utility.h"
 #include <QItemDelegate>
 #include <QLineEdit>
 #include <QMenu>

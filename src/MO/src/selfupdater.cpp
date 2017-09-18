@@ -19,13 +19,13 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/selfupdater.h"
 
+#include "MO/downloadmanager.h"
+#include "MO/installationmanager.h"
 #include "MO/messagedialog.h"
 #include "MO/nexusinterface.h"
 #include "MO/nxmaccessmanager.h"
 #include "archive/archive.h"
 #include "archive/callback.h"
-#include "uibase/downloadmanager.h"
-#include "uibase/installationmanager.h"
 #include "uibase/iplugingame.h"
 #include "uibase/utility.h"
 #include <MO/Shared/util.h>
@@ -54,11 +54,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtAlgorithms>
 #include <QtDebug>
 
-#include <boost/bind.hpp>
-
 #include <Windows.h> //for VS_FIXEDFILEINFO, GetLastError
 
 #include <exception>
+#include <functional>
 #include <map>
 #include <stddef.h> //for size_t
 #include <stdexcept>
@@ -434,7 +433,7 @@ void SelfUpdater::nxmDownloadURLsAvailable(int, int, QVariant userData, QVariant
         if (serverList.count() != 0) {
             std::map<QString, int> dummy;
             qSort(serverList.begin(), serverList.end(),
-                  boost::bind(&DownloadManager::ServerByPreference, dummy, _1, _2));
+                  std::bind(&DownloadManager::ServerByPreference, dummy, std::placeholders::_1, std::placeholders::_2));
 
             QVariantMap dlServer = serverList.first().toMap();
 

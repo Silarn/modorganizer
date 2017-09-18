@@ -1,7 +1,7 @@
 #include "MO/organizerproxy.h"
 
-#include "appconfig.h"
-#include "organizercore.h"
+#include "MO/Shared/appconfig.h"
+#include "MO/organizercore.h"
 
 #include <QApplication>
 

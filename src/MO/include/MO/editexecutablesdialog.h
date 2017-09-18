@@ -20,8 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef EDITEXECUTABLESDIALOG_H
 #define EDITEXECUTABLESDIALOG_H
 
-#include "executableslist.h"
-#include "tutorabledialog.h"
+#include "MO/executableslist.h"
+#include "uibase/tutorabledialog.h"
 #include <QListWidgetItem>
 #include <QTimer>
 

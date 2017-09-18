@@ -19,14 +19,14 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/modlist.h"
 
-#include "installationtester.h"
-#include "messagedialog.h"
-#include "modlistsortproxy.h"
-#include "qtgroupingproxy.h"
-#include "viewmarkingscrollbar.h"
-#include <appconfig.h>
-#include <report.h>
-#include <utility.h>
+#include "MO/messagedialog.h"
+#include "MO/modlistsortproxy.h"
+#include "MO/qtgroupingproxy.h"
+#include "MO/viewmarkingscrollbar.h"
+#include "uibase/installationtester.h"
+#include <MO/Shared/appconfig.h>
+#include <uibase/report.h>
+#include <uibase/utility.h>
 
 #include <QAbstractItemView>
 #include <QApplication>

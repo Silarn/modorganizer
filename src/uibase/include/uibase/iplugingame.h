@@ -37,8 +37,8 @@ class IPluginGame : public QObject, public IPlugin {
         auto iter = list.find(typeid(T));
         if (iter != list.end()) {
             try {
-                return boost::any_cast<T*>(iter->second);
-            } catch (const boost::bad_any_cast&) {
+                return std::any_cast<T*>(iter->second);
+            } catch (const std::bad_any_cast&) {
                 qCritical("failed to retrieve feature type %s (got %s)", typeid(T).name(), typeid(iter->second).name());
                 return nullptr;
             }

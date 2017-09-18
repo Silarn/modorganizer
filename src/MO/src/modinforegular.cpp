@@ -1,10 +1,10 @@
 #include "MO/modinforegular.h"
 
-#include "categories.h"
-#include "iplugingame.h"
-#include "messagedialog.h"
-#include "report.h"
-#include "scriptextender.h"
+#include "MO/categories.h"
+#include "MO/messagedialog.h"
+#include "gamefeatures/scriptextender.h"
+#include "uibase/iplugingame.h"
+#include "uibase/report.h"
 
 #include <QApplication>
 #include <QDirIterator>

@@ -19,10 +19,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/directoryrefresher.h"
 
-#include "iplugingame.h"
-#include "modinfo.h"
-#include "report.h"
-#include "utility.h"
+#include "MO/modinfo.h"
+#include "uibase/iplugingame.h"
+#include "uibase/report.h"
+#include "uibase/utility.h"
 
 #include <QApplication>
 #include <QDir>
