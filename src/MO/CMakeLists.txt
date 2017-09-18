@@ -224,7 +224,7 @@ source_group(QT FILES ${QTs})
 ## Dependencies ##
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5WinExtras REQUIRED)
-find_package(Qt5WebView REQUIRED)
+find_package(Qt5WebEngine REQUIRED)
 
 ## Library ##
 add_library(${library_name}Shared STATIC ${SHARED_HDRS} ${SHARED_SRCS})
@@ -235,8 +235,7 @@ target_include_directories(${library_name}Shared PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::WebView
-                      # Qt5::WebKitWidgets
+target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets Qt5::WinExtras
                       Zlib fmt::fmt-header-only uibase bsatk common
                       # esptk
                       Dbghelp advapi32 Version Shlwapi)
@@ -250,9 +249,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras
-                      # Qt5::WebKitWidgets
-                      Zlib
+target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::WebEngine Zlib
                       common uibase bsatk gamefeatures
                       # esptk
                       Dbghelp advapi32 Version Shlwapi)
