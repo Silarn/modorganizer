@@ -1,36 +1,35 @@
 #include "MO/plugincontainer.h"
-#include "organizerproxy.h"
-#include "report.h"
+#include "MO/organizerproxy.h"
+#include "uibase/report.h"
+#include <MO/Shared/appconfig.h>
 #include <QAction>
 #include <QCoreApplication>
 #include <QDirIterator>
 #include <QMessageBox>
 #include <QToolButton>
-#include <appconfig.h>
-#include <idownloadmanager.h>
-#include <ipluginproxy.h>
+#include <uibase/idownloadmanager.h>
+#include <uibase/ipluginproxy.h>
 
 using namespace MOBase;
 using namespace MOShared;
 
-namespace bf = boost::fusion;
-
 PluginContainer::PluginContainer(OrganizerCore* organizer) : m_Organizer(organizer), m_UserInterface(nullptr) {}
 
 void PluginContainer::setUserInterface(IUserInterface* userInterface, QWidget* widget) {
-    for (IPluginProxy* proxy : bf::at_key<IPluginProxy>(m_Plugins)) {
-        proxy->setParentWidget(widget);
-    }
+    // FIXME: This.
+    // for (IPluginProxy* proxy : bf::at_key<IPluginProxy>(m_Plugins)) {
+    //    proxy->setParentWidget(widget);
+    //}
 
-    if (userInterface != nullptr) {
-        for (IPluginModPage* modPage : bf::at_key<IPluginModPage>(m_Plugins)) {
-            userInterface->registerModPage(modPage);
-        }
+    // if (userInterface != nullptr) {
+    //    for (IPluginModPage* modPage : bf::at_key<IPluginModPage>(m_Plugins)) {
+    //        userInterface->registerModPage(modPage);
+    //    }
 
-        for (IPluginTool* tool : bf::at_key<IPluginTool>(m_Plugins)) {
-            userInterface->registerPluginTool(tool);
-        }
-    }
+    //    for (IPluginTool* tool : bf::at_key<IPluginTool>(m_Plugins)) {
+    //        userInterface->registerPluginTool(tool);
+    //    }
+    //}
 
     m_UserInterface = userInterface;
 }
@@ -69,21 +68,24 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
     { // diagnosis plugins
         IPluginDiagnose* diagnose = qobject_cast<IPluginDiagnose*>(plugin);
         if (diagnose != nullptr) {
-            bf::at_key<IPluginDiagnose>(m_Plugins).push_back(diagnose);
-            m_DiagnosisConnections.push_back(diagnose->onInvalidated([&]() { emit diagnosisUpdate(); }));
+            // FIXME: BF
+            // bf::at_key<IPluginDiagnose>(m_Plugins).push_back(diagnose);
+            // m_DiagnosisConnections.push_back(diagnose->onInvalidated([&]() { emit diagnosisUpdate(); }));
         }
     }
     { // mod page plugin
         IPluginModPage* modPage = qobject_cast<IPluginModPage*>(plugin);
         if (verifyPlugin(modPage)) {
-            bf::at_key<IPluginModPage>(m_Plugins).push_back(modPage);
+            // FIXME: BF
+            // bf::at_key<IPluginModPage>(m_Plugins).push_back(modPage);
             return true;
         }
     }
     { // game plugin
         IPluginGame* game = qobject_cast<IPluginGame*>(plugin);
         if (verifyPlugin(game)) {
-            bf::at_key<IPluginGame>(m_Plugins).push_back(game);
+            // FIXME: BF
+            // bf::at_key<IPluginGame>(m_Plugins).push_back(game);
             registerGame(game);
             return true;
         }
@@ -91,14 +93,16 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
     { // tool plugins
         IPluginTool* tool = qobject_cast<IPluginTool*>(plugin);
         if (verifyPlugin(tool)) {
-            bf::at_key<IPluginTool>(m_Plugins).push_back(tool);
+            // FIXME: BF
+            // bf::at_key<IPluginTool>(m_Plugins).push_back(tool);
             return true;
         }
     }
     { // installer plugins
         IPluginInstaller* installer = qobject_cast<IPluginInstaller*>(plugin);
         if (verifyPlugin(installer)) {
-            bf::at_key<IPluginInstaller>(m_Plugins).push_back(installer);
+            // FIXME: BF
+            // bf::at_key<IPluginInstaller>(m_Plugins).push_back(installer);
             m_Organizer->installationManager()->registerInstaller(installer);
             return true;
         }
@@ -106,7 +110,8 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
     { // preview plugins
         IPluginPreview* preview = qobject_cast<IPluginPreview*>(plugin);
         if (verifyPlugin(preview)) {
-            bf::at_key<IPluginPreview>(m_Plugins).push_back(preview);
+            // FIXME: BF
+            // bf::at_key<IPluginPreview>(m_Plugins).push_back(preview);
             m_PreviewGenerator.registerPlugin(preview);
             return true;
         }
@@ -114,7 +119,8 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
     { // proxy plugins
         IPluginProxy* proxy = qobject_cast<IPluginProxy*>(plugin);
         if (verifyPlugin(proxy)) {
-            bf::at_key<IPluginProxy>(m_Plugins).push_back(proxy);
+            // FIXME: BF
+            // bf::at_key<IPluginProxy>(m_Plugins).push_back(proxy);
             QStringList pluginNames =
                 proxy->pluginList(QCoreApplication::applicationDirPath() + "/" + ToQString(AppConfig::pluginPath()));
             for (const QString& pluginName : pluginNames) {
@@ -141,7 +147,8 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
         // only initialize these, no processing otherwise
         IPlugin* dummy = qobject_cast<IPlugin*>(plugin);
         if (verifyPlugin(dummy)) {
-            bf::at_key<IPlugin>(m_Plugins).push_back(dummy);
+            // FIXME: BF
+            // bf::at_key<IPlugin>(m_Plugins).push_back(dummy);
             return true;
         }
     }
@@ -166,10 +173,14 @@ void PluginContainer::unloadPlugins() {
     // disconnect all slots before unloading plugins so plugins don't have to take care of that
     m_Organizer->disconnectPlugins();
 
-    bf::for_each(m_Plugins, clearPlugins());
+    // FIXME: BF
+    // bf::for_each(m_Plugins, clearPlugins());
 
-    foreach (const boost::signals2::connection& connection, m_DiagnosisConnections) { connection.disconnect(); }
-    m_DiagnosisConnections.clear();
+    // FIXME: Signals
+    // for (const  boost::signals2::connection& : m_DiagnosisConnections) {
+    //    connection.disconnect();
+    //}
+    // m_DiagnosisConnections.clear();
 
     while (!m_PluginLoaders.empty()) {
         QPluginLoader* loader = m_PluginLoaders.back();
@@ -255,8 +266,8 @@ void PluginContainer::loadPlugins() {
 
     // remove the load check file on success
     loadCheck.remove();
-
-    bf::at_key<IPluginDiagnose>(m_Plugins).push_back(this);
+    // FIXME: BF
+    // bf::at_key<IPluginDiagnose>(m_Plugins).push_back(this);
 
     m_Organizer->connectPlugins(this);
 }

@@ -1,35 +1,35 @@
 #include "MO/organizercore.h"
 
-#include "appconfig.h"
-#include "credentialsdialog.h"
-#include "delayedfilewriter.h"
-#include "filedialogmemory.h"
-#include "guessedvalue.h"
-#include "imodinterface.h"
-#include "imoinfo.h"
-#include "iplugingame.h"
-#include "iuserinterface.h"
-#include "loadmechanism.h"
-#include "lockeddialog.h"
-#include "logbuffer.h"
-#include "messagedialog.h"
-#include "modinfodialog.h"
-#include "modlistsortproxy.h"
-#include "modrepositoryfileinfo.h"
-#include "nexusinterface.h"
-#include "nxmaccessmanager.h"
-#include "plugincontainer.h"
-#include "pluginlistsortproxy.h"
-#include "profile.h"
-#include "spawn.h"
-#include "syncoverwritedialog.h"
-#include <dataarchives.h>
-#include <directoryentry.h>
-#include <ipluginmodpage.h>
-#include <questionboxmemory.h>
-#include <report.h>
-#include <scopeguard.h>
-#include <utility.h>
+#include "MO/Shared/appconfig.h"
+#include "MO/credentialsdialog.h"
+#include "MO/filedialogmemory.h"
+#include "MO/iuserinterface.h"
+#include "MO/loadmechanism.h"
+#include "MO/lockeddialog.h"
+#include "MO/logbuffer.h"
+#include "MO/messagedialog.h"
+#include "MO/modinfodialog.h"
+#include "MO/modlistsortproxy.h"
+#include "MO/nexusinterface.h"
+#include "MO/nxmaccessmanager.h"
+#include "MO/plugincontainer.h"
+#include "MO/pluginlistsortproxy.h"
+#include "MO/profile.h"
+#include "MO/spawn.h"
+#include "MO/syncoverwritedialog.h"
+#include "uibase/delayedfilewriter.h"
+#include "uibase/guessedvalue.h"
+#include "uibase/imodinterface.h"
+#include "uibase/imoinfo.h"
+#include "uibase/iplugingame.h"
+#include "uibase/modrepositoryfileinfo.h"
+#include <MO/Shared/directoryentry.h>
+#include <gamefeatures/dataarchives.h>
+#include <uibase/ipluginmodpage.h>
+#include <uibase/questionboxmemory.h>
+#include <uibase/report.h>
+#include <uibase/scopeguard.h>
+#include <uibase/utility.h>
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -143,8 +143,10 @@ QStringList toStringList(InputIterator current, InputIterator end) {
 
 OrganizerCore::OrganizerCore(const QSettings& initSettings)
     : m_UserInterface(nullptr), m_PluginContainer(nullptr), m_GameName(), m_CurrentProfile(nullptr),
-      m_Settings(initSettings), m_Updater(NexusInterface::instance()), m_AboutToRun(), m_FinishedRun(),
-      m_ModInstalled(), m_ModList(this), m_PluginList(this), m_DirectoryRefresher(),
+      m_Settings(initSettings), m_Updater(NexusInterface::instance()), //, m_AboutToRun(), m_FinishedRun(),
+                                                                       // m_ModInstalled(),
+                                                                       // FIXME: This.
+      m_ModList(this), m_PluginList(this), m_DirectoryRefresher(),
       m_DirectoryStructure(new DirectoryEntry(L"data", nullptr, 0)),
       m_DownloadManager(NexusInterface::instance(), this), m_InstallationManager(), m_RefresherThread(),
       m_AskForNexusPW(false), m_DirectoryUpdate(false), m_ArchivesInit(false),
@@ -418,9 +420,10 @@ void OrganizerCore::connectPlugins(PluginContainer* container) {
 }
 
 void OrganizerCore::disconnectPlugins() {
-    m_AboutToRun.disconnect_all_slots();
-    m_FinishedRun.disconnect_all_slots();
-    m_ModInstalled.disconnect_all_slots();
+    // FIXME: Signals?
+    // m_AboutToRun.disconnect_all_slots();
+    // m_FinishedRun.disconnect_all_slots();
+    // m_ModInstalled.disconnect_all_slots();
     m_ModList.disconnectSlots();
     m_PluginList.disconnectSlots();
 
@@ -664,7 +667,8 @@ MOBase::IModInterface* OrganizerCore::installMod(const QString& fileName, const 
                                        QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)) {
                 m_UserInterface->displayModInformation(modInfo, modIndex, ModInfoDialog::TAB_INIFILES);
             }
-            m_ModInstalled(modName);
+            // FIXME: Signals?
+            // m_ModInstalled(modName);
             return modInfo.data();
         } else {
             reportError(tr("mod \"%1\" not found").arg(modName));
@@ -714,8 +718,8 @@ void OrganizerCore::installDownload(int index) {
                                            QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)) {
                     m_UserInterface->displayModInformation(modInfo, modIndex, ModInfoDialog::TAB_INIFILES);
                 }
-
-                m_ModInstalled(modName);
+                // FIXME: Signals?
+                // m_ModInstalled(modName);
             } else {
                 reportError(tr("mod \"%1\" not found").arg(modName));
             }
@@ -861,7 +865,8 @@ void OrganizerCore::spawnBinary(const QFileInfo& binary, const QString& argument
             }
 
             // These callbacks should not fiddle with directoy structure and ESPs.
-            m_FinishedRun(binary.absoluteFilePath(), processExitCode);
+            // FIXME: Signals?
+            // m_FinishedRun(binary.absoluteFilePath(), processExitCode);
         }
     }
 }
@@ -910,7 +915,9 @@ HANDLE OrganizerCore::spawnBinaryDirect(const QFileInfo& binary, const QString& 
     }
 
     // TODO: should also pass arguments
-    if (m_AboutToRun(binary.absoluteFilePath())) {
+    // FIXME: Signals?
+    // if (m_AboutToRun(binary.absoluteFilePath())) {
+    if (1) {
         return startBinary(binary, arguments, profileName, m_Settings.logLevel(), currentDirectory, true);
     } else {
         qDebug("start of \"%s\" canceled by plugin", qPrintable(binary.absoluteFilePath()));
@@ -1048,18 +1055,24 @@ bool OrganizerCore::waitForProcessCompletion(HANDLE handle, LPDWORD exitCode) {
 }
 
 bool OrganizerCore::onAboutToRun(const std::function<bool(const QString&)>& func) {
-    auto conn = m_AboutToRun.connect(func);
-    return conn.connected();
+    // FIXME: Signals?
+    // auto conn = m_AboutToRun.connect(func);
+    // return conn.connected();
+    return true;
 }
 
 bool OrganizerCore::onFinishedRun(const std::function<void(const QString&, unsigned int)>& func) {
-    auto conn = m_FinishedRun.connect(func);
-    return conn.connected();
+    // FIXME: Signals?
+    // auto conn = m_FinishedRun.connect(func);
+    // return conn.connected();
+    return true;
 }
 
 bool OrganizerCore::onModInstalled(const std::function<void(const QString&)>& func) {
-    auto conn = m_ModInstalled.connect(func);
-    return conn.connected();
+    // FIXME: Signals?
+    // auto conn = m_ModInstalled.connect(func);
+    // return conn.connected();
+    return true;
 }
 
 void OrganizerCore::refreshModList(bool saveChanges) {
