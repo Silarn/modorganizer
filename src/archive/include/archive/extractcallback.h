@@ -18,13 +18,12 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef EXTRACTCALLBACK_H
 #define EXTRACTCALLBACK_H
 
-#include "callback.h"
-#include "multioutputstream.h"
-#include "unknown_impl.h"
+#include "archive/callback.h"
+#include "archive/multioutputstream.h"
+#include "archive/unknown_impl.h"
 
 #include "7zip/Archive/IArchive.h"
 #include "7zip/IPassword.h"
@@ -36,74 +35,63 @@ class QString;
 
 class FileData;
 
-class CArchiveExtractCallback: public IArchiveExtractCallback,
-                               public ICryptoGetTextPassword
-{
+class CArchiveExtractCallback : public IArchiveExtractCallback, public ICryptoGetTextPassword {
 
-  //A note: It appears that the IArchiveExtractCallback interface includes the
-  //IProgress interface, swo we need to respond to it
-  UNKNOWN_3_INTERFACE(IArchiveExtractCallback,
-                      ICryptoGetTextPassword,
-                      IProgress);
+    // A note: It appears that the IArchiveExtractCallback interface includes the
+    // IProgress interface, swo we need to respond to it
+    UNKNOWN_3_INTERFACE(IArchiveExtractCallback, ICryptoGetTextPassword, IProgress);
 
-public:
+  public:
+    CArchiveExtractCallback(ProgressCallback* progressCallback, FileChangeCallback* fileChangeCallback,
+                            ErrorCallback* errorCallback, PasswordCallback* passwordCallback,
+                            IInArchive* archiveHandler, const QString& directoryPath, FileData* const* fileData,
+                            QString* password);
 
-  CArchiveExtractCallback(ProgressCallback *progressCallback,
-                          FileChangeCallback *fileChangeCallback,
-                          ErrorCallback *errorCallback,
-                          PasswordCallback *passwordCallback,
-                          IInArchive *archiveHandler,
-                          const QString &directoryPath,
-                          FileData * const *fileData,
-                          QString *password);
+    virtual ~CArchiveExtractCallback();
 
-  virtual ~CArchiveExtractCallback();
+    void SetCanceled(bool aCanceled);
 
-  void SetCanceled(bool aCanceled);
+    INTERFACE_IArchiveExtractCallback(;)
 
-  INTERFACE_IArchiveExtractCallback(;)
+        // ICryptoGetTextPassword
+        STDMETHOD(CryptoGetTextPassword)(BSTR* aPassword);
 
-  // ICryptoGetTextPassword
-  STDMETHOD(CryptoGetTextPassword)(BSTR *aPassword);
+  private:
+    void reportError(const QString& message);
 
-private:
+    template <typename T>
+    bool getOptionalProperty(UInt32 index, int property, T* result) const;
+    template <typename T>
+    T getProperty(UInt32 index, int property) const;
 
-  void reportError(const QString &message);
+  private:
+    CComPtr<IInArchive> m_ArchiveHandler;
 
-  template <typename T> bool getOptionalProperty(UInt32 index, int property, T *result) const;
-  template <typename T> T getProperty(UInt32 index, int property) const;
+    UInt64 m_Total;
 
-private:
+    QDir m_DirectoryPath;
+    bool m_Extracting;
+    bool m_Canceled;
 
-  CComPtr<IInArchive> m_ArchiveHandler;
+    struct CProcessedFileInfo {
+        FILETIME MTime;
+        UInt32 Attrib;
+        bool isDir;
+        bool AttribDefined;
+        bool MTimeDefined;
+    } m_ProcessedFileInfo;
 
-  UInt64 m_Total;
+    CComPtr<MultiOutputStream> m_OutFileStream;
 
-  QDir m_DirectoryPath;
-  bool m_Extracting;
-  bool m_Canceled;
+    std::vector<QString> m_FullProcessedPaths;
 
-  struct CProcessedFileInfo {
-    FILETIME MTime;
-    UInt32 Attrib;
-    bool isDir;
-    bool AttribDefined;
-    bool MTimeDefined;
-  } m_ProcessedFileInfo;
+    FileData* const* m_FileData;
+    QString* m_Password;
 
-  CComPtr<MultiOutputStream> m_OutFileStream;
-
-  std::vector<QString> m_FullProcessedPaths;
-
-  FileData* const *m_FileData;
-  QString *m_Password;
-
-  ProgressCallback *m_ProgressCallback;
-  FileChangeCallback *m_FileChangeCallback;
-  ErrorCallback *m_ErrorCallback;
-  PasswordCallback *m_PasswordCallback;
-
+    ProgressCallback* m_ProgressCallback;
+    FileChangeCallback* m_FileChangeCallback;
+    ErrorCallback* m_ErrorCallback;
+    PasswordCallback* m_PasswordCallback;
 };
-
 
 #endif // EXTRACTCALLBACK_H

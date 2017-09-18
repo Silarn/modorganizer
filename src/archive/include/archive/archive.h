@@ -18,11 +18,10 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-
 #ifndef ARCHIVE_H
 #define ARCHIVE_H
 
-#include "callback.h"
+#include "archive/callback.h"
 
 class QString;
 
@@ -35,69 +34,61 @@ class QString;
 #define DLLEXPORT _declspec(dllimport)
 #endif
 
-
 class FileData {
-public:
-  virtual QString getFileName() const = 0;
-  virtual void addOutputFileName(QString const &fileName) = 0;
-  virtual std::vector<QString> getAndClearOutputFileNames() = 0;
-  virtual uint64_t getCRC() const = 0;
-  virtual bool isDirectory() const = 0;
+  public:
+    virtual QString getFileName() const = 0;
+    virtual void addOutputFileName(QString const& fileName) = 0;
+    virtual std::vector<QString> getAndClearOutputFileNames() = 0;
+    virtual uint64_t getCRC() const = 0;
+    virtual bool isDirectory() const = 0;
 };
-
 
 class Archive {
 
-public:
+  public:
+    enum Error {
+        ERROR_NONE,
+        ERROR_EXTRACT_CANCELLED,
+        ERROR_LIBRARY_NOT_FOUND,
+        ERROR_LIBRARY_INVALID,
+        ERROR_ARCHIVE_NOT_FOUND,
+        ERROR_FAILED_TO_OPEN_ARCHIVE,
+        ERROR_INVALID_ARCHIVE_FORMAT,
+        ERROR_LIBRARY_ERROR,
+        ERROR_ARCHIVE_INVALID,
+        ERROR_OUT_OF_MEMORY
+    };
 
-  enum Error {
-    ERROR_NONE,
-    ERROR_EXTRACT_CANCELLED,
-    ERROR_LIBRARY_NOT_FOUND,
-    ERROR_LIBRARY_INVALID,
-    ERROR_ARCHIVE_NOT_FOUND,
-    ERROR_FAILED_TO_OPEN_ARCHIVE,
-    ERROR_INVALID_ARCHIVE_FORMAT,
-    ERROR_LIBRARY_ERROR,
-    ERROR_ARCHIVE_INVALID,
-    ERROR_OUT_OF_MEMORY
-  };
+  public:
+    virtual ~Archive() {}
 
-public:
+    virtual bool isValid() const = 0;
 
-  virtual ~Archive() {}
+    virtual Error getLastError() const = 0;
 
-  virtual bool isValid() const = 0;
+    virtual bool open(QString const& archiveName, PasswordCallback* passwordCallback) = 0;
 
-  virtual Error getLastError() const = 0;
+    virtual void close() = 0;
 
-  virtual bool open(QString const &archiveName, PasswordCallback *passwordCallback) = 0;
+    virtual bool getFileList(FileData* const*& data, size_t& size) = 0;
 
-  virtual void close() = 0;
+    virtual bool extract(QString const& outputDirectory, ProgressCallback* progressCallback,
+                         FileChangeCallback* fileChangeCallback, ErrorCallback* errorCallback) = 0;
 
-  virtual bool getFileList(FileData* const *&data, size_t &size) = 0;
+    virtual void cancel() = 0;
 
-  virtual bool extract(QString const &outputDirectory, ProgressCallback *progressCallback,
-                       FileChangeCallback* fileChangeCallback, ErrorCallback* errorCallback) = 0;
-
-  virtual void cancel() = 0;
-
-  void operator delete(void *ptr) {
-    if (ptr != nullptr) {
-      Archive *object = static_cast<Archive*>(ptr);
-      object->destroy();
+    void operator delete(void* ptr) {
+        if (ptr != nullptr) {
+            Archive* object = static_cast<Archive*>(ptr);
+            object->destroy();
+        }
     }
-  }
 
-private:
-
-  virtual void destroy() = 0;
-
+  private:
+    virtual void destroy() = 0;
 };
-
 
 /// factory function for archive-objects
 extern "C" DLLEXPORT Archive* CreateArchive();
-
 
 #endif // ARCHIVE_H

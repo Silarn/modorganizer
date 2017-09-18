@@ -21,72 +21,48 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef CALLBACK_H
 #define CALLBACK_H
 
-
 class QString;
 
 template <typename RET, typename PAR>
-class Callback
-{
+class Callback {
 
-public:
-
-  virtual RET operator()(PAR parameter) = 0;
-
+  public:
+    virtual RET operator()(PAR parameter) = 0;
 };
-
 
 template <typename RET, typename PAR>
-class FunctionCallback : public Callback<RET, PAR>
-{
-public:
+class FunctionCallback : public Callback<RET, PAR> {
+  public:
+    typedef RET (*Function)(PAR);
 
-  typedef RET (*Function)(PAR);
+  public:
+    FunctionCallback(Function function) : m_Function(function) {}
 
-public:
+    virtual RET operator()(PAR parameter) { return m_Function(parameter); }
 
-  FunctionCallback(Function function)
-    : m_Function(function)
-  {
-  }
-
-  virtual RET operator()(PAR parameter) {
-    return m_Function(parameter);
-  }
-
-private:
-
-  Function m_Function;
+  private:
+    Function m_Function;
 };
 
-
 template <class CLASS, typename RET, typename PAR>
-class MethodCallback : public Callback<RET, PAR>
-{
-public:
+class MethodCallback : public Callback<RET, PAR> {
+  public:
+    typedef RET (CLASS::*Method)(PAR);
 
- typedef RET (CLASS::*Method)(PAR);
+    MethodCallback(CLASS* object, Method method) : m_Object(object), m_Method(method) {}
 
- MethodCallback(CLASS* object, Method method)
-   : m_Object(object), m_Method(method)
- {}
+    virtual RET operator()(PAR parameter) { return (m_Object->*m_Method)(parameter); }
 
- virtual RET operator()(PAR parameter) {
-    return (m_Object->*m_Method)(parameter);
- }
-
-private:
-
- CLASS* m_Object;
- Method m_Method;
-
+  private:
+    CLASS* m_Object;
+    Method m_Method;
 };
 
 static const int MAX_PASSWORD_LENGTH = 256;
 
 typedef Callback<void, float> ProgressCallback;
-typedef Callback<void, QString *> PasswordCallback;
-typedef Callback<void, QString const &> FileChangeCallback;
-typedef Callback<void, QString const &> ErrorCallback;
-
+typedef Callback<void, QString*> PasswordCallback;
+typedef Callback<void, QString const&> FileChangeCallback;
+typedef Callback<void, QString const&> ErrorCallback;
 
 #endif // CALLBACK_H
