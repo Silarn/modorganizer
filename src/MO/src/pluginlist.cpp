@@ -17,16 +17,16 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/pluginlist.h"
-#include "inject.h"
-#include "modinfo.h"
-#include "safewritefile.h"
-#include "scopeguard.h"
-#include "settings.h"
-#include <espfile.h>
-#include <iplugingame.h>
-#include <report.h>
-#include <utility.h>
-#include <windows_error.h>
+#include "MO/Shared/inject.h"
+#include "MO/modinfo.h"
+#include "MO/safewritefile.h"
+#include "MO/settings.h"
+#include "uibase/scopeguard.h"
+#include <MO/Shared/windows_error.h>
+// #include <espfile.h>
+#include <uibase/iplugingame.h>
+#include <uibase/report.h>
+#include <uibase/utility.h>
 
 #include <QApplication>
 #include <QCoreApplication>
@@ -1113,15 +1113,16 @@ PluginList::ESPInfo::ESPInfo(const QString& name, bool enabled, const QString& o
     : m_Name(name), m_FullPath(fullPath), m_Enabled(enabled), m_ForceEnabled(enabled), m_Priority(0), m_LoadOrder(-1),
       m_OriginName(originName), m_HasIni(hasIni) {
     try {
-        ESP::File file(ToWString(fullPath));
-        m_IsMaster = file.isMaster();
-        m_IsDummy = file.isDummy();
-        m_Author = QString::fromLatin1(file.author().c_str());
-        m_Description = QString::fromLatin1(file.description().c_str());
-        std::set<std::string> masters = file.masters();
-        for (auto iter = masters.begin(); iter != masters.end(); ++iter) {
-            m_Masters.insert(QString(iter->c_str()));
-        }
+        // FIXME: This. ESP shit.
+        // ESP::File file(ToWString(fullPath));
+        // m_IsMaster = file.isMaster();
+        // m_IsDummy = file.isDummy();
+        // m_Author = QString::fromLatin1(file.author().c_str());
+        // m_Description = QString::fromLatin1(file.description().c_str());
+        // std::set<std::string> masters = file.masters();
+        // for (auto iter = masters.begin(); iter != masters.end(); ++iter) {
+        //    m_Masters.insert(QString(iter->c_str()));
+        //}
     } catch (const std::exception& e) {
         qCritical("failed to parse esp file %s: %s", qPrintable(fullPath), e.what());
         m_IsMaster = false;

@@ -19,12 +19,12 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/nexusinterface.h"
 
-#include "iplugingame.h"
-#include "json.h"
-#include "nxmaccessmanager.h"
-#include "selectiondialog.h"
-#include <util.h>
-#include <utility.h>
+#include "MO/json.h"
+#include "MO/nxmaccessmanager.h"
+#include "MO/selectiondialog.h"
+#include "uibase/iplugingame.h"
+#include <MO/Shared/util.h>
+#include <uibase/utility.h>
 
 #include <QApplication>
 

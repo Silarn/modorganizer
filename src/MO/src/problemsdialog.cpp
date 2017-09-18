@@ -2,8 +2,8 @@
 #include "ui_problemsdialog.h"
 #include <QPushButton>
 #include <Shellapi.h>
-#include <iplugindiagnose.h>
-#include <utility.h>
+#include <uibase/iplugindiagnose.h>
+#include <uibase/utility.h>
 
 using namespace MOBase;
 

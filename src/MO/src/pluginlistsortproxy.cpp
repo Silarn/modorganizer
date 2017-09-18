@@ -18,7 +18,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MO/pluginlistsortproxy.h"
-#include "messagedialog.h"
+#include "MO/messagedialog.h"
 #include <QApplication>
 #include <QCheckBox>
 #include <QMenu>

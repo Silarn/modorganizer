@@ -18,10 +18,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MO/modlistsortproxy.h"
-#include "messagedialog.h"
-#include "modinfo.h"
-#include "profile.h"
-#include "qtgroupingproxy.h"
+#include "MO/messagedialog.h"
+#include "MO/modinfo.h"
+#include "MO/profile.h"
+#include "MO/qtgroupingproxy.h"
 #include <QApplication>
 #include <QCheckBox>
 #include <QDebug>

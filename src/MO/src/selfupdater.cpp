@@ -19,18 +19,18 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/selfupdater.h"
 
-#include "archive.h"
-#include "callback.h"
-#include "downloadmanager.h"
-#include "installationmanager.h"
-#include "iplugingame.h"
-#include "messagedialog.h"
-#include "nexusinterface.h"
-#include "nxmaccessmanager.h"
-#include "utility.h"
-#include <report.h>
-#include <util.h>
-#include <versioninfo.h>
+#include "MO/messagedialog.h"
+#include "MO/nexusinterface.h"
+#include "MO/nxmaccessmanager.h"
+#include "archive/archive.h"
+#include "archive/callback.h"
+#include "uibase/downloadmanager.h"
+#include "uibase/installationmanager.h"
+#include "uibase/iplugingame.h"
+#include "uibase/utility.h"
+#include <MO/Shared/util.h>
+#include <uibase/report.h>
+#include <uibase/versioninfo.h>
 
 #include <QApplication>
 #include <QCoreApplication>

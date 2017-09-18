@@ -40,6 +40,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDirIterator>
 #include <QMutexLocker>
 #include <QSettings>
+#include <functional>
 
 using namespace MOBase;
 using namespace MOShared;
@@ -185,7 +186,7 @@ unsigned int ModInfo::getIndex(const QString& name) {
     return iter->second;
 }
 
-unsigned int ModInfo::findMod(const boost::function<bool(ModInfo::Ptr)>& filter) {
+unsigned int ModInfo::findMod(const std::function<bool(ModInfo::Ptr)>& filter) {
     for (unsigned int i = 0U; i < s_Collection.size(); ++i) {
         if (filter(s_Collection[i])) {
             return i;
