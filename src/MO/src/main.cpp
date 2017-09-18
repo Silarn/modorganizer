@@ -18,29 +18,30 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #define WIN32_LEAN_AND_MEAN
-#include <DbgHelp.h>
 #include <windows.h>
 
-#include "executableslist.h"
-#include "helper.h"
-#include "logbuffer.h"
-#include "mainwindow.h"
-#include "moapplication.h"
-#include "modlist.h"
-#include "nxmaccessmanager.h"
-#include "profile.h"
-#include "selectiondialog.h"
-#include "singleinstance.h"
-#include "spawn.h"
-#include "tutorialmanager.h"
-#include "utility.h"
-#include <appconfig.h>
+#include <DbgHelp.h>
+
+#include "MO/executableslist.h"
+#include "MO/helper.h"
+#include "MO/logbuffer.h"
+#include "MO/mainwindow.h"
+#include "MO/moapplication.h"
+#include "MO/modlist.h"
+#include "MO/nxmaccessmanager.h"
+#include "MO/profile.h"
+#include "MO/selectiondialog.h"
+#include "MO/singleinstance.h"
+#include "MO/spawn.h"
+#include "uibase/tutorialmanager.h"
+#include "uibase/utility.h"
+#include <MO/Shared/appconfig.h>
+#include <MO/Shared/inject.h>
+#include <MO/Shared/windows_error.h>
 #include <eh.h>
-#include <inject.h>
-#include <report.h>
-#include <scopeguard.h>
-#include <utility.h>
-#include <windows_error.h>
+#include <uibase/report.h>
+#include <uibase/scopeguard.h>
+#include <uibase/utility.h>
 
 #include <QApplication>
 #include <QBuffer>
@@ -492,14 +493,15 @@ int main(int argc, char* argv[]) {
         //  SetDllDirectory replaces other search directories and this seems to propagate to child processes)
         static const int BUFSIZE = 4096;
 
-        boost::scoped_array<TCHAR> oldPath(new TCHAR[BUFSIZE]);
-        DWORD offset = ::GetEnvironmentVariable(TEXT("PATH"), oldPath.get(), BUFSIZE);
+        std::vector<TCHAR> oldPath(BUFSIZE);
+        DWORD offset = ::GetEnvironmentVariable(TEXT("PATH"), oldPath.data(), BUFSIZE);
         if (offset > BUFSIZE) {
-            oldPath.reset(new TCHAR[offset]);
-            ::GetEnvironmentVariable(TEXT("PATH"), oldPath.get(), offset);
+            oldPath.clear();
+            oldPath.resize(offset);
+            ::GetEnvironmentVariable(TEXT("PATH"), oldPath.data(), offset);
         }
 
-        std::wstring newPath(oldPath.get());
+        std::wstring newPath(oldPath.data());
         newPath += L";";
         newPath += ToWString(QDir::toNativeSeparators(QCoreApplication::applicationDirPath())).c_str();
         newPath += L"\\dlls";
