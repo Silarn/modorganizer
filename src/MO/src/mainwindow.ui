@@ -1480,17 +1480,17 @@ Right now this has very limited functionality</string>
   <customwidget>
    <class>MOBase::LineEditClear</class>
    <extends>QLineEdit</extends>
-   <header>lineeditclear.h</header>
+   <header>uibase/lineeditclear.h</header>
   </customwidget>
   <customwidget>
    <class>ModListView</class>
    <extends>QTreeView</extends>
-   <header>modlistview.h</header>
+   <header>MO/modlistview.h</header>
   </customwidget>
   <customwidget>
    <class>MOBase::SortableTreeWidget</class>
    <extends>QTreeWidget</extends>
-   <header>sortabletreewidget.h</header>
+   <header>uibase/sortabletreewidget.h</header>
   </customwidget>
  </customwidgets>
  <resources>
