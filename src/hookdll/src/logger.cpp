@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "hookdll/reroutes.h"
 #include <MO/shared/error_report.h>
 #include <MO/shared/util.h>
-#include <Shlwapi.h>
 #include <common/sane_windows.h>
 #include <cstdio>
 #include <cstdlib>
@@ -164,24 +163,26 @@ void Logger::error(const char* format, ...) {
 static const int BUFFERSIZE = 1000;
 
 void Logger::log(const char* prefix, const char* format, va_list argList) {
-    char buffer[BUFFERSIZE + 1];
-    char buffer2[BUFFERSIZE + 51];
-    memset(buffer, '\0', sizeof(char) * BUFFERSIZE + 1);
-    memset(buffer2, '\0', sizeof(char) * BUFFERSIZE + 51);
-    wvnsprintfA(buffer, BUFFERSIZE, format, argList);
-    SYSTEMTIME now;
-    ::GetLocalTime(&now);
-    int len = wnsprintfA(buffer2, BUFFERSIZE + 50, "%s (%.2d:%.2d:%.2d.%.4d): %s\r\n", prefix, now.wHour, now.wMinute,
-                         now.wSecond, now.wMilliseconds, buffer);
-    if (len < 0) {
-        len = BUFFERSIZE + 50;
-    }
-    buffer2[len] = '\0';
+    // FIXME: This.
+    // char buffer[BUFFERSIZE + 1];
+    // char buffer2[BUFFERSIZE + 51];
+    // memset(buffer, '\0', sizeof(char) * BUFFERSIZE + 1);
+    // memset(buffer2, '\0', sizeof(char) * BUFFERSIZE + 51);
+    // wvnsprintfA(buffer, BUFFERSIZE, format, argList);
+    // SYSTEMTIME now;
+    //::GetLocalTime(&now);
+    // int len = wnsprintfA(buffer2, BUFFERSIZE + 50, "%s (%.2d:%.2d:%.2d.%.4d): %s\r\n", prefix, now.wHour,
+    // now.wMinute,
+    //                     now.wSecond, now.wMilliseconds, buffer);
+    // if (len < 0) {
+    //    len = BUFFERSIZE + 50;
+    //}
+    // buffer2[len] = '\0';
 
-    if (m_LogFile != INVALID_HANDLE_VALUE) {
-        DWORD sizeWritten = 0;
-        ::WriteFile(m_LogFile, buffer2, len, &sizeWritten, nullptr);
-    }
+    // if (m_LogFile != INVALID_HANDLE_VALUE) {
+    //    DWORD sizeWritten = 0;
+    //    ::WriteFile(m_LogFile, buffer2, len, &sizeWritten, nullptr);
+    //}
 }
 
 void log(const char* format, ...) {

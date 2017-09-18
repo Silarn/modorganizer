@@ -20,12 +20,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #pragma once
 //#include <common/sane_windows.h>
 #include <Windows.h>
-using NTSTATUS = LONG;
-//#include <ntdef.h>
-//#include <DbgHelp.h>
 #include <shellapi.h>
-//#include <ntstatus.h>
-//#include <winternl.h>
+using NTSTATUS = LONG;
 
 typedef BOOL(WINAPI* CreateProcessA_type)(LPCSTR, LPSTR, LPSECURITY_ATTRIBUTES, LPSECURITY_ATTRIBUTES, BOOL, DWORD,
                                           LPVOID, LPCSTR, LPSTARTUPINFOA, LPPROCESS_INFORMATION);

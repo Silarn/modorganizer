@@ -26,7 +26,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <cassert>
 #include <common/sane_windows.h>
 #include <fmt/format.h>
-#include <shlobj.h>
 #include <sstream>
 
 namespace MOShared {
@@ -47,20 +46,21 @@ void GameInfo::identifyMyGamesDirectory(const std::wstring& file) {
 
     m_MyGamesDirectory.clear();
 
-    // a) this is the way it should work. get the configured My Documents\My Games directory
-    if (::SHGetFolderPathW(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_CURRENT, myDocuments) == S_OK) {
-        m_MyGamesDirectory = std::wstring(myDocuments) + L"\\My Games";
-    }
+    // FIXME: This.
+    //// a) this is the way it should work. get the configured My Documents\My Games directory
+    // if (::SHGetFolderPathW(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_CURRENT, myDocuments) == S_OK) {
+    //    m_MyGamesDirectory = std::wstring(myDocuments) + L"\\My Games";
+    //}
 
-    // b) if there is no <game> directory there, look in the default directory
-    if (m_MyGamesDirectory.empty() || !FileExists(m_MyGamesDirectory + L"\\" + file)) {
-        if (::SHGetFolderPathW(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_DEFAULT, myDocuments) == S_OK) {
-            std::wstring fromDefault = std::wstring(myDocuments) + L"\\My Games";
-            if (FileExists(fromDefault + L"\\" + file)) {
-                m_MyGamesDirectory = fromDefault;
-            }
-        }
-    }
+    //// b) if there is no <game> directory there, look in the default directory
+    // if (m_MyGamesDirectory.empty() || !FileExists(m_MyGamesDirectory + L"\\" + file)) {
+    //    if (::SHGetFolderPathW(nullptr, CSIDL_PERSONAL, nullptr, SHGFP_TYPE_DEFAULT, myDocuments) == S_OK) {
+    //        std::wstring fromDefault = std::wstring(myDocuments) + L"\\My Games";
+    //        if (FileExists(fromDefault + L"\\" + file)) {
+    //            m_MyGamesDirectory = fromDefault;
+    //        }
+    //    }
+    //}
     // c) finally, look in the registry. This is discouraged
     if (m_MyGamesDirectory.empty() || !FileExists(m_MyGamesDirectory + L"\\" + file)) {
         std::wstring fromRegistry = getSpecialPath(L"Personal") + L"\\My Games";

@@ -20,10 +20,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef GAMEINFO_H
 #define GAMEINFO_H
 
+#include <common/fwd_windows.h>
 #include <string>
 #include <vector>
-#include <wchar.h>
-#include <common/fwd_windows.h>
 
 namespace MOShared {
 

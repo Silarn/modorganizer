@@ -25,12 +25,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "hookdll/reroutes.h"
 #include "hookdll/utility.h"
 #include <MO/shared/appconfig.h>
-#ifdef __GNUC__
-#include <cstdlib>
-#endif
 #include <MO/shared/util.h>
-#include <Shlobj.h>
-#include <Shlwapi.h>
 #include <algorithm>
 #include <ctime>
 #include <fstream>
@@ -778,7 +773,8 @@ void ModInfo::getFullPathName(LPCWSTR originalName, LPWSTR targetBuffer, size_t 
             _snwprintf_s(temp, _TRUNCATE, L"%ls\\%ls", m_CurrentDirectory.c_str(),
                          originalName + static_cast<size_t>(length));
         } else {
-            ::PathCombineW(temp, m_CurrentDirectory.c_str(), originalName);
+            // TODO: Replace with filesystem API. Just joins paths and then absoultes.
+            // ::PathCombineW(temp, m_CurrentDirectory.c_str(), originalName);
         }
     } else {
         ::GetFullPathNameW_reroute(originalName, static_cast<DWORD>(bufferLength), temp, nullptr);

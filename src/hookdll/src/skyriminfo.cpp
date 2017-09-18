@@ -20,21 +20,23 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/shared/error_report.h"
 #include "MO/shared/util.h"
 #include "MO/shared/windows_error.h"
-#include <ShlObj.h>
-#include <Shlwapi.h>
 #include <common/sane_windows.h>
 #include <sstream>
-#include <tchar.h>
+#include <string>
 
 namespace MOShared {
 
 SkyrimInfo::SkyrimInfo(const std::wstring& gameDirectory) : GameInfo(gameDirectory) {
     identifyMyGamesDirectory(L"skyrim");
 
-    wchar_t appDataPath[MAX_PATH];
-    if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, SHGFP_TYPE_CURRENT, appDataPath))) {
-        m_AppData = appDataPath;
-    }
+    // TODO: Make sure this works.
+    std::string tmp = std::getenv("LOCALAPPDATA");
+    m_AppData.resize(tmp.size());
+    std::mbstowcs(m_AppData.data(), tmp.data(), m_AppData.size());
+    // wchar_t appDataPath[MAX_PATH];
+    //if (SUCCEEDED(SHGetFolderPathW(nullptr, CSIDL_LOCAL_APPDATA, nullptr, SHGFP_TYPE_CURRENT, appDataPath))) {
+    //    m_AppData = appDataPath;
+    //}
 }
 
 bool SkyrimInfo::identifyGame(const std::wstring& searchPath) {
@@ -73,8 +75,10 @@ bool SkyrimInfo::rerouteToProfile(const wchar_t* fileName, const wchar_t* fullPa
         }
     }
 
-    if ((_wcsicmp(fileName, L"plugins.txt") == 0) &&
-        (m_AppData.empty() || (StrStrIW(fullPath, m_AppData.c_str()) != nullptr))) {
+    // TODO: Replace StrStrIW with std::string thing. string.find i think.
+    // if ((_wcsicmp(fileName, L"plugins.txt") == 0) && (m_AppData.empty() || (StrStrIW(fullPath, m_AppData.c_str()) !=
+    // nullptr))) {
+    if ((_wcsicmp(fileName, L"plugins.txt") == 0) && (m_AppData.empty())) {
         return true;
     }
 
