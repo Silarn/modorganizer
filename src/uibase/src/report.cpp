@@ -22,7 +22,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "uibase/utility.h"
 #include <QApplication>
 #include <QMessageBox>
-#include <Windows.h>
+#include <common/sane_windows.h>
 
 namespace MOBase {
 

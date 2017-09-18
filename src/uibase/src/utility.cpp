@@ -27,11 +27,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QTextCodec>
 #include <QtDebug>
 #include <QtWinExtras/QtWin>
-#include <memory>
-#define WIN32_LEAN_AND_MEAN
+#include <common/sane_windows.h>
 #include <ShlObj.h>
-#include <Windows.h>
-
+#include <shellapi.h>
+#include <memory>
 #define FO_RECYCLE 0x1003
 
 namespace MOBase {

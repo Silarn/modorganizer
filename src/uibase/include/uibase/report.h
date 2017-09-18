@@ -23,7 +23,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "uibase/dllimport.h"
 #include <QString>
-#include <wchar.h>
 
 namespace MOBase {
 

@@ -29,6 +29,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QVariant>
 #include <Windows.h>
 #include <functional>
+#include <common/sane_windows.h>
 
 namespace MOBase {
 
