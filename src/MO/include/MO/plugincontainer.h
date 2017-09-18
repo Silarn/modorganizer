@@ -6,29 +6,29 @@
 #include <QFile>
 #include <QPluginLoader>
 #include <QtPlugin>
-#include <iplugindiagnose.h>
-#include <iplugingame.h>
-#include <iplugininstaller.h>
-#include <ipluginmodpage.h>
-#include <ipluginproxy.h>
-#include <iplugintool.h>
+#include <map>
+#include <uibase/iplugindiagnose.h>
+#include <uibase/iplugingame.h>
+#include <uibase/iplugininstaller.h>
+#include <uibase/ipluginmodpage.h>
+#include <uibase/ipluginproxy.h>
+#include <uibase/iplugintool.h>
+#include <utility>
 #include <vector>
 
 class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
-
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
-
   private:
-    typedef boost::fusion::map<boost::fusion::pair<MOBase::IPlugin, std::vector<MOBase::IPlugin*>>,
-                               boost::fusion::pair<MOBase::IPluginDiagnose, std::vector<MOBase::IPluginDiagnose*>>,
-                               boost::fusion::pair<MOBase::IPluginGame, std::vector<MOBase::IPluginGame*>>,
-                               boost::fusion::pair<MOBase::IPluginInstaller, std::vector<MOBase::IPluginInstaller*>>,
-                               boost::fusion::pair<MOBase::IPluginModPage, std::vector<MOBase::IPluginModPage*>>,
-                               boost::fusion::pair<MOBase::IPluginPreview, std::vector<MOBase::IPluginPreview*>>,
-                               boost::fusion::pair<MOBase::IPluginTool, std::vector<MOBase::IPluginTool*>>,
-                               boost::fusion::pair<MOBase::IPluginProxy, std::vector<MOBase::IPluginProxy*>>>
-        PluginMap;
+    // typedef boost::fusion::map<boost::fusion::pair<MOBase::IPlugin, std::vector<MOBase::IPlugin*>>,
+    //                           boost::fusion::pair<MOBase::IPluginDiagnose, std::vector<MOBase::IPluginDiagnose*>>,
+    //                           boost::fusion::pair<MOBase::IPluginGame, std::vector<MOBase::IPluginGame*>>,
+    //                           boost::fusion::pair<MOBase::IPluginInstaller, std::vector<MOBase::IPluginInstaller*>>,
+    //                           boost::fusion::pair<MOBase::IPluginModPage, std::vector<MOBase::IPluginModPage*>>,
+    //                           boost::fusion::pair<MOBase::IPluginPreview, std::vector<MOBase::IPluginPreview*>>,
+    //                           boost::fusion::pair<MOBase::IPluginTool, std::vector<MOBase::IPluginTool*>>,
+    //                           boost::fusion::pair<MOBase::IPluginProxy, std::vector<MOBase::IPluginProxy*>>>
+    //    PluginMap;
 
     static const unsigned int PROBLEM_PLUGINSNOTLOADED = 1;
 
@@ -73,10 +73,10 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
 
     IUserInterface* m_UserInterface;
 
-    PluginMap m_Plugins;
+    // PluginMap m_Plugins;
 
     std::map<QString, MOBase::IPluginGame*> m_SupportedGames;
-    std::vector<boost::signals2::connection> m_DiagnosisConnections;
+    // std::vector<boost::signals2::connection> m_DiagnosisConnections;
     QStringList m_FailedPlugins;
     std::vector<QPluginLoader*> m_PluginLoaders;
 

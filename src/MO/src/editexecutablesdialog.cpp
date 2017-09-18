@@ -18,12 +18,12 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MO/editexecutablesdialog.h"
-#include "filedialogmemory.h"
-#include "stackdata.h"
+#include "MO/Shared/stackdata.h"
+#include "MO/filedialogmemory.h"
 #include "ui_editexecutablesdialog.h"
 #include <QMessageBox>
 #include <Shellapi.h>
-#include <utility.h>
+#include <uibase/utility.h>
 
 using namespace MOBase;
 using namespace MOShared;
