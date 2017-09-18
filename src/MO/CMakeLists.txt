@@ -260,15 +260,14 @@ set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC O
 if(WIN32)
     # FIXME: --libdir dlls doesnt work, puts it in wrong directory.
     # SET(windeploy_parameters --no-translations --no-plugins --release-with-debug-info --no-compiler-runtime)
-    SET(windeploy_parameters --no-translations --libdir dlls --release-with-debug-info --no-printsupport --no-qml --no-positioning)
+    SET(windeploy_parameters --no-translations --no-plugins --dir dlls --release --pdb
+        # --no-printsupport --no-qml --no-positioning
+        --no-compiler-runtime
+    )
     # Run winddeployqt if it can be found
     find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${QTDIR} ENV QTDIR PATH_SUFFIXES bin)
     add_custom_command(TARGET ${library_name} POST_BUILD
         COMMAND ${WINDEPLOYQT_EXECUTABLE} ${windeploy_parameters} $<TARGET_FILE:${library_name}>
-    )
-    add_custom_command(TARGET ${library_name} POST_BUILD
-        # COMMAND ${WINDEPLOYQT_EXECUTABLE} ${windeploy_parameters} $<TARGET_FILE:${library_name}>
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_BINARY_DIR}/dlls $<TARGET_FILE_DIR:${library_name}>/dlls
     )
 endif()
 # Install Targets
