@@ -29,6 +29,8 @@ class QString;
 #include <stdint.h>
 #include <vector>
 
+#define COMMON_DLL
+#define COMMON_DLL_BUILD
 #include <common/dllmain.h>
 
 class FileData {
