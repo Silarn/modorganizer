@@ -214,7 +214,7 @@ SET(QTs
     src/stylesheet_resource.qrc
     #
     src/app_icon.rc
-    src/version.rc
+    # src/version.rc
 )
 #endif
 
@@ -242,7 +242,7 @@ target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets Qt5::WinExtras
                       Dbghelp advapi32 Version Shlwapi)
 
 ## Executable ##
-add_executable(${library_name} ${HDRS} ${SRCS} ${QTs})
+add_executable(${library_name} WIN32 ${HDRS} ${SRCS} ${QTs})
 # Headers
 target_include_directories(${library_name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
