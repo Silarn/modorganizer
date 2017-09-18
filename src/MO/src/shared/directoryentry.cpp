@@ -285,7 +285,8 @@ FileEntry::~FileEntry() { LEAK_UNTRACE; }
 
 void FileEntry::sortOrigins() {
     m_Alternatives.push_back(m_Origin);
-    std::sort(m_Alternatives.begin(), m_Alternatives.end(), std::bind(ByOriginPriority, m_Parent));
+    std::sort(m_Alternatives.begin(), m_Alternatives.end(),
+              std::bind(ByOriginPriority, m_Parent, std::placeholders::_1, std::placeholders::_2));
     m_Origin = m_Alternatives[m_Alternatives.size() - 1];
     m_Alternatives.pop_back();
 }
@@ -714,8 +715,7 @@ DirectoryEntry* DirectoryEntry::getSubDirectoryRecursive(const std::wstring& pat
     }
 }
 
-FileRegister::FileRegister(std::shared_ptr<OriginConnection> originConnection)
-    : m_OriginConnection(originConnection) {
+FileRegister::FileRegister(std::shared_ptr<OriginConnection> originConnection) : m_OriginConnection(originConnection) {
     LEAK_TRACE;
 }
 
