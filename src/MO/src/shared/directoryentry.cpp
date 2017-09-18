@@ -21,11 +21,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/shared/error_report.h"
 #include "MO/shared/leaktrace.h"
 #include "MO/shared/windows_error.h"
-#include <bsatk/bsatk.h>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
 #include <algorithm>
 #include <atomic>
+#include <bsatk/bsatk.h>
+#include <common/sane_windows.h>
 #include <ctime>
 #include <map>
 #include <memory>

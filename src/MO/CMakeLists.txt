@@ -92,6 +92,7 @@ SET(HDRS
     include/${library_name}/iuserinterface.h
 )
 #endif
+
 #if SRCs
 set(SHARED_SRCS
     src/shared/inject.cpp
@@ -236,10 +237,9 @@ target_include_directories(${library_name}Shared PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets Qt5::WinExtras
-                      Zlib fmt::fmt-header-only uibase bsatk common
-                      # esptk
-                      Dbghelp advapi32 Version Shlwapi)
+target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets
+                      bsatk common
+)
 
 ## Executable ##
 add_executable(${library_name} WIN32 ${HDRS} ${SRCS} ${QTs})

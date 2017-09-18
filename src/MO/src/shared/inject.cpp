@@ -18,9 +18,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MO/shared/inject.h"
-/*#if defined UNICODE && !defined _UNICODE
-#define _UNICODE 1
-#endif*/
 #include "MO/shared/error_report.h"
 #include "MO/shared/windows_error.h"
 #include <cstdio>
@@ -28,8 +25,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <exception>
 #include <stdexcept>
 #include <string>
-#include <tchar.h>
-#include <wchar.h>
 
 namespace MOShared {
 

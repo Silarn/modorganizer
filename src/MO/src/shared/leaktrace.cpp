@@ -1,7 +1,6 @@
 #include "MO/shared/leaktrace.h"
 #include "MO/shared/stackdata.h"
-#include <DbgHelp.h>
-#include <Windows.h>
+#include <common/sane_windows.h>
 #include <algorithm>
 #include <map>
 #include <set>

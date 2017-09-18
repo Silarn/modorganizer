@@ -20,9 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef UTIL_H
 #define UTIL_H
 
+#include <common/sane_windows.h>
 #include <string>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
 
 namespace MOShared {
 

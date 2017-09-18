@@ -20,9 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef WINDOWS_ERROR_H
 #define WINDOWS_ERROR_H
 
+#include <common/sane_windows.h>
 #include <stdexcept>
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
 
 namespace MOShared {
 

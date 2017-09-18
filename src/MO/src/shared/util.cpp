@@ -20,7 +20,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/shared/util.h"
 #include "MO/shared/error_report.h"
 #include "MO/shared/windows_error.h"
-#include <DbgHelp.h>
 #include <algorithm>
 #include <locale>
 #include <memory>

@@ -18,11 +18,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-
 #include <string>
+using HANDLE = void*;
 
 namespace MOShared {
 

@@ -20,16 +20,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef DIRECTORYENTRY_H
 #define DIRECTORYENTRY_H
 
+#include "MO/shared/util.h"
+#include <bsatk/bsatk.h>
 #include <cassert>
+#include <common/sane_windows.h>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
-#define WIN32_MEAN_AND_LEAN
-#include "MO/shared/util.h"
-#include <Windows.h>
-#include <bsatk/bsatk.h>
-#include <memory>
 
 namespace MOShared {
 

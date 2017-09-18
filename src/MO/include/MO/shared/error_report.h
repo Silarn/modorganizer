@@ -18,9 +18,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include <tchar.h>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <common/sane_windows.h>
 #include <string>
 
 namespace std {
