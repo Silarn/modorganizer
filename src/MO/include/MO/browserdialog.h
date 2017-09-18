@@ -27,7 +27,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QQueue>
 #include <QTabWidget>
 #include <QTimer>
-#include <QWebView>
+#include <QtWebEngineWidgets/QWebEngineView>
 
 namespace Ui {
 class BrowserDialog;

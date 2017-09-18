@@ -18,12 +18,12 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MO/browserdialog.h"
-#include "browserview.h"
-#include "messagedialog.h"
-#include "persistentcookiejar.h"
-#include "report.h"
-#include "settings.h"
+#include "MO/browserview.h"
+#include "MO/messagedialog.h"
+#include "MO/persistentcookiejar.h"
+#include "MO/settings.h"
 #include "ui_browserdialog.h"
+#include "uibase/report.h"
 #include <QDesktopWidget>
 #include <QDir>
 #include <QInputDialog>
@@ -31,9 +31,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMenu>
 #include <QNetworkCookie>
 #include <QNetworkCookieJar>
-#include <QWebFrame>
-#include <QWebHistory>
-#include <utility.h>
+#include <QtWebEngineWidgets/QWebEngineHistory>
+#include <QtWebEngineWidgets/QWebEnginePage>
+#include <QtWebEngineWidgets/QWebEngineSettings>
+#include <uibase/utility.h>
 
 BrowserDialog::BrowserDialog(QWidget* parent)
     : QDialog(parent), ui(new Ui::BrowserDialog), m_AccessManager(new QNetworkAccessManager(this)) {
@@ -64,8 +65,9 @@ void BrowserDialog::closeEvent(QCloseEvent* event) {
 }
 
 void BrowserDialog::initTab(BrowserView* newView) {
-    newView->page()->setNetworkAccessManager(m_AccessManager);
-    newView->page()->setForwardUnsupportedContent(true);
+    // FIXME: This is not supported with QWebEngine.
+    // newView->page()->setNetworkAccessManager(m_AccessManager);
+    // newView->page()->setForwardUnsupportedContent(true);
 
     connect(newView, SIGNAL(loadProgress(int)), this, SLOT(progress(int)));
     connect(newView, SIGNAL(titleChanged(QString)), this, SLOT(titleChanged(QString)));
@@ -75,14 +77,14 @@ void BrowserDialog::initTab(BrowserView* newView) {
     connect(newView, SIGNAL(openUrlInNewTab(QUrl)), this, SLOT(openInNewTab(QUrl)));
     connect(newView->page(), SIGNAL(downloadRequested(QNetworkRequest)), this,
             SLOT(downloadRequested(QNetworkRequest)));
-    connect(newView->page(), SIGNAL(unsupportedContent(QNetworkReply*)), this,
-            SLOT(unsupportedContent(QNetworkReply*)));
+    //connect(newView->page(), SIGNAL(unsupportedContent(QNetworkReply*)), this,
+    //        SLOT(unsupportedContent(QNetworkReply*)));
 
     ui->backBtn->setEnabled(false);
     ui->fwdBtn->setEnabled(false);
     m_Tabs->addTab(newView, tr("new"));
-    newView->settings()->setAttribute(QWebSettings::PluginsEnabled, true);
-    newView->settings()->setAttribute(QWebSettings::AutoLoadImages, true);
+    newView->settings()->setAttribute(QWebEngineSettings::PluginsEnabled, true);
+    newView->settings()->setAttribute(QWebEngineSettings::AutoLoadImages, true);
 }
 
 void BrowserDialog::openInNewTab(const QUrl& url) {
@@ -159,8 +161,9 @@ QString BrowserDialog::guessFileName(const QString& url) {
 }
 
 void BrowserDialog::unsupportedContent(QNetworkReply* reply) {
+    // FIXME: This signal is not supported with QWebEngine.
     try {
-        QWebPage* page = qobject_cast<QWebPage*>(sender());
+        QWebEnginePage* page = qobject_cast<QWebEnginePage*>(sender());
         if (page == nullptr) {
             qCritical("sender not a page");
             return;

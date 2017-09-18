@@ -31,7 +31,7 @@ HRESULT MultiOutputStream::Close() {
 }
 
 bool MultiOutputStream::Open(std::vector<QString> const& fileNames) {
-    m_ProcessedSize = 0;
+    // m_ProcessedSize = 0;
     bool ok = true;
     m_Handles.clear();
     for (std::size_t f = 0; f != fileNames.size(); ++f) {
@@ -43,23 +43,23 @@ bool MultiOutputStream::Open(std::vector<QString> const& fileNames) {
     return ok;
 }
 
-STDMETHODIMP MultiOutputStream::Write(const void* data, UInt32 size, UInt32* processedSize) {
-    bool update_processed(true);
-    for (OutFile& f : m_Handles) {
-        qint64 realProcessedSize = f->write(static_cast<char const*>(data), size);
-        if (realProcessedSize == -1) {
-            return ConvertBoolToHRESULT(false);
-        }
-        if (update_processed) {
-            m_ProcessedSize += realProcessedSize;
-            update_processed = false;
-        }
-        if (processedSize != nullptr) {
-            *processedSize = realProcessedSize;
-        }
-    }
-    return S_OK;
-}
+// STDMETHODIMP MultiOutputStream::Write(const void* data, UInt32 size, UInt32* processedSize) {
+//    bool update_processed(true);
+//    for (OutFile& f : m_Handles) {
+//        qint64 realProcessedSize = f->write(static_cast<char const*>(data), size);
+//        if (realProcessedSize == -1) {
+//            return ConvertBoolToHRESULT(false);
+//        }
+//        if (update_processed) {
+//            m_ProcessedSize += realProcessedSize;
+//            update_processed = false;
+//        }
+//        if (processedSize != nullptr) {
+//            *processedSize = realProcessedSize;
+//        }
+//    }
+//    return S_OK;
+//}
 
 bool MultiOutputStream::SetMTime(FILETIME const* mTime) {
     for (OutFile& f : m_Handles) {

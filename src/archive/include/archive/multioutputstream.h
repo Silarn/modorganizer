@@ -3,7 +3,10 @@
 
 #include "archive/unknown_impl.h"
 
-#include "7zip/IStream.h"
+// TODO: Bit7z
+// #include "7zip/IStream.h"
+
+// FIXME: This entire, ugly, com file.
 
 class QFile;
 class QString;
@@ -18,9 +21,10 @@ class QString;
  *
  * Note that the handling on errors could be better.
  */
-class MultiOutputStream : public ISequentialOutStream {
+// class MultiOutputStream : public ISequentialOutStream {
+class MultiOutputStream {
 
-    UNKNOWN_1_INTERFACE(ISequentialOutStream);
+    // UNKNOWN_1_INTERFACE(ISequentialOutStream);
 
   public:
     MultiOutputStream();
@@ -55,7 +59,7 @@ class MultiOutputStream : public ISequentialOutStream {
      * @warn If an error happens, the code will not attempt any further writing,
      * so some files might not get written to at all
      */
-    STDMETHOD(Write)(const void* data, UInt32 size, UInt32* processedSize);
+    // STDMETHOD(Write)(const void* data, UInt32 size, UInt32* processedSize);
 
   private:
     /** This is the amount of data written to *any one* file.
@@ -63,7 +67,7 @@ class MultiOutputStream : public ISequentialOutStream {
      * If there are errors writing to one of the files, this might or might
      * not match what was actually written to another of the files
      */
-    UInt64 m_ProcessedSize;
+    // UInt64 m_ProcessedSize;
 
     typedef std::unique_ptr<QFile> OutFile;
 
