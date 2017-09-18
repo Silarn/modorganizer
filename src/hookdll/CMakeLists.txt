@@ -43,7 +43,8 @@ SET(SRCS
 )
 
 ## Library ##
-add_library(${library_name} STATIC ${HDRS} ${SRCS})
+add_library(${library_name} SHARED ${HDRS} ${SRCS})
+set_target_properties(${library_name} PROPERTIES OUTPUT_NAME "hook")
 # Headers
 target_include_directories(${library_name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -51,7 +52,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC common MOShared fmt::fmt-header-only Shlwapi)
+target_link_libraries(${library_name} PUBLIC common MOShared fmt::fmt-header-only Shlwapi Mincore)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.

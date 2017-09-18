@@ -18,6 +18,8 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #pragma once
+#define COMMON_DLL
+#define COMMON_DLL_BUILD
 #include <common/dllmain.h>
 
 extern "C" DLLEXPORT bool __cdecl Init(int logLevel, const wchar_t* profileName);
