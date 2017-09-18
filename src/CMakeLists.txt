@@ -216,7 +216,7 @@ set_property(TARGET UDIS86 PROPERTY IMPORTED_LOCATION_DEBUG ${UDIS86_LIBRARY_D})
 set(bit7z_INCLUDE_DIRS ${PREFIX_PATH}/include)
 set(bit7z_LIBRARY ${PREFIX_PATH}/lib/bit7z64${CMAKE_STATIC_LIBRARY_SUFFIX})
 set(bit7z_LIBRARY_D ${PREFIX_PATH}/lib/bit7z64_d${CMAKE_STATIC_LIBRARY_SUFFIX})
-if(NOT EXISTS ${bit7z_INCLUDE_DIRS}/bit7z.h OR NOT EXISTS ${bit7z_LIBRARY})
+if(NOT EXISTS ${bit7z_INCLUDE_DIRS}/bit7z.hpp OR NOT EXISTS ${bit7z_LIBRARY})
     message(FATAL_ERROR "bit7z not found, have you built it correctly?\n"
             "${library_name} requires Static bit7z")
 endif()
