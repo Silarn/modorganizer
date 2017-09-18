@@ -31,15 +31,12 @@ SET(SRCS
     src/fallout3info.cpp
     src/falloutnvinfo.cpp
     src/gameinfo.cpp
-    src/hookdll.pro
-    src/hookdll.qbs
     src/hooklock.cpp
     src/logger.cpp
     src/modinfo.cpp
     src/oblivioninfo.cpp
     src/process_blacklist.txt
     src/profile.cpp
-    src/SConscript
     src/skyriminfo.cpp
     src/utility.cpp
     src/version.rc
