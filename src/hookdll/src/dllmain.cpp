@@ -53,6 +53,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <tchar.h>
 #include <tuple>
 #include <vector>
+#include <mutex>
 
 using namespace MOShared;
 
@@ -145,10 +146,12 @@ int sLogLevel = 0;
 bool winXP = false;
 
 #pragma message("the privatestring-hook is not functional with a debug build. should fix that")
-#if defined(DEBUG) || !defined(_MSC_VER)
-enum { HOOK_NOTYET, HOOK_FAILED, HOOK_SUCCESS } archiveListHookState = HOOK_FAILED;
+#if defined(_DEBUG) || !defined(_MSC_VER)
+enum { HOOK_NOTYET, HOOK_FAILED, HOOK_SUCCESS };
+auto archiveListHookState = HOOK_FAILED;
 #else  // DEBUG
-enum { HOOK_NOTYET, HOOK_FAILED, HOOK_SUCCESS } archiveListHookState = HOOK_NOTYET;
+enum { HOOK_NOTYET, HOOK_FAILED, HOOK_SUCCESS };
+auto archiveListHookState = HOOK_NOTYET;
 #endif // DEBUG
 
 char modName[MAX_PATH];
@@ -766,7 +769,8 @@ static PBYTE s_ReturnAddress = nullptr;
 // this includes a bit of wiggle room, for skyrim we need 42 bytes
 #define FUNCTION_BUFFER_SIZE 64
 
-#ifdef _MSC_VER
+// FIXME: Reversed.
+#ifndef _MSC_VER
 // FIXME: HACK: THIS.
 #pragma optimize("", off)
 
@@ -2142,7 +2146,7 @@ int NextDividableBy(int number, int divider) {
 }
 
 NTSTATUS addNtSearchData(const std::wstring& localPath, PUNICODE_STRING FileName,
-                         FILE_INFORMATION_CLASS FileInformationClass, boost::scoped_array<uint8_t>& buffer,
+                         FILE_INFORMATION_CLASS FileInformationClass, std::vector<uint8_t>& buffer,
                          ULONG bufferSize, std::pair<HANDLE, std::deque<std::vector<uint8_t>>>& result,
                          std::set<std::wstring>& foundFiles) {
     NTSTATUS res = STATUS_NO_SUCH_FILE;
@@ -2151,10 +2155,10 @@ NTSTATUS addNtSearchData(const std::wstring& localPath, PUNICODE_STRING FileName
                                        OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, nullptr);
     if (hdl != INVALID_HANDLE_VALUE) {
         IO_STATUS_BLOCK status;
-        res = NtQueryDirectoryFile_reroute(hdl, nullptr, nullptr, nullptr, &status, buffer.get(), bufferSize,
+        res = NtQueryDirectoryFile_reroute(hdl, nullptr, nullptr, nullptr, &status, buffer.data(), bufferSize,
                                            FileInformationClass, FALSE, FileName, FALSE);
         while ((res == STATUS_SUCCESS) && (status.Information > 0)) {
-            uint8_t* pos = buffer.get();
+            uint8_t* pos = buffer.data();
             ULONG totalOffset = 0;
             while (totalOffset < status.Information) {
                 ULONG offset;
@@ -2175,7 +2179,7 @@ NTSTATUS addNtSearchData(const std::wstring& localPath, PUNICODE_STRING FileName
                 totalOffset += size;
             }
 
-            res = NtQueryDirectoryFile_reroute(hdl, nullptr, nullptr, nullptr, &status, buffer.get(), bufferSize,
+            res = NtQueryDirectoryFile_reroute(hdl, nullptr, nullptr, nullptr, &status, buffer.data(), bufferSize,
                                                FileInformationClass, FALSE, FileName, FALSE);
         }
     }
@@ -2220,7 +2224,7 @@ NTSTATUS WINAPI NtQueryDirectoryFile_rep(HANDLE FileHandle, HANDLE Event, PIO_AP
 
             // we use one large buffer and copy the required section to newly allocated parts.
             ULONG bufferSize = (std::max<ULONG>(64 * 1024, Length)); // should usually be sufficiently oversized
-            boost::scoped_array<uint8_t> buffer(new uint8_t[bufferSize]);
+            std::vector<uint8_t> buffer(bufferSize);
 
             if (addNtSearchData(directoryCFHandles[FileHandle], FileName, FileInformationClass, buffer, bufferSize,
                                 result, foundFiles) != STATUS_NO_SUCH_FILE) {
@@ -2243,7 +2247,7 @@ NTSTATUS WINAPI NtQueryDirectoryFile_rep(HANDLE FileHandle, HANDLE Event, PIO_AP
 
         ULONG offset = 0;
 
-        boost::mutex::scoped_lock l(queryMutex);
+        std::scoped_lock<std::mutex> l(queryMutex);
         uint8_t* destination = nullptr;
         // ok, data available, return it
         while (qdfData[FileHandle].size() > 0) {
