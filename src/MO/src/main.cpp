@@ -17,8 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <common/sane_windows.h>
 
 #include <DbgHelp.h>
 
@@ -69,8 +68,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <stdexcept>
 
-#pragma comment(linker,                                                                                                \
-                "/manifestDependency:\"name='dlls' processorArchitecture='x86' version='1.0.0.0' type='win32' \"")
+// #pragma comment(linker,                                                                                                \
+//                "/manifestDependency:\"name='dlls' processorArchitecture='x86' version='1.0.0.0' type='win32' \"")
 
 using namespace MOBase;
 using namespace MOShared;
