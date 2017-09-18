@@ -39,7 +39,7 @@ SET(SRCS
     src/profile.cpp
     src/skyriminfo.cpp
     src/utility.cpp
-    src/version.rc
+    # src/version.rc
 )
 
 ## Library ##
