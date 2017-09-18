@@ -24,9 +24,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QStringList>
 #include <QStyleFactory>
 #include <QStyleOption>
-#include <appconfig.h>
-#include <report.h>
-#include <utility.h>
+#include <MO/Shared/appconfig.h>
+#include <uibase/report.h>
+#include <uibase/utility.h>
 
 #include <QDebug>
 

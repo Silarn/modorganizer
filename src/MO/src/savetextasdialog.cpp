@@ -2,7 +2,7 @@
 #include "ui_savetextasdialog.h"
 #include <QClipboard>
 #include <QFileDialog>
-#include <report.h>
+#include <uibase/report.h>
 
 using MOBase::reportError;
 

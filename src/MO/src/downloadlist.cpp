@@ -18,7 +18,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MO/downloadlist.h"
-#include "downloadmanager.h"
+#include "MO/downloadmanager.h"
 #include <QEvent>
 
 #include <QSortFilterProxyModel>

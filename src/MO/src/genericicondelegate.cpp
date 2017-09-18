@@ -1,5 +1,5 @@
 #include "MO/genericicondelegate.h"
-#include "pluginlist.h"
+#include "MO/pluginlist.h"
 #include <QList>
 #include <QPixmapCache>
 

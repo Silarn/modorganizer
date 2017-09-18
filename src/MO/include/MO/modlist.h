@@ -20,17 +20,17 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MODLIST_H
 #define MODLIST_H
 
+#include "MO/modinfo.h"
+#include "MO/nexusinterface.h"
+#include "MO/profile.h"
 #include "categories.h"
-#include "hookdll/profile.h"
-#include "modinfo.h"
-#include "nexusinterface.h"
 #include <QFile>
 #include <QListWidget>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QVector>
-#include <imodlist.h>
 #include <set>
+#include <uibase/imodlist.h>
 #include <vector>
 
 class QSortFilterProxyModel;

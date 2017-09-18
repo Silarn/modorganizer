@@ -19,13 +19,13 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/nxmaccessmanager.h"
 
-#include "iplugingame.h"
-#include "nxmurl.h"
-#include "persistentcookiejar.h"
-#include "report.h"
-#include "selfupdater.h"
-#include "settings.h"
-#include "utility.h"
+#include "MO/persistentcookiejar.h"
+#include "MO/selfupdater.h"
+#include "MO/settings.h"
+#include "uibase/iplugingame.h"
+#include "uibase/nxmurl.h"
+#include "uibase/report.h"
+#include "uibase/utility.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QJsonArray>

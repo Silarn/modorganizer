@@ -20,7 +20,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PROFILESDIALOG_H
 #define PROFILESDIALOG_H
 
-#include "tutorabledialog.h"
+#include "uibase/tutorabledialog.h"
 class Profile;
 
 class QListWidget;

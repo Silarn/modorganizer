@@ -20,8 +20,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef PLUGINLIST_H
 #define PLUGINLIST_H
 
-#include <directoryentry.h>
-#include <ipluginlist.h>
+#include <MO/Shared/directoryentry.h>
+#include <uibase/ipluginlist.h>
 namespace MOBase {
 class IPluginGame;
 }

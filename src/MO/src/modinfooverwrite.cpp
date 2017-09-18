@@ -1,6 +1,6 @@
 #include "MO/modinfooverwrite.h"
 
-#include "appconfig.h"
+#include "MO/Shared/appconfig.h"
 
 #include <QApplication>
 #include <QDirIterator>

@@ -23,8 +23,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QIcon>
 #include <QMutexLocker>
 #include <Windows.h>
-#include <report.h>
-#include <scopeguard.h>
+#include <uibase/report.h>
+#include <uibase/scopeguard.h>
 
 using MOBase::reportError;
 

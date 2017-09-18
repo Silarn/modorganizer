@@ -18,9 +18,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MO/overwriteinfodialog.h"
-#include "report.h"
 #include "ui_overwriteinfodialog.h"
-#include "utility.h"
+#include "uibase/report.h"
+#include "uibase/utility.h"
 #include <QMenu>
 #include <QMessageBox>
 #include <Shlwapi.h>

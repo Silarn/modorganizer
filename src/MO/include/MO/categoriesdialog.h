@@ -20,7 +20,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef CATEGORIESDIALOG_H
 #define CATEGORIESDIALOG_H
 
-#include "tutorabledialog.h"
+#include "uibase/tutorabledialog.h"
 #include <set>
 
 namespace Ui {

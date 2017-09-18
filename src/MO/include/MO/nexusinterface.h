@@ -25,11 +25,11 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QQueue>
 #include <QTimer>
 #include <QVariant>
-#include <imodrepositorybridge.h>
 #include <list>
 #include <set>
-#include <utility.h>
-#include <versioninfo.h>
+#include <uibase/imodrepositorybridge.h>
+#include <uibase/utility.h>
+#include <uibase/versioninfo.h>
 
 namespace MOBase {
 class IPluginGame;

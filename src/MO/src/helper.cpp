@@ -18,9 +18,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MO/helper.h"
-#include "utility.h"
+#include "uibase/utility.h"
 #include <LMCons.h>
-#include <report.h>
+#include <uibase/report.h>
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

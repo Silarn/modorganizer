@@ -23,7 +23,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QString>
 #include <QWidget>
 #include <functional>
-#include <ipluginpreview.h>
+#include <uibase/ipluginpreview.h>
 #include <map>
 
 class PreviewGenerator {

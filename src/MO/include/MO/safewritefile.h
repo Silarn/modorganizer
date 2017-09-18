@@ -22,7 +22,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QString>
 #include <QTemporaryFile>
-#include <utility.h>
+#include <uibase/utility.h>
 
 /**
  * @brief a wrapper for QFile that ensures the file is only actually (over-)written if writing was successful

@@ -19,15 +19,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/profile.h"
 
-#include "appconfig.h"
-#include "modinfo.h"
-#include "safewritefile.h"
-#include <bsainvalidation.h>
-#include <dataarchives.h>
-#include <error_report.h>
-#include <iplugingame.h>
-#include <report.h>
-#include <utility.h>
+#include "MO/modinfo.h"
+#include "MO/safewritefile.h"
+#include "Mo/Shared/appconfig.h"
+#include <MO/Shared/error_report.h>
+#include <gamefeatures/bsainvalidation.h>
+#include <gamefeatures/dataarchives.h>
+#include <uibase/iplugingame.h>
+#include <uibase/report.h>
+#include <uibase/utility.h>
 
 #include <QApplication>
 #include <QFile>     // for QFile

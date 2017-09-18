@@ -26,7 +26,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTextBrowser>
 #include <QVariant>
 #include <Qt>
-#include <utility.h>
+#include <uibase/utility.h>
 
 AboutDialog::AboutDialog(const QString& version, QWidget* parent) : QDialog(parent), ui(new Ui::AboutDialog) {
     ui->setupUi(this);

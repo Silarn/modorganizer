@@ -9,7 +9,6 @@ class QUrl;
 class QStringList;
 
 #include <any>
-
 #include <cstdint>
 #include <typeindex>
 #include <unordered_map>
@@ -187,7 +186,7 @@ class IPluginGame : public QObject, public IPlugin {
     virtual QString gameVersion() const = 0;
 
   protected:
-    virtual std::map<std::type_index, boost::any> featureList() const = 0;
+    virtual std::map<std::type_index, std::any> featureList() const = 0;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(IPluginGame::ProfileSettings)

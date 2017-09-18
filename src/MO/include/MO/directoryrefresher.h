@@ -23,7 +23,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMutex>
 #include <QObject>
 #include <QStringList>
-#include <directoryentry.h>
+#include <MO/Shared/directoryentry.h>
 #include <set>
 #include <tuple>
 #include <vector>

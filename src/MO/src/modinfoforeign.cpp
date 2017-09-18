@@ -1,7 +1,7 @@
 #include "MO/modinfoforeign.h"
 
-#include "iplugingame.h"
-#include "utility.h"
+#include "uibase/iplugingame.h"
+#include "uibase/utility.h"
 
 #include <QApplication>
 

@@ -1,7 +1,7 @@
 #ifndef ORGANIZERPROXY_H
 #define ORGANIZERPROXY_H
 
-#include <imoinfo.h>
+#include <uibase/imoinfo.h>
 
 class OrganizerCore;
 

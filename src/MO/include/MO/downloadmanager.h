@@ -31,8 +31,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTime>
 #include <QUrl>
 #include <QVector>
-#include <idownloadmanager.h>
-#include <modrepositoryfileinfo.h>
+#include <uibase/idownloadmanager.h>
+#include <uibase/modrepositoryfileinfo.h>
 #include <set>
 
 namespace MOBase {

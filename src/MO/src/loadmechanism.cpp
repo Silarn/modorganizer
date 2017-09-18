@@ -18,8 +18,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "MO/loadmechanism.h"
-#include "util.h"
-#include "utility.h"
+#include "MO/Shared/util.h"
+#include "uibase/utility.h"
 #include <QCoreApplication>
 #include <QCryptographicHash>
 #include <QDir>
@@ -27,9 +27,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QFileInfo>
 #include <QMessageBox>
 #include <QString>
-#include <appconfig.h>
-#include <iplugingame.h>
-#include <scriptextender.h>
+#include <MO/Shared/appconfig.h>
+#include <uibase/iplugingame.h>
+#include <gamefeatures/scriptextender.h>
 
 using namespace MOBase;
 using namespace MOShared;

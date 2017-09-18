@@ -19,9 +19,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/transfersavesdialog.h"
 
-#include "iplugingame.h"
-#include "isavegame.h"
-#include "savegameinfo.h"
+#include "uibase/iplugingame.h"
+#include "uibase/isavegame.h"
+#include "gamefeatures/savegameinfo.h"
 #include "ui_transfersavesdialog.h"
 
 #include <QDateTime>

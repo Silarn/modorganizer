@@ -3,7 +3,7 @@
 
 #include <QDialog>
 #include <QUrl>
-#include <iplugindiagnose.h>
+#include <uibase/iplugindiagnose.h>
 
 namespace Ui {
 class ProblemsDialog;

@@ -20,7 +20,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SELFUPDATER_H
 #define SELFUPDATER_H
 
-#include <versioninfo.h>
+#include <uibase/versioninfo.h>
 
 class Archive;
 class NexusInterface;
