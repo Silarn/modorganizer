@@ -1,7 +1,7 @@
 #ifndef MODINFOBACKUP_H
 #define MODINFOBACKUP_H
 
-#include "modinforegular.h"
+#include "MO/modinforegular.h"
 
 class ModInfoBackup : public ModInfoRegular {
 

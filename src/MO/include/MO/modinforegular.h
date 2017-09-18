@@ -1,8 +1,8 @@
 #ifndef MODINFOREGULAR_H
 #define MODINFOREGULAR_H
 
-#include "modinfowithconflictinfo.h"
-#include "nexusinterface.h"
+#include "MO/modinfowithconflictinfo.h"
+#include "MO/nexusinterface.h"
 
 /**
  * @brief Represents meta information about a single mod.
