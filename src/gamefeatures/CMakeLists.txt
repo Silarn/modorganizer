@@ -5,7 +5,7 @@ set(library_name "gamefeatures")
 ## Files ##
 # Main
 SET(HDRS
-	include/${library_name}/bsainvalidation.h
+    include/${library_name}/bsainvalidation.h
     include/${library_name}/scriptextender.h
     include/${library_name}/dataarchives.h
     include/${library_name}/localsavegames.h
@@ -14,10 +14,11 @@ SET(HDRS
 )
 
 SET(SRCS
+    src/gamefeatures.cpp
 )
 
 ## Library ##
-add_library(${library_name} STATIC ${HDRS})
+add_library(${library_name} STATIC ${HDRS} ${SRCS})
 # Headers
 target_include_directories(${library_name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
