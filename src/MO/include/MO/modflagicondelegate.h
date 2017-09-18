@@ -1,7 +1,7 @@
 #ifndef MODFLAGICONDELEGATE_H
 #define MODFLAGICONDELEGATE_H
 
-#include "icondelegate.h"
+#include "MO/icondelegate.h"
 
 class ModFlagIconDelegate : public IconDelegate {
   public:
