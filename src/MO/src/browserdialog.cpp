@@ -77,7 +77,7 @@ void BrowserDialog::initTab(BrowserView* newView) {
     connect(newView, SIGNAL(openUrlInNewTab(QUrl)), this, SLOT(openInNewTab(QUrl)));
     connect(newView->page(), SIGNAL(downloadRequested(QNetworkRequest)), this,
             SLOT(downloadRequested(QNetworkRequest)));
-    //connect(newView->page(), SIGNAL(unsupportedContent(QNetworkReply*)), this,
+    // connect(newView->page(), SIGNAL(unsupportedContent(QNetworkReply*)), this,
     //        SLOT(unsupportedContent(QNetworkReply*)));
 
     ui->backBtn->setEnabled(false);
@@ -112,10 +112,20 @@ void BrowserDialog::openUrl(const QUrl& url) {
 }
 
 void BrowserDialog::maximizeWidth() {
-    int viewportWidth = getCurrentView()->page()->viewportSize().width();
+    // int viewportWidth = getCurrentView()->page()->viewportSize().width();
+    int viewportWidth = 0;
+    // FIXME: I hope this works...
+    bool fin = false;
+    getCurrentView()->page()->runJavaScript("window.innerWidth", [&viewportWidth, &fin](const QVariant& result) {
+        viewportWidth = result.toInt();
+        fin = true;
+    });
+    while (!fin) {
+        Sleep(100);
+    }
     int frameWidth = width() - viewportWidth;
 
-    int contentWidth = getCurrentView()->page()->mainFrame()->contentsSize().width();
+    int contentWidth = getCurrentView()->page()->contentsSize().width();
 
     QDesktopWidget screen;
     int currentScreen = screen.screenNumber(this);
@@ -215,7 +225,7 @@ void BrowserDialog::startSearch() { ui->searchEdit->setFocus(); }
 void BrowserDialog::on_searchEdit_returnPressed() {
     BrowserView* currentView = getCurrentView();
     if (currentView != nullptr) {
-        currentView->findText(ui->searchEdit->text(), QWebPage::FindWrapsAroundDocument);
+        currentView->findText(ui->searchEdit->text());
     }
 }
 
@@ -230,7 +240,7 @@ void BrowserDialog::on_browserTabWidget_currentChanged(int index) {
 }
 
 void BrowserDialog::on_urlEdit_returnPressed() {
-    QWebView* currentView = getCurrentView();
+    QWebEngineView* currentView = getCurrentView();
     if (currentView != nullptr) {
         currentView->setUrl(QUrl(ui->urlEdit->text()));
     }
