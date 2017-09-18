@@ -33,8 +33,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSignalMapper>
 #include <QTextCodec>
 #include <QTreeWidgetItem>
-#include <set>
 #include <QtWebEngineWidgets/QWebEnginePage>
+#include <QtWebEngineWidgets/QWebEngineView>
+#include <set>
 
 namespace Ui {
 class ModInfoDialog;

@@ -225,6 +225,7 @@ source_group(QT FILES ${QTs})
 find_package(Qt5Widgets REQUIRED)
 find_package(Qt5WinExtras REQUIRED)
 find_package(Qt5WebEngine REQUIRED)
+find_package(Qt5WebEngineWidgets REQUIRED)
 
 ## Library ##
 add_library(${library_name}Shared STATIC ${SHARED_HDRS} ${SHARED_SRCS})
@@ -249,7 +250,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::WebEngine Zlib
+target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::WebEngine Qt5::WebEngineWidgets Zlib
                       common uibase bsatk gamefeatures archive
                       ${library_name}Shared
                       # esptk

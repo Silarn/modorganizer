@@ -27,6 +27,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QQueue>
 #include <QTabWidget>
 #include <QTimer>
+#include <QtWebEngineWidgets/QWebEnginePage>
+#include <QtWebEngineWidgets/QWebEngineSettings>
 #include <QtWebEngineWidgets/QWebEngineView>
 
 namespace Ui {
