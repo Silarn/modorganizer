@@ -19,21 +19,21 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/installationmanager.h"
 
-#include "categories.h"
-#include "iplugininstallercustom.h"
-#include "iplugininstallersimple.h"
-#include "messagedialog.h"
-#include "modinfo.h"
-#include "nexusinterface.h"
-#include "queryoverwritedialog.h"
-#include "questionboxmemory.h"
-#include "report.h"
-#include "selectiondialog.h"
-#include "settings.h"
-#include "utility.h"
-#include <installationtester.h>
-#include <scopeguard.h>
-#include <utility.h>
+#include "MO/categories.h"
+#include "MO/messagedialog.h"
+#include "MO/modinfo.h"
+#include "MO/nexusinterface.h"
+#include "MO/queryoverwritedialog.h"
+#include "MO/selectiondialog.h"
+#include "MO/settings.h"
+#include "uibase/iplugininstallercustom.h"
+#include "uibase/iplugininstallersimple.h"
+#include "uibase/questionboxmemory.h"
+#include "uibase/report.h"
+#include "uibase/utility.h"
+#include <uibase/installationtester.h>
+#include <uibase/scopeguard.h>
+#include <uibase/utility.h>
 
 #include <QApplication>
 #include <QDateTime>
@@ -48,9 +48,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSettings>
 
 #include <Shellapi.h>
-
-#include <boost/assign.hpp>
-#include <boost/scoped_ptr.hpp>
 
 using namespace MOBase;
 using namespace MOShared;
