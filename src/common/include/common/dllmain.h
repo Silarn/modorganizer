@@ -5,7 +5,7 @@
 // If COMMON_DLL is defined, export/import synbols as needed.
 // if not, noop.
 #if defined(COMMON_DLL)
-#if COMMON_DLL_BUILD
+#if defined(COMMON_DLL_BUILD)
 #define DLLEXPORT __declspec(dllexport)
 #else
 #define DLLEXPORT __declspec(dllimport)
