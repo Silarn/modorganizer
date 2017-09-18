@@ -3,7 +3,10 @@
 
 #include "archive/unknown_impl.h"
 
-#include "7zip/IStream.h"
+// TODO: Use Bit7z
+// #include "7zip/IStream.h"
+
+// FIXME: This COM mess.
 
 #include <QFile>
 class QString;
@@ -12,9 +15,10 @@ class QString;
  *
  * Note that the handling on errors could be better.
  */
-class InputStream : public IInStream {
+// class InputStream : public IInStream {
+class InputStream {
 
-    UNKNOWN_1_INTERFACE(IInStream);
+    // UNKNOWN_1_INTERFACE(IInStream);
 
   public:
     InputStream();
@@ -23,8 +27,8 @@ class InputStream : public IInStream {
 
     bool Open(QString const& filename);
 
-    STDMETHOD(Read)(void* data, UInt32 size, UInt32* processedSize);
-    STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64* newPosition);
+    // STDMETHOD(Read)(void* data, UInt32 size, UInt32* processedSize);
+    // STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64* newPosition);
 
   private:
     QFile m_File;

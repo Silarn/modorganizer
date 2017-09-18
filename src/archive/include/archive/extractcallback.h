@@ -20,41 +20,44 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef EXTRACTCALLBACK_H
 #define EXTRACTCALLBACK_H
+using UInt32 = unsigned int;
 
 #include "archive/callback.h"
 #include "archive/multioutputstream.h"
 #include "archive/unknown_impl.h"
 
-#include "7zip/Archive/IArchive.h"
-#include "7zip/IPassword.h"
+// TODO: Use Bit7z
+// #include "7zip/Archive/IArchive.h"
+// #include "7zip/IPassword.h"
 
 #include <QDir>
 class QString;
 
-#include <atlbase.h>
+// FIXME: ATL.
+// #include <atlbase.h>
 
 class FileData;
 
-class CArchiveExtractCallback : public IArchiveExtractCallback, public ICryptoGetTextPassword {
+class CArchiveExtractCallback {
 
     // A note: It appears that the IArchiveExtractCallback interface includes the
     // IProgress interface, swo we need to respond to it
-    UNKNOWN_3_INTERFACE(IArchiveExtractCallback, ICryptoGetTextPassword, IProgress);
+    // UNKNOWN_3_INTERFACE(IArchiveExtractCallback, ICryptoGetTextPassword, IProgress);
 
   public:
     CArchiveExtractCallback(ProgressCallback* progressCallback, FileChangeCallback* fileChangeCallback,
                             ErrorCallback* errorCallback, PasswordCallback* passwordCallback,
-                            IInArchive* archiveHandler, const QString& directoryPath, FileData* const* fileData,
+                            void* archiveHandler, const QString& directoryPath, FileData* const* fileData,
                             QString* password);
 
     virtual ~CArchiveExtractCallback();
 
     void SetCanceled(bool aCanceled);
 
-    INTERFACE_IArchiveExtractCallback(;)
+    // INTERFACE_IArchiveExtractCallback(;)
 
-        // ICryptoGetTextPassword
-        STDMETHOD(CryptoGetTextPassword)(BSTR* aPassword);
+    // ICryptoGetTextPassword
+    // STDMETHOD(CryptoGetTextPassword)(BSTR* aPassword);
 
   private:
     void reportError(const QString& message);
@@ -65,9 +68,9 @@ class CArchiveExtractCallback : public IArchiveExtractCallback, public ICryptoGe
     T getProperty(UInt32 index, int property) const;
 
   private:
-    CComPtr<IInArchive> m_ArchiveHandler;
+    // CComPtr<IInArchive> m_ArchiveHandler;
 
-    UInt64 m_Total;
+    // UInt64 m_Total;
 
     QDir m_DirectoryPath;
     bool m_Extracting;
@@ -75,13 +78,13 @@ class CArchiveExtractCallback : public IArchiveExtractCallback, public ICryptoGe
 
     struct CProcessedFileInfo {
         FILETIME MTime;
-        UInt32 Attrib;
+        // UInt32 Attrib;
         bool isDir;
         bool AttribDefined;
         bool MTimeDefined;
     } m_ProcessedFileInfo;
 
-    CComPtr<MultiOutputStream> m_OutFileStream;
+    // CComPtr<MultiOutputStream> m_OutFileStream;
 
     std::vector<QString> m_FullProcessedPaths;
 

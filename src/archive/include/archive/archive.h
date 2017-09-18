@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifndef ARCHIVE_H
 #define ARCHIVE_H
+using UInt32 = unsigned int;
 
 #include "archive/callback.h"
 
@@ -28,11 +29,7 @@ class QString;
 #include <stdint.h>
 #include <vector>
 
-#ifdef _WINDLL
-#define DLLEXPORT _declspec(dllexport)
-#else
-#define DLLEXPORT _declspec(dllimport)
-#endif
+#include <common/dllmain.h>
 
 class FileData {
   public:
@@ -44,7 +41,6 @@ class FileData {
 };
 
 class Archive {
-
   public:
     enum Error {
         ERROR_NONE,

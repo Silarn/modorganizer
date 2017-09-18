@@ -24,22 +24,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include "archive/callback.h"
 #include "archive/unknown_impl.h"
 
-#include "7zip/Archive/IArchive.h"
-#include "7zip/IPassword.h"
+// TODO: Use Bit7z
+// FIXME: COM Mess.
+//#include "7zip/Archive/IArchive.h"
+//#include "7zip/IPassword.h"
 
 #include <QDir>
 #include <QFileInfo>
 
 #include <string>
 
-class CArchiveOpenCallback : public IArchiveOpenCallback,
-                             public IArchiveOpenVolumeCallback,
-                             public ICryptoGetTextPassword,
-                             public IArchiveOpenSetSubArchiveName {
-
-    UNKNOWN_4_INTERFACE(IArchiveOpenCallback, IArchiveOpenVolumeCallback, ICryptoGetTextPassword,
-                        IArchiveOpenSetSubArchiveName);
-
+class CArchiveOpenCallback {
   public:
     CArchiveOpenCallback(PasswordCallback* passwordCallback, QFileInfo const& fileinfo);
 
@@ -47,14 +42,12 @@ class CArchiveOpenCallback : public IArchiveOpenCallback,
 
     QString GetPassword() const { return m_Password; }
 
-    INTERFACE_IArchiveOpenCallback(;) INTERFACE_IArchiveOpenVolumeCallback(;)
-
-        // ICryptoGetTextPassword interface
-        STDMETHOD(CryptoGetTextPassword)(BSTR* password);
+    // ICryptoGetTextPassword interface
+    // STDMETHOD(CryptoGetTextPassword)(BSTR* password);
     // Not implemented STDMETHOD(CryptoGetTextPassword2)(Int32 *passwordIsDefined, BSTR *password);
 
     // IArchiveOpenSetSubArchiveName interface
-    STDMETHOD(SetSubArchiveName)(const wchar_t* name);
+    // STDMETHOD(SetSubArchiveName)(const wchar_t* name);
 
   private:
     PasswordCallback* m_PasswordCallback;
