@@ -232,7 +232,6 @@
            <rect>
             <x>0</x>
             <y>0</y>
-             <!--Was 98 and 28 repsectively. QT Auto Changed.-->
             <width>676</width>
             <height>126</height>
            </rect>
@@ -679,8 +678,8 @@ p, li { white-space: pre-wrap; }
         </layout>
        </item>
        <item>
-        <widget class="QWebEngineView" name="descriptionView" native="true">
-         <property name="url" stdset="0">
+        <widget class="QWebEngineView" name="descriptionView">
+         <property name="url">
           <url>
            <string>about:blank</string>
           </url>
@@ -806,6 +805,13 @@ p, li { white-space: pre-wrap; }
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebEngineView</class>
+   <extends>QWidget</extends>
+   <header location="global">QtWebEngineWidgets/QWebEngineView</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="resources.qrc"/>
  </resources>
