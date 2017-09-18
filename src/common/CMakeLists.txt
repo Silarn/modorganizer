@@ -9,6 +9,7 @@ SET(HDRS
     include/${library_name}/dllmain.h # Handle Static vs Shared DLL exports.
     include/${library_name}/sane_windows.h # A sane windows.h import.
     include/${library_name}/fwd_windows.h # So you can use windows.h types without windows.h.
+    include/${library_name}/stringutils.h # Some string utilities.
 )
 
 SET(SRCS
