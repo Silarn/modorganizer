@@ -20,66 +20,67 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/mainwindow.h"
 #include "ui_mainwindow.h"
 
-#include "directoryentry.h"
-#include "directoryrefresher.h"
-#include "executableinfo.h"
-#include "executableslist.h"
-#include "guessedvalue.h"
-#include "imodinterface.h"
-#include "iplugindiagnose.h"
-#include "iplugingame.h"
-#include "isavegame.h"
-#include "isavegameinfowidget.h"
-#include "nexusinterface.h"
-#include "organizercore.h"
-#include "pluginlistsortproxy.h"
-#include "previewgenerator.h"
-#include "savegameinfo.h"
-#include "serverinfo.h"
-#include "spawn.h"
-#include "versioninfo.h"
+#include "MO/Shared/directoryentry.h"
+#include "MO/directoryrefresher.h"
+#include "MO/executableslist.h"
+#include "MO/nexusinterface.h"
+#include "MO/organizercore.h"
+#include "MO/pluginlistsortproxy.h"
+#include "MO/previewgenerator.h"
+#include "MO/serverinfo.h"
+#include "MO/spawn.h"
+#include "gamefeatures/savegameinfo.h"
+#include "uibase/executableinfo.h"
+#include "uibase/guessedvalue.h"
+#include "uibase/imodinterface.h"
+#include "uibase/iplugindiagnose.h"
+#include "uibase/iplugingame.h"
+#include "uibase/isavegame.h"
+#include "uibase/isavegameinfowidget.h"
+#include "uibase/versioninfo.h"
+#include <common/stringutils.h>
 
-#include "aboutdialog.h"
-#include "activatemodsdialog.h"
-#include "appconfig.h"
-#include "browserdialog.h"
-#include "categories.h"
-#include "categoriesdialog.h"
-#include "csvbuilder.h"
-#include "downloadlist.h"
-#include "downloadlistsortproxy.h"
-#include "downloadlistwidget.h"
-#include "downloadlistwidgetcompact.h"
-#include "editexecutablesdialog.h"
-#include "filedialogmemory.h"
-#include "genericicondelegate.h"
-#include "installationmanager.h"
-#include "lockeddialog.h"
-#include "logbuffer.h"
-#include "messagedialog.h"
-#include "modflagicondelegate.h"
-#include "modinfodialog.h"
-#include "modlist.h"
-#include "modlistsortproxy.h"
-#include "motddialog.h"
-#include "nxmaccessmanager.h"
-#include "overwriteinfodialog.h"
-#include "pluginlist.h"
-#include "previewdialog.h"
-#include "problemsdialog.h"
-#include "profile.h"
-#include "profilesdialog.h"
-#include "qtgroupingproxy.h"
-#include "report.h"
-#include "safewritefile.h"
-#include "savetextasdialog.h"
-#include "selectiondialog.h"
-#include "tutorialmanager.h"
-#include <bsainvalidation.h>
-#include <dataarchives.h>
-#include <scopeguard.h>
-#include <taskprogressmanager.h>
-#include <utility.h>
+#include "MO/Shared/appconfig.h"
+#include "MO/aboutdialog.h"
+#include "MO/activatemodsdialog.h"
+#include "MO/browserdialog.h"
+#include "MO/categories.h"
+#include "MO/categoriesdialog.h"
+#include "MO/csvbuilder.h"
+#include "MO/downloadlist.h"
+#include "MO/downloadlistsortproxy.h"
+#include "MO/downloadlistwidget.h"
+#include "MO/downloadlistwidgetcompact.h"
+#include "MO/editexecutablesdialog.h"
+#include "MO/filedialogmemory.h"
+#include "MO/genericicondelegate.h"
+#include "MO/installationmanager.h"
+#include "MO/lockeddialog.h"
+#include "MO/logbuffer.h"
+#include "MO/messagedialog.h"
+#include "MO/modflagicondelegate.h"
+#include "MO/modinfodialog.h"
+#include "MO/modlist.h"
+#include "MO/modlistsortproxy.h"
+#include "MO/motddialog.h"
+#include "MO/nxmaccessmanager.h"
+#include "MO/overwriteinfodialog.h"
+#include "MO/pluginlist.h"
+#include "MO/previewdialog.h"
+#include "MO/problemsdialog.h"
+#include "MO/profile.h"
+#include "MO/profilesdialog.h"
+#include "MO/qtgroupingproxy.h"
+#include "MO/safewritefile.h"
+#include "MO/savetextasdialog.h"
+#include "MO/selectiondialog.h"
+#include "uibase/report.h"
+#include "uibase/tutorialmanager.h"
+#include <gamefeatures/bsainvalidation.h>
+#include <gamefeatures/dataarchives.h>
+#include <uibase/scopeguard.h>
+#include <uibase/taskprogressmanager.h>
+#include <uibase/utility.h>
 
 #include <QAbstractItemDelegate>
 #include <QAbstractProxyModel>
@@ -150,13 +151,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtConcurrent/QtConcurrentRun>
 #else
 #include <QtConcurrentRun>
-#endif
-
-#ifndef Q_MOC_RUN
-#include <boost/algorithm/string.hpp>
-#include <boost/assign.hpp>
-#include <boost/bind.hpp>
-#include <boost/thread.hpp>
 #endif
 
 #include <shlobj.h>
@@ -2206,7 +2200,7 @@ void MainWindow::endorseMod(ModInfo::Ptr mod) {
     } else {
         QString username, password;
         if (m_OrganizerCore.settings().getNexusLogin(username, password)) {
-            m_OrganizerCore.doAfterLogin(boost::bind(&MainWindow::endorseMod, this, mod));
+            m_OrganizerCore.doAfterLogin(std::bind(&MainWindow::endorseMod, this, mod));
             NexusInterface::instance()->getAccessManager()->login(username, password);
         } else {
             MessageDialog::showMessage(tr("You need to be logged in with Nexus to endorse"), this);
@@ -3613,8 +3607,7 @@ void MainWindow::modDetailsUpdated(bool) {
     --m_ModsToUpdate;
     if (m_ModsToUpdate == 0) {
         statusBar()->hide();
-        m_ModListSortProxy->setCategoryFilter(
-            boost::assign::list_of(CategoryFactory::CATEGORY_SPECIAL_UPDATEAVAILABLE));
+        m_ModListSortProxy->setCategoryFilter({CategoryFactory::CATEGORY_SPECIAL_UPDATEAVAILABLE});
         for (int i = 0; i < ui->categoriesList->topLevelItemCount(); ++i) {
             if (ui->categoriesList->topLevelItem(i)->data(0, Qt::UserRole) ==
                 CategoryFactory::CATEGORY_SPECIAL_UPDATEAVAILABLE) {
@@ -3652,8 +3645,7 @@ void MainWindow::nxmUpdatesAvailable(const std::vector<int>& modIDs, QVariant us
 
     if (m_ModsToUpdate <= 0) {
         statusBar()->hide();
-        m_ModListSortProxy->setCategoryFilter(
-            boost::assign::list_of(CategoryFactory::CATEGORY_SPECIAL_UPDATEAVAILABLE));
+        m_ModListSortProxy->setCategoryFilter({CategoryFactory::CATEGORY_SPECIAL_UPDATEAVAILABLE});
         for (int i = 0; i < ui->categoriesList->topLevelItemCount(); ++i) {
             if (ui->categoriesList->topLevelItem(i)->data(0, Qt::UserRole) ==
                 CategoryFactory::CATEGORY_SPECIAL_UPDATEAVAILABLE) {
@@ -3772,7 +3764,8 @@ void MainWindow::extractBSATriggered() {
         progress.setValue(0);
         progress.show();
         archive.extractAll(QDir::toNativeSeparators(targetFolder).toLocal8Bit().constData(),
-                           boost::bind(&MainWindow::extractProgress, this, boost::ref(progress), _1, _2));
+                           std::bind(&MainWindow::extractProgress, this, std::ref(progress), std::placeholders::_1,
+                                     std::placeholders::_2));
         if (result == BSA::ERROR_INVALIDHASHES) {
             reportError(tr("This archive contains invalid hashes. Some files may be broken."));
         }
@@ -4052,10 +4045,10 @@ std::string MainWindow::readFromPipe(HANDLE stdOutRead) {
 
 void MainWindow::processLOOTOut(const std::string& lootOut, std::string& errorMessages, QProgressDialog& dialog) {
     std::vector<std::string> lines;
-    boost::split(lines, lootOut, boost::is_any_of("\r\n"));
+    common::split(lines, lootOut, {"\n", "\r\n"});
 
-    std::tr1::regex exRequires("\"([^\"]*)\" requires \"([^\"]*)\", but it is missing\\.");
-    std::tr1::regex exIncompatible("\"([^\"]*)\" is incompatible with \"([^\"]*)\", but both are present\\.");
+    std::regex exRequires("\"([^\"]*)\" requires \"([^\"]*)\", but it is missing\\.");
+    std::regex exIncompatible("\"([^\"]*)\" is incompatible with \"([^\"]*)\", but both are present\\.");
 
     for (const std::string& line : lines) {
         if (line.length() > 0) {
@@ -4065,15 +4058,15 @@ void MainWindow::processLOOTOut(const std::string& lootOut, std::string& errorMe
                 dialog.setLabelText(line.substr(progidx + 11).c_str());
             } else if (erroridx != std::string::npos) {
                 qWarning("%s", line.c_str());
-                errorMessages.append(boost::algorithm::trim_copy(line.substr(erroridx + 8)) + "\n");
+                errorMessages.append(common::trim_copy(line.substr(erroridx + 8)) + "\n");
             } else {
-                std::tr1::smatch match;
-                if (std::tr1::regex_match(line, match, exRequires)) {
+                std::smatch match;
+                if (std::regex_match(line, match, exRequires)) {
                     std::string modName(match[1].first, match[1].second);
                     std::string dependency(match[2].first, match[2].second);
                     m_OrganizerCore.pluginList()->addInformation(
                         modName.c_str(), tr("depends on missing \"%1\"").arg(dependency.c_str()));
-                } else if (std::tr1::regex_match(line, match, exIncompatible)) {
+                } else if (std::regex_match(line, match, exIncompatible)) {
                     std::string modName(match[1].first, match[1].second);
                     std::string dependency(match[2].first, match[2].second);
                     m_OrganizerCore.pluginList()->addInformation(
