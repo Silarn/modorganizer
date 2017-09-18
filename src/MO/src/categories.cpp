@@ -145,7 +145,7 @@ void CategoryFactory::saveCategories() {
     categoryFile.close();
 }
 
-unsigned int CategoryFactory::countCategories(std::tr1::function<bool(const Category& category)> filter) {
+unsigned int CategoryFactory::countCategories(std::function<bool(const Category& category)> filter) {
     unsigned int result = 0;
     for (const Category& cat : m_Categories) {
         if (filter(cat)) {
