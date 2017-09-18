@@ -34,6 +34,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTextCodec>
 #include <QTreeWidgetItem>
 #include <set>
+#include <QtWebEngineWidgets/QWebEnginePage>
 
 namespace Ui {
 class ModInfoDialog;
@@ -152,7 +153,7 @@ class ModInfoDialog : public MOBase::TutorableDialog {
     void unhideConflictFile();
 
     void thumbnailClicked(const QString& fileName);
-    bool linkClicked(const QUrl& url, QWebEnginePage::NavigationType, bool);
+    bool acceptNavigationRequest(const QUrl& url, QWebEnginePage::NavigationType, bool);
 
     void deleteTriggered();
     void renameTriggered();
