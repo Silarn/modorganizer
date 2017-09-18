@@ -106,7 +106,7 @@ target_include_directories(${library_name} PUBLIC
 )
 # Dependencies
 target_link_libraries(${library_name} PUBLIC
-	Common
+    common
     Qt5::Widgets Qt5::WinExtras Qt5::Script Qt5::Quick
     fmt::fmt-header-only
 )
