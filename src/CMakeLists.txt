@@ -193,6 +193,9 @@ import_target(AsmJit "asmjit" ${PREFIX_PATH}/include "asmjit/asmjit.h" "STATIC")
 import_target(UDIS86 "libudis86" ${PREFIX_PATH}/include "udis86.h" "STATIC")
 # bit7z
 import_target(bit7z "bit7z" ${PREFIX_PATH}/include "bit7z.hpp" "STATIC")
+# 7Zip
+import_target(7zip "" "C:/_Diana/Dev/C++/- Libraries/sources/lzma/C" "7z.h" "INTERFACE")
+
 ## Targets ##
 # add_subdirectory(usvfs_shared)
 # add_subdirectory(thooklib)
