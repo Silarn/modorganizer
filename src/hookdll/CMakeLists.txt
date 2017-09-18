@@ -54,7 +54,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC common MOShared fmt::fmt-header-only)
+target_link_libraries(${library_name} PUBLIC common MOShared fmt::fmt-header-only Shlwapi)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.

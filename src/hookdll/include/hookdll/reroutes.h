@@ -18,9 +18,14 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #pragma once
-#include <common/sane_windows.h>
-#include <ntdef.h>
+//#include <common/sane_windows.h>
+#include <Windows.h>
+using NTSTATUS = LONG;
+//#include <ntdef.h>
+//#include <DbgHelp.h>
 #include <shellapi.h>
+//#include <ntstatus.h>
+//#include <winternl.h>
 
 typedef BOOL(WINAPI* CreateProcessA_type)(LPCSTR, LPSTR, LPSECURITY_ATTRIBUTES, LPSECURITY_ATTRIBUTES, BOOL, DWORD,
                                           LPVOID, LPCSTR, LPSTARTUPINFOA, LPPROCESS_INFORMATION);
@@ -177,10 +182,10 @@ extern CreateHardLinkA_type CreateHardLinkA_reroute;
 typedef DWORD(WINAPI* GetFullPathNameW_type)(LPCWSTR, DWORD, LPWSTR, LPWSTR*);
 extern GetFullPathNameW_type GetFullPathNameW_reroute;
 
-typedef int(STDAPICALLTYPE* SHFileOperationA_type)(LPSHFILEOPSTRUCTA);
+typedef int(WINAPI* SHFileOperationA_type)(LPSHFILEOPSTRUCTA);
 extern SHFileOperationA_type SHFileOperationA_reroute;
 
-typedef int(STDAPICALLTYPE* SHFileOperationW_type)(LPSHFILEOPSTRUCTW);
+typedef int(WINAPI* SHFileOperationW_type)(LPSHFILEOPSTRUCTW);
 extern SHFileOperationW_type SHFileOperationW_reroute;
 
 typedef BOOL(WINAPI* GetFileVersionInfoW_type)(LPCWSTR, DWORD, DWORD, LPVOID);
