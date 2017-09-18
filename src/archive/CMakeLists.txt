@@ -7,7 +7,7 @@ set(library_name "archive")
 ## Files ##
 # Main
 SET(HDRS
-	include/${library_name}/archive.h
+    include/${library_name}/archive.h
     include/${library_name}/callback.h
     include/${library_name}/extractcallback.h
     include/${library_name}/opencallback.h
@@ -25,7 +25,7 @@ SET(HDRS
 )
 
 SET(SRCS
-	src/archive.cpp
+    src/archive.cpp
     src/extractcallback.cpp
     src/callback.cpp
     src/opencallback.cpp
@@ -34,6 +34,9 @@ SET(SRCS
     src/propertyvariant.cpp
     src/inputstream.cpp
 )
+
+## Dependencies ##
+find_package(Qt5Core REQUIRED)
 
 ## Library ##
 add_library(${library_name} STATIC ${HDRS} ${SRCS})
@@ -44,7 +47,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC common)
+target_link_libraries(${library_name} PUBLIC common Qt5::Core)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.

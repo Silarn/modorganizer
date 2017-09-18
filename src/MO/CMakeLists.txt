@@ -223,7 +223,6 @@ source_group(QT FILES ${QTs})
 
 ## Dependencies ##
 find_package(Qt5Widgets REQUIRED)
-# find_package(Qt5WebKit REQUIRED)
 find_package(Qt5WinExtras REQUIRED)
 find_package(Qt5WebView REQUIRED)
 
