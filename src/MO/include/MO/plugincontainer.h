@@ -44,8 +44,10 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
 
     template <typename T>
     const std::vector<T*>& plugins() const {
-        typename boost::fusion::result_of::at_key<const PluginMap, T>::type temp = boost::fusion::at_key<T>(m_Plugins);
-        return temp;
+        // FIXME: This.
+        return {};
+        // typename boost::fusion::result_of::at_key<const PluginMap, T>::type temp =
+        // boost::fusion::at_key<T>(m_Plugins);  return temp;
     }
 
     const PreviewGenerator& previewGenerator() const;
