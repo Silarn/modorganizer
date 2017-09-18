@@ -146,6 +146,30 @@ else()
     message(WARNING "Unsupported or unknown compiler")
 endif()
 
+## Helper Function ##
+#if
+# includeDir is where obvious.
+# libraryName will be the name of the imported target.
+# libraryFile is the name of the library on disk, IE zlib.dll
+# includeFile will be the path relative to includeDir
+# type will be STATIC or SHARED or INTERFACE or the like.
+function(import_target libraryName libraryFile includeDir includeFile type)
+    set(INCLUDE_DIRS ${includeDir})
+    set(LIBRARY ${PREFIX_PATH}/lib/${libraryFile}${CMAKE_${type}_LIBRARY_SUFFIX})
+    set(LIBRARY_D ${PREFIX_PATH}/lib/${libraryFile}d${CMAKE_${type}_LIBRARY_SUFFIX})
+    if(NOT EXISTS ${INCLUDE_DIRS}/${includeFile} OR NOT type STREQUAL "INTERFACE" AND NOT EXISTS ${LIBRARY} OR NOT EXISTS ${LIBRARY_D})
+        message(FATAL_ERROR "${libraryName} not found, have you installed it correctly?\n"
+                "${library_name} requires ${libraryName}")
+    endif()
+    add_library(${libraryName} ${type} IMPORTED)
+    set_property(TARGET ${libraryName} PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${INCLUDE_DIRS})
+    if(NOT type STREQUAL "INTERFACE")
+        set_property(TARGET ${libraryName} PROPERTY IMPORTED_LOCATION_RELEASE ${LIBRARY})
+        set_property(TARGET ${libraryName} PROPERTY IMPORTED_LOCATION_DEBUG ${LIBRARY_D})
+    endif()
+endfunction()
+#endif
+
 ## Imported Targets ##
 # Qt
 if (IS_X64)
@@ -156,75 +180,19 @@ endif()
 find_package(Qt5Core REQUIRED)
 
 # ZLIB
-set(ZLIB_INCLUDE_DIRS ${PREFIX_PATH}/include)
-set(ZLIB_LIBRARY ${PREFIX_PATH}/lib/zlibstatic${CMAKE_STATIC_LIBRARY_SUFFIX})
-set(ZLIB_LIBRARY_D ${PREFIX_PATH}/lib/zlibstaticd${CMAKE_STATIC_LIBRARY_SUFFIX})
-if(NOT EXISTS ${ZLIB_INCLUDE_DIRS}/zlib.h OR NOT EXISTS ${ZLIB_LIBRARY})
-    message(FATAL_ERROR "Zlib not found, have you built it correctly?\n"
-            "${library_name} requires Static Zlib")
-endif()
-add_library(Zlib STATIC IMPORTED)
-set_property(TARGET Zlib PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ZLIB_INCLUDE_DIRS})
-set_property(TARGET Zlib PROPERTY IMPORTED_LOCATION_RELEASE ${ZLIB_LIBRARY})
-set_property(TARGET Zlib PROPERTY IMPORTED_LOCATION_DEBUG ${ZLIB_LIBRARY_D})
+import_target(Zlib "zlibstatic" ${PREFIX_PATH}/include "zlib.h" "STATIC")
 # Fmtlib
 find_package(fmt REQUIRED CONFIG)
 # spdlog
-set(SPDLog_INCLUDE_DIRS ${PREFIX_PATH}/include)
-if(NOT EXISTS ${SPDLog_INCLUDE_DIRS}/spdlog/spdlog.h)
-    message(FATAL_ERROR "spdlog not found, have you installed it correctly?")
-endif()
-add_library(spdlog INTERFACE IMPORTED)
-set_property(TARGET spdlog PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${spdlog_INCLUDE_DIRS})
+import_target(spdlog "" ${PREFIX_PATH}/include "spdlog/spdlog.h" "INTERFACE")
 # Google Test
-set(GTEST_INCLUDE_DIRS ${PREFIX_PATH}/include)
-set(GTEST_LIBRARY ${PREFIX_PATH}/lib/gtest${CMAKE_STATIC_LIBRARY_SUFFIX})
-set(GTEST_LIBRARY_D ${PREFIX_PATH}/lib/gtestd${CMAKE_STATIC_LIBRARY_SUFFIX})
-if(NOT EXISTS ${GTEST_INCLUDE_DIRS}/gtest/gtest.h OR NOT EXISTS ${GTEST_LIBRARY})
-    message(FATAL_ERROR "GTest not found, have you built it correctly?\n"
-            "${library_name} requires Static GTest")
-endif()
-add_library(GTest STATIC IMPORTED)
-set_property(TARGET GTest PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${GTEST_INCLUDE_DIRS})
-set_property(TARGET GTest PROPERTY IMPORTED_LOCATION_RELEASE ${GTEST_LIBRARY})
-set_property(TARGET GTest PROPERTY IMPORTED_LOCATION_DEBUG ${GTEST_LIBRARY_D})
+import_target(GTest "gtest" ${PREFIX_PATH}/include "gtest/gtest.h" "STATIC")
 # AsmJit
-set(ASMJIT_INCLUDE_DIRS ${PREFIX_PATH}/include)
-set(ASMJIT_LIBRARY ${PREFIX_PATH}/lib/asmjit${CMAKE_STATIC_LIBRARY_SUFFIX})
-set(ASMJIT_LIBRARY_D ${PREFIX_PATH}/lib/asmjitd${CMAKE_STATIC_LIBRARY_SUFFIX})
-if(NOT EXISTS ${ASMJIT_INCLUDE_DIRS}/asmjit/asmjit.h OR NOT EXISTS ${ASMJIT_LIBRARY})
-    message(FATAL_ERROR "AsmJit not found, have you built it correctly?\n"
-            "${library_name} requires Static AsmJit")
-endif()
-add_library(AsmJit STATIC IMPORTED)
-set_property(TARGET AsmJit PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${ASMJIT_INCLUDE_DIRS})
-set_property(TARGET AsmJit PROPERTY IMPORTED_LOCATION_RELEASE ${ASMJIT_LIBRARY})
-set_property(TARGET AsmJit PROPERTY IMPORTED_LOCATION_DEBUG ${ASMJIT_LIBRARY_D})
+import_target(AsmJit "asmjit" ${PREFIX_PATH}/include "asmjit/asmjit.h" "STATIC")
 # UDIS86
-set(UDIS86_INCLUDE_DIRS ${PREFIX_PATH}/include)
-set(UDIS86_LIBRARY ${PREFIX_PATH}/lib/libudis86${CMAKE_STATIC_LIBRARY_SUFFIX})
-set(UDIS86_LIBRARY_D ${PREFIX_PATH}/lib/libudis86d${CMAKE_STATIC_LIBRARY_SUFFIX})
-if(NOT EXISTS ${UDIS86_INCLUDE_DIRS}/udis86.h OR NOT EXISTS ${UDIS86_LIBRARY})
-    message(FATAL_ERROR "UDIS86 not found, have you built it correctly?\n"
-            "${library_name} requires Static UDIS86")
-endif()
-add_library(UDIS86 STATIC IMPORTED)
-set_property(TARGET UDIS86 PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${UDIS86_INCLUDE_DIRS})
-set_property(TARGET UDIS86 PROPERTY IMPORTED_LOCATION_RELEASE ${UDIS86_LIBRARY})
-set_property(TARGET UDIS86 PROPERTY IMPORTED_LOCATION_DEBUG ${UDIS86_LIBRARY_D})
+import_target(UDIS86 "libudis86" ${PREFIX_PATH}/include "udis86.h" "STATIC")
 # bit7z
-set(bit7z_INCLUDE_DIRS ${PREFIX_PATH}/include)
-set(bit7z_LIBRARY ${PREFIX_PATH}/lib/bit7z${CMAKE_STATIC_LIBRARY_SUFFIX})
-set(bit7z_LIBRARY_D ${PREFIX_PATH}/lib/bit7z_d${CMAKE_STATIC_LIBRARY_SUFFIX})
-if(NOT EXISTS ${bit7z_INCLUDE_DIRS}/bit7z.hpp OR NOT EXISTS ${bit7z_LIBRARY})
-    message(FATAL_ERROR "bit7z not found, have you built it correctly?\n"
-            "${library_name} requires Static bit7z")
-endif()
-add_library(bit7z STATIC IMPORTED)
-set_property(TARGET bit7z PROPERTY INTERFACE_INCLUDE_DIRECTORIES ${bit7z_INCLUDE_DIRS})
-set_property(TARGET bit7z PROPERTY IMPORTED_LOCATION_RELEASE ${bit7z_LIBRARY})
-set_property(TARGET bit7z PROPERTY IMPORTED_LOCATION_DEBUG ${bit7z_LIBRARY_D})
-
+import_target(bit7z "bit7z" ${PREFIX_PATH}/include "bit7z.hpp" "STATIC")
 ## Targets ##
 # add_subdirectory(usvfs_shared)
 # add_subdirectory(thooklib)
