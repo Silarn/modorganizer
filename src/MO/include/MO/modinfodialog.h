@@ -152,7 +152,7 @@ class ModInfoDialog : public MOBase::TutorableDialog {
     void unhideConflictFile();
 
     void thumbnailClicked(const QString& fileName);
-    void linkClicked(const QUrl& url);
+    bool linkClicked(const QUrl& url, QWebEnginePage::NavigationType, bool);
 
     void deleteTriggered();
     void renameTriggered();

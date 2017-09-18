@@ -20,15 +20,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/modinfodialog.h"
 #include "ui_modinfodialog.h"
 
-#include "bbcode.h"
-#include "categories.h"
-#include "iplugingame.h"
-#include "messagedialog.h"
-#include "nexusinterface.h"
-#include "questionboxmemory.h"
-#include "report.h"
-#include "settings.h"
-#include "utility.h"
+#include "MO/bbcode.h"
+#include "MO/categories.h"
+#include "MO/messagedialog.h"
+#include "MO/nexusinterface.h"
+#include "MO/settings.h"
+#include "uibase/iplugingame.h"
+#include "uibase/questionboxmemory.h"
+#include "uibase/report.h"
+#include "uibase/utility.h"
 
 #include <QDir>
 #include <QDirIterator>
@@ -82,8 +82,16 @@ ModInfoDialog::ModInfoDialog(ModInfo::Ptr modInfo, const DirectoryEntry* directo
     connect(&m_ThumbnailMapper, SIGNAL(mapped(const QString&)), this, SIGNAL(thumbnailClickedSignal(const QString&)));
     connect(this, SIGNAL(thumbnailClickedSignal(const QString&)), this, SLOT(thumbnailClicked(const QString&)));
     connect(m_ModInfo.data(), SIGNAL(modDetailsUpdated(bool)), this, SLOT(modDetailsUpdated(bool)));
-    connect(ui->descriptionView, SIGNAL(linkClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
-    ui->descriptionView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+    // FIXME: TODO: http://doc.qt.io/qt-5/qtwebenginewidgets-qtwebkitportingguide.html
+    // There is no way to connect a signal to run C++ code when a link is clicked. However, link clicks can be delegated
+    // to the Qt application instead of having the HTML handler engine process them by overloading the
+    // QWebEnginePage::acceptNavigationRequest() function. This is necessary when an HTML document is used as part of
+    // the user interface, and not to display external data, for example, when displaying a list of results.
+    // connect(ui->descriptionView, SIGNAL(linkClicked(QUrl)), this, SLOT(linkClicked(QUrl)));
+    // ui->descriptionView->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+    // HACK: ugly.
+    connect(ui->descriptionView, SIGNAL(acceptNavigationRequest(QWebEnginePage::NavigationType, bool)), this,
+            SLOT(linkClicked(QWebEnginePage::NavigationType, bool)));
 
     if (directory->originExists(ToWString(modInfo->name()))) {
         m_Origin = &directory->getOriginByName(ToWString(modInfo->name()));
@@ -627,15 +635,19 @@ void ModInfoDialog::on_visitNexusLabel_linkActivated(const QString& link) {
     emit nexusLinkActivated(link);
 }
 
-void ModInfoDialog::linkClicked(const QUrl& url) {
+bool ModInfoDialog::linkClicked(const QUrl& url, QWebEnginePage::NavigationType type, bool) {
+    if (type != QWebEnginePage::NavigationTypeLinkClicked) {
+        return true;
+    }
     // Ideally we'd ask the mod for the game and the web service then pass the game
     // and URL to the web service
-    if (NexusInterface::instance()->isURLGameRelated(url)) {
-        this->close();
-        emit nexusLinkActivated(url.toString());
-    } else {
+    if (!NexusInterface::instance()->isURLGameRelated(url)) {
         ::ShellExecuteW(nullptr, L"open", ToWString(url.toString()).c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+        return false;
     }
+    this->close();
+    emit nexusLinkActivated(url.toString());
+    return true;
 }
 
 void ModInfoDialog::refreshNexusData(int modID) {
