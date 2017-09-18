@@ -77,9 +77,9 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
         COL_LASTCOLUMN = COL_MODINDEX
     };
 
-    typedef boost::signals2::signal<void()> SignalRefreshed;
-    typedef boost::signals2::signal<void(const QString&, int, int)> SignalPluginMoved;
-    typedef boost::signals2::signal<void(const QString&, PluginStates)> SignalPluginStateChanged;
+    // typedef boost::signals2::signal<void()> SignalRefreshed;
+    // typedef boost::signals2::signal<void(const QString&, int, int)> SignalPluginMoved;
+    // typedef boost::signals2::signal<void(const QString&, PluginStates)> SignalPluginStateChanged;
 
   public:
     /**
@@ -319,9 +319,9 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
     QTextCodec* m_Utf8Codec;
     QTextCodec* m_LocalCodec;
 
-    SignalRefreshed m_Refreshed;
-    SignalPluginMoved m_PluginMoved;
-    SignalPluginStateChanged m_PluginStateChanged;
+    // SignalRefreshed m_Refreshed;
+    // SignalPluginMoved m_PluginMoved;
+    // SignalPluginStateChanged m_PluginStateChanged;
 
     QTemporaryFile m_TempFile;
 

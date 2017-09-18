@@ -73,9 +73,9 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     };
 
   private:
-    typedef boost::signals2::signal<bool(const QString&), SignalCombinerAnd> SignalAboutToRunApplication;
-    typedef boost::signals2::signal<void(const QString&, unsigned int)> SignalFinishedRunApplication;
-    typedef boost::signals2::signal<void(const QString&)> SignalModInstalled;
+    // typedef boost::signals2::signal<bool(const QString&), SignalCombinerAnd> SignalAboutToRunApplication;
+    // typedef boost::signals2::signal<void(const QString&, unsigned int)> SignalFinishedRunApplication;
+    // typedef boost::signals2::signal<void(const QString&)> SignalModInstalled;
 
   public:
     OrganizerCore(const QSettings& initSettings);
@@ -255,9 +255,9 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
 
     SelfUpdater m_Updater;
 
-    SignalAboutToRunApplication m_AboutToRun;
-    SignalFinishedRunApplication m_FinishedRun;
-    SignalModInstalled m_ModInstalled;
+    // SignalAboutToRunApplication m_AboutToRun;
+    // SignalFinishedRunApplication m_FinishedRun;
+    // SignalModInstalled m_ModInstalled;
 
     ModList m_ModList;
     PluginList m_PluginList;

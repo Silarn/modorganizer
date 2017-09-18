@@ -57,8 +57,8 @@ class ModList : public QAbstractItemModel, public MOBase::IModList {
         COL_LASTCOLUMN = COL_PRIORITY
     };
 
-    typedef boost::signals2::signal<void(const QString&, ModStates)> SignalModStateChanged;
-    typedef boost::signals2::signal<void(const QString&, int, int)> SignalModMoved;
+    // typedef boost::signals2::signal<void(const QString&, ModStates)> SignalModStateChanged;
+    // typedef boost::signals2::signal<void(const QString&, int, int)> SignalModMoved;
 
   public:
     /**
@@ -304,8 +304,8 @@ class ModList : public QAbstractItemModel, public MOBase::IModList {
 
     TModInfoChange m_ChangeInfo;
 
-    SignalModStateChanged m_ModStateChanged;
-    SignalModMoved m_ModMoved;
+    // SignalModStateChanged m_ModStateChanged;
+    // SignalModMoved m_ModMoved;
 
     std::map<ModInfo::EContent, std::tuple<QString, QString>> m_ContentIcons;
 

@@ -37,7 +37,7 @@ namespace MOBase {
 class IPluginDiagnose {
   public:
     /// signal to be emitted when the diagnosis information of the plugin is invalidated
-    typedef boost::signals2::signal<void(void)> SignalInvalidated;
+    // typedef boost::signals2::signal<void(void)> SignalInvalidated;
 
   public:
     /**
@@ -81,15 +81,17 @@ class IPluginDiagnose {
      * @brief the application will use this to register callbacks to be called when
      *        the diagnosis information needs to be re-evaluated
      */
-    virtual boost::signals2::connection onInvalidated(std::function<void()> callback) {
-        return m_OnInvalidated.connect(callback);
-    }
+    // virtual boost::signals2::connection onInvalidated(std::function<void()> callback) {
+    //    return m_OnInvalidated.connect(callback);
+    //}
 
   protected:
-    void invalidate() { m_OnInvalidated(); }
+    void invalidate() {
+        // m_OnInvalidated();
+    }
 
   private:
-    SignalInvalidated m_OnInvalidated;
+    // SignalInvalidated m_OnInvalidated;
 };
 
 } // namespace MOBase
