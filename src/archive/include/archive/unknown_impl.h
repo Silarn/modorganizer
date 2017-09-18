@@ -1,8 +1,7 @@
 #ifndef UNKNOWN_IMPL_H
 #define UNKNOWN_IMPL_H
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <common/sane_windows.h>
 
 /* This implements a common way of creating classes which implement one or more
  * COM interfaces.

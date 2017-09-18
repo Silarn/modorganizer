@@ -5,7 +5,7 @@ set(library_name "bsatk")
 ## Files ##
 # Main
 SET(HDRS
-	include/${library_name}/filehash.h
+    include/${library_name}/filehash.h
     include/${library_name}/errorcodes.h
     include/${library_name}/bsatypes.h
     include/${library_name}/bsafile.h
@@ -15,7 +15,7 @@ SET(HDRS
 )
 
 SET(SRCS
-	src/filehash.cpp
+    src/filehash.cpp
     src/bsafile.cpp
     src/bsaexception.cpp
     src/bsafolder.cpp
@@ -32,7 +32,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC Zlib)
+target_link_libraries(${library_name} PUBLIC Zlib common)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.
