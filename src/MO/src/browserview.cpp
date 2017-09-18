@@ -19,22 +19,25 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/browserview.h"
 
-#include "utility.h"
+#include "uibase/utility.h"
 #include <QEvent>
 #include <QKeyEvent>
 #include <QMenu>
 #include <QNetworkDiskCache>
-#include <QWebElement>
-#include <QWebFrame>
+//#include <QWebElement>
+#include <QtWebEngineWidgets/QWebEnginePage>
+#include <QtWebEngineWidgets/QWebEngineSettings>
+#include <QtWebEngineWidgets/QWebEngineView>
 #include <Shlwapi.h>
 
-BrowserView::BrowserView(QWidget* parent) : QWebView(parent) {
+BrowserView::BrowserView(QWidget* parent) : QWebEngineView(parent) {
     installEventFilter(this);
 
-    page()->settings()->setMaximumPagesInCache(10);
+    // FIXME: No alternative in QT 5.9. Important?
+    // page()->settings()->setMaximumPagesInCache(10);
 }
 
-QWebView* BrowserView::createWindow(QWebPage::WebWindowType) {
+QWebEngineView* BrowserView::createWindow(QWebEnginePage::WebWindowType) {
     BrowserView* newView = new BrowserView(parentWidget());
     emit initTab(newView);
     return newView;
@@ -57,14 +60,15 @@ bool BrowserView::eventFilter(QObject* obj, QEvent* event) {
     } else if (event->type() == QEvent::MouseButtonRelease) {
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
         if (mouseEvent->button() == Qt::MidButton) {
-            QWebHitTestResult hitTest = page()->frameAt(mouseEvent->pos())->hitTestContent(mouseEvent->pos());
-            if (hitTest.linkUrl().isValid()) {
-                emit openUrlInNewTab(hitTest.linkUrl());
-            }
+            // FIXME: This?
+            // QWebHitTestResult hitTest = page()->frameAt(mouseEvent->pos())->hitTestContent(mouseEvent->pos());
+            // if (hitTest.linkUrl().isValid()) {
+            //    emit openUrlInNewTab(hitTest.linkUrl());
+            //}
             mouseEvent->ignore();
 
             return true;
         }
     }
-    return QWebView::eventFilter(obj, event);
+    return QWebEngineView::eventFilter(obj, event);
 }

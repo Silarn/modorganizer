@@ -20,16 +20,16 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef NEXUSVIEW_H
 #define NEXUSVIEW_H
 
-class QEvent;
-class QUrl;
-class QWidget;
-#include <QWebPage>
-#include <QWebView>
+#include <QEvent>
+#include <QUrl>
+#include <QWidget>
+#include <QtWebEngineWidgets/QWebEnginePage>
+#include <QtWebEngineWidgets/QWebEngineView>
 
 /**
  * @brief web view used to display a nexus page
  **/
-class BrowserView : public QWebView {
+class BrowserView : public QWebEngineView {
     Q_OBJECT
 
   public:
@@ -62,7 +62,7 @@ class BrowserView : public QWebView {
     void findAgain();
 
   protected:
-    virtual QWebView* createWindow(QWebPage::WebWindowType type);
+    virtual QWebEngineView* createWindow(QWebEnginePage::WebWindowType type);
 
     virtual bool eventFilter(QObject* obj, QEvent* event);
 
