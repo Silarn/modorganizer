@@ -21,12 +21,12 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #define MAINWINDOW_H
 
 #include "MO/browserdialog.h"
+#include "MO/iuserinterface.h"
+#include "MO/modinfo.h"
+#include "MO/modlistsortproxy.h"
 #include "bsatk/bsafolder.h"
 #include "bsatk/errorcodes.h"
 #include "gamefeatures/savegameinfo.h"
-#include "iuserinterface.h"
-#include "modinfo.h"
-#include "modlistsortproxy.h"
 #include "uibase/delayedfilewriter.h"
 #include "uibase/imoinfo.h"
 #include "uibase/tutorialcontrol.h"
@@ -90,9 +90,7 @@ class QUrl;
 class QSettings;
 class QWidget;
 
-// Sigh - just for HANDLE
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+using HANDLE = void*;
 
 #include <functional>
 #include <set>
