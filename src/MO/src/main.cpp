@@ -306,10 +306,10 @@ MOBase::IPluginGame* selectGame(QSettings& settings, QDir const& gamePath, MOBas
     return game; // Woot
 }
 
+// Determine what game we are running where. Be very paranoid in case the
+// user has done something odd.
+// If the game name has been set up, use that.
 MOBase::IPluginGame* determineCurrentGame(QString const& moPath, QSettings& settings, PluginContainer const& plugins) {
-    // Determine what game we are running where. Be very paranoid in case the
-    // user has done something odd.
-    // If the game name has been set up, use that.
     QString gameName = settings.value("gameName", "").toString();
     if (!gameName.isEmpty()) {
         MOBase::IPluginGame* game = plugins.managedGame(gameName);
@@ -563,20 +563,20 @@ int main(int argc, char* argv[]) {
         fs::path settingsPath = dataPath / AppConfig::iniFileName();
         QSettings settings(QString::fromStdString(settingsPath.string()), QSettings::IniFormat);
 
+        // Setup the Core application.
         qDebug("initializing core");
         OrganizerCore organizer(settings);
         qDebug("initialize plugins");
         PluginContainer pluginContainer(&organizer);
-        // FIXME: Crashes here.
         pluginContainer.loadPlugins();
 
+        // Setup MO for game.
         MOBase::IPluginGame* game = determineCurrentGame(application.applicationDirPath(), settings, pluginContainer);
         if (game == nullptr) {
             return 1;
         }
 
         organizer.setManagedGame(game);
-
         organizer.createDefaultProfile();
 
         // See the pragma - we apparently don't use this so not sure why we check it
