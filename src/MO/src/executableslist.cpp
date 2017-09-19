@@ -16,17 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/executableslist.h"
 
-#include "uibase/iplugingame.h"
-#include "uibase/utility.h"
-
-#include <QDebug>
-#include <QDir>
-#include <QFileInfo>
-
-#include <algorithm>
+#include <uibase/iplugingame.h>
 
 using namespace MOBase;
 

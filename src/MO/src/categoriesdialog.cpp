@@ -16,16 +16,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/categoriesdialog.h"
+#include "MO/categories.h"
 #include "ui_categoriesdialog.h"
 
-#include "MO/categories.h"
-#include "uibase/utility.h"
 #include <QItemDelegate>
 #include <QLineEdit>
 #include <QMenu>
 #include <QRegExpValidator>
+#include <uibase/utility.h>
 
 class NewIDValidator : public QIntValidator {
   public:

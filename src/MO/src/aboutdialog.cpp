@@ -16,16 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/aboutdialog.h"
 #include "ui_aboutdialog.h"
-#include <QApplication>
-#include <QLabel>
-#include <QListWidget>
-#include <QListWidgetItem>
-#include <QTextBrowser>
-#include <QVariant>
-#include <Qt>
+
 #include <uibase/utility.h>
 
 AboutDialog::AboutDialog(const QString& version, QWidget* parent) : QDialog(parent), ui(new Ui::AboutDialog) {

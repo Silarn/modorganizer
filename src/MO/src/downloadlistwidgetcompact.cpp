@@ -16,9 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/downloadlistwidgetcompact.h"
 #include "ui_downloadlistwidgetcompact.h"
+
 #include <QMenu>
 #include <QMessageBox>
 #include <QMouseEvent>

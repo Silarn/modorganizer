@@ -16,11 +16,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#include <common/sane_windows.h>
-
-#include <DbgHelp.h>
-
+#include "MO/Shared/appconfig.h"
+#include "MO/Shared/windows_error.h"
 #include "MO/helper.h"
 #include "MO/logbuffer.h"
 #include "MO/mainwindow.h"
@@ -28,18 +25,17 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/nxmaccessmanager.h"
 #include "MO/selectiondialog.h"
 #include "MO/singleinstance.h"
-#include "uibase/tutorialmanager.h"
-#include <MO/Shared/appconfig.h>
-#include <MO/Shared/windows_error.h>
-#include <uibase/report.h>
 
+#include <common/sane_windows.h>
+#include <uibase/report.h>
+#include <uibase/tutorialmanager.h>
+
+#include <DbgHelp.h>
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSplashScreen>
-
 #include <ShellAPI.h>
-
 
 #pragma comment(linker, "/manifestdependency:\"name='dlls' version='1.0.0.0' type='win32'\"")
 

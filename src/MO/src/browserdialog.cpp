@@ -16,24 +16,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/browserdialog.h"
 #include "MO/browserview.h"
 #include "MO/messagedialog.h"
 #include "MO/persistentcookiejar.h"
 #include "MO/settings.h"
 #include "ui_browserdialog.h"
-#include "uibase/report.h"
+
 #include <QDesktopWidget>
-#include <QDir>
-#include <QInputDialog>
-#include <QKeyEvent>
-#include <QMenu>
-#include <QNetworkCookie>
-#include <QNetworkCookieJar>
 #include <QtWebEngineWidgets/QWebEngineHistory>
-#include <QtWebEngineWidgets/QWebEnginePage>
-#include <QtWebEngineWidgets/QWebEngineSettings>
 #include <uibase/utility.h>
 
 BrowserDialog::BrowserDialog(QWidget* parent)

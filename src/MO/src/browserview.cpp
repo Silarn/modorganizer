@@ -19,7 +19,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "MO/browserview.h"
 
-#include "uibase/utility.h"
 #include <QEvent>
 #include <QKeyEvent>
 #include <QMenu>
@@ -27,6 +26,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtWebEngineWidgets/QWebEnginePage>
 #include <QtWebEngineWidgets/QWebEngineSettings>
 #include <QtWebEngineWidgets/QWebEngineView>
+#include <uibase/utility.h>
 
 BrowserView::BrowserView(QWidget* parent) : QWebEngineView(parent) {
     installEventFilter(this);

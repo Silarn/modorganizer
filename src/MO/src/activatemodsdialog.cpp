@@ -16,15 +16,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/activatemodsdialog.h"
 #include "ui_activatemodsdialog.h"
+
 #include <QComboBox>
-#include <QHeaderView>
 #include <QLabel>
-#include <QString>
-#include <QTableWidget>
-#include <QtGlobal>
 
 ActivateModsDialog::ActivateModsDialog(SaveGameInfo::MissingAssets const& missingAssets, QWidget* parent)
     : TutorableDialog("ActivateMods", parent), ui(new Ui::ActivateModsDialog) {
