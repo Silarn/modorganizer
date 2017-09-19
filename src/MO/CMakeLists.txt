@@ -245,7 +245,7 @@ target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets
 )
 
 ## Executable ##
-add_executable(${library_name} WIN32 ${HDRS} ${SRCS} ${QTs})
+add_executable(${library_name} ${HDRS} ${SRCS} ${QTs})
 set_target_properties(${library_name} PROPERTIES OUTPUT_NAME "ModOrganizer")
 # Headers
 target_include_directories(${library_name} PUBLIC
@@ -259,11 +259,13 @@ target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::We
                       ${library_name}Shared
                       # esptk
                       Dbghelp advapi32 Version Shlwapi)
-add_definitions(-DQT_MESSAGELOGCONTEXT)
+# add_definitions(-DQT_MESSAGELOGCONTEXT)
 # QT
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 if(WIN32)
-    SET(windeploy_parameters --no-translations --no-plugins --dir dlls --release-with-debug-info
+    SET(windeploy_parameters --no-translations
+        # --no-plugins
+        --dir dlls --plugindir dlls --libdir dlls --release-with-debug-info --pdb
         # --no-printsupport --no-qml --no-positioning
         --no-compiler-runtime
     )
