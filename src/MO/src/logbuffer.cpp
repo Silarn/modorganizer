@@ -28,6 +28,7 @@ using MOBase::reportError;
 
 QScopedPointer<LogBuffer> LogBuffer::s_Instance;
 QMutex LogBuffer::s_Mutex;
+QtMessageHandler LogBuffer::old_handler;
 
 LogBuffer::LogBuffer(int messageCount, QtMsgType minMsgType, const QString& outputFileName)
     : QAbstractItemModel(nullptr), m_OutFileName(outputFileName), m_ShutDown(false), m_MinMsgType(minMsgType),
@@ -208,6 +209,28 @@ void LogBuffer::cleanQuit() {
     if (!s_Instance.isNull()) {
         s_Instance->m_ShutDown = true;
     }
+}
+
+void log(const char* format, ...) {
+    // FIXME: C style va_args? In C++? The horror.
+    // FIXME: Removing this causes compilation to fail.
+    // Somehow it's being used in MOShared.lib(directoryentry.obj).
+    // error LNK2019: unresolved external symbol "void __cdecl log(char const *,...)" (?log@@YAXPEBDZZ) referenced in
+    // function "public: bool __cdecl MOShared::FileRegister::removeFile(unsigned int)"
+    // (?removeFile@FileRegister@MOShared@@QEAA_NI@Z)
+    va_list argList;
+    va_start(argList, format);
+
+    static const int BUFFERSIZE = 1000;
+
+    char buffer[BUFFERSIZE + 1];
+    buffer[BUFFERSIZE] = '\0';
+
+    vsnprintf(buffer, BUFFERSIZE, format, argList);
+
+    qCritical("%s", buffer);
+
+    va_end(argList);
 }
 
 QString LogBuffer::Message::toString() const {
