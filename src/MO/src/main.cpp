@@ -32,6 +32,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSplashScreen>
 #include <common/predef.h>
 #include <common/stringutils.h>
+#include <fmt/format.h>
 #include <uibase/report.h>
 #include <uibase/tutorialmanager.h>
 
@@ -40,6 +41,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <array>
 #include <filesystem>
 #include <fstream>
+#include <iostream>
+#include <sstream>
 #include <string>
 
 namespace fs = std::experimental::filesystem;
@@ -48,6 +51,10 @@ namespace fs = std::experimental::filesystem;
 
 using namespace MOBase;
 using namespace MOShared;
+
+// Debug output will be logged here as well as to the console.
+// This way it can be used in the Minidump.
+static thread_local std::stringstream errorLog;
 
 bool createAndMakeWritable(const std::wstring& subPath) {
     QString const dataPath = qApp->property("dataPath").toString();
@@ -148,6 +155,59 @@ void cleanupDir() {
 
 bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
 
+static BOOL CALLBACK MyMiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_INPUT pInput,
+                                        PMINIDUMP_CALLBACK_OUTPUT pOutput) {
+    BOOL bRet = FALSE;
+
+    // Check parameters
+    if (pInput == 0 || pOutput == 0) {
+        return FALSE;
+    }
+
+    // Process the callbacks
+    switch (pInput->CallbackType) {
+    case IncludeModuleCallback: {
+        // Include the module into the dump
+        bRet = TRUE;
+    } break;
+
+    case IncludeThreadCallback: {
+        // Include the thread into the dump
+        bRet = TRUE;
+    } break;
+
+    case ModuleCallback: {
+        // Does the module have ModuleReferencedByMemory flag set ?
+        if (!(pOutput->ModuleWriteFlags & ModuleReferencedByMemory)) {
+            // No, it does not - exclude it
+            wprintf(L"Excluding module: %s \n", pInput->Module.FullPath);
+            pOutput->ModuleWriteFlags &= (~ModuleWriteModule);
+        }
+        bRet = TRUE;
+    } break;
+
+    case ThreadCallback: {
+        // Include all thread information into the minidump
+        bRet = TRUE;
+    } break;
+
+    case ThreadExCallback: {
+        // Include this information
+        bRet = TRUE;
+    } break;
+
+    case MemoryCallback: {
+        // We do not include any information here -> return FALSE
+        bRet = FALSE;
+    } break;
+
+    case CancelCallback:
+        break;
+    }
+
+    return bRet;
+}
+
 static std::string CreateMiniDump(EXCEPTION_POINTERS* exceptionPtrs) {
     std::string errorMsg;
     // Create Dump File.
@@ -160,17 +220,20 @@ static std::string CreateMiniDump(EXCEPTION_POINTERS* exceptionPtrs) {
         exceptionInfo.ExceptionPointers = exceptionPtrs;
         exceptionInfo.ClientPointers = FALSE;
         _MINIDUMP_USER_STREAM_INFORMATION userInfo;
-        std::string txt = "TESTING TESTING";
+        std::string txt = errorLog.str();
         std::array<_MINIDUMP_USER_STREAM, 1> tmp = {
             {CommentStreamA, txt.size() + 1, txt.data()},
         };
         userInfo.UserStreamCount = tmp.size();
         userInfo.UserStreamArray = &tmp[0];
+        _MINIDUMP_CALLBACK_INFORMATION callbackInfo;
+        callbackInfo.CallbackRoutine = &MyMiniDumpCallback;
+        callbackInfo.CallbackParam = 0;
 
-        MINIDUMP_TYPE mtype = static_cast<MINIDUMP_TYPE>(MiniDumpNormal | MiniDumpWithPrivateReadWriteMemory |
-                                                         MiniDumpWithIndirectlyReferencedMemory | MiniDumpWithDataSegs);
+        MINIDUMP_TYPE mtype =
+            static_cast<MINIDUMP_TYPE>(MiniDumpNormal | MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory);
         BOOL success = MiniDumpWriteDump(::GetCurrentProcess(), ::GetCurrentProcessId(), dumpFile, mtype,
-                                         &exceptionInfo, &userInfo, nullptr);
+                                         &exceptionInfo, &userInfo, &callbackInfo);
 
         ::FlushFileBuffers(dumpFile);
         ::CloseHandle(dumpFile);
@@ -407,7 +470,38 @@ MOBase::IPluginGame* determineCurrentGame(QString const& moPath, QSettings& sett
     return nullptr;
 }
 
+void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
+    QByteArray localMsg = msg.toLocal8Bit();
+    std::string smsg =
+        fmt::format("{:s} ({:s}:{:d}, {:s})\n", localMsg.constData(), context.file, context.line, context.function);
+    switch (type) {
+    case QtDebugMsg:
+        smsg = fmt::format("Debug: {:s}", smsg);
+        break;
+    case QtInfoMsg:
+        smsg = fmt::format("Info: {:s}", smsg);
+        break;
+    case QtWarningMsg:
+        smsg = fmt::format("Warning: {:s}", smsg);
+        break;
+    case QtCriticalMsg:
+        smsg = fmt::format("Critical: {:s}", smsg);
+        break;
+    case QtFatalMsg:
+        smsg = fmt::format("Fatal: {:s}", smsg);
+        break;
+    }
+    std::cout << smsg;
+    errorLog << smsg;
+
+    if (type == QtFatalMsg) {
+        abort();
+    }
+}
+
 int main(int argc, char* argv[]) {
+    // Install message handler for logging.
+    qInstallMessageHandler(&myMessageOutput);
     MOApplication application(argc, argv);
     // TODO: ALL Logging should use qUtf8Printable instead of qPrintable
     // As per http://doc.qt.io/qt-5/qtglobal.html#qPrintable
