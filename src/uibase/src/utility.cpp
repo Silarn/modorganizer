@@ -17,9 +17,9 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
 #include "uibase/utility.h"
 #include "uibase/report.h"
+
 #include <QApplication>
 #include <QBuffer>
 #include <QDesktopWidget>
@@ -28,9 +28,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QtDebug>
 #include <QtWinExtras/QtWin>
 #include <common/sane_windows.h>
+
 #include <ShlObj.h>
-#include <shellapi.h>
 #include <memory>
+#include <shellapi.h>
 #define FO_RECYCLE 0x1003
 
 namespace MOBase {
@@ -316,17 +317,7 @@ bool copyFileRecursive(const QString& source, const QString& baseDir, const QStr
     return true;
 }
 
-std::wstring ToWString(const QString& source) {
-    // FIXME
-    // why not source.toStdWString() ?
-    wchar_t* buffer = new wchar_t[source.count() + 1];
-    source.toWCharArray(buffer);
-    buffer[source.count()] = L'\0';
-    std::wstring result(buffer);
-    delete[] buffer;
-
-    return result;
-}
+std::wstring ToWString(const QString& source) { return source.toStdWString(); }
 
 std::string ToString(const QString& source, bool utf8) {
     QByteArray array8bit;
@@ -340,13 +331,7 @@ std::string ToString(const QString& source, bool utf8) {
 
 QString ToQString(const std::string& source) { return QString::fromUtf8(source.c_str()); }
 
-QString ToQString(const std::wstring& source) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    return QString::fromWCharArray(source.c_str());
-#else
-    return QString::fromUtf16(source.c_str());
-#endif
-}
+QString ToQString(const std::wstring& source) { return QString::fromWCharArray(source.c_str()); }
 
 QString ToString(const SYSTEMTIME& time) {
     char dateBuffer[100];
