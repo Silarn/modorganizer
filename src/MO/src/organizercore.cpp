@@ -111,17 +111,22 @@ OrganizerCore::OrganizerCore(const QSettings& initSettings)
       m_DirectoryRefresher(), m_DirectoryStructure(new DirectoryEntry(L"data", nullptr, 0)),
       m_DownloadManager(NexusInterface::instance(), this), m_InstallationManager(), m_RefresherThread(),
       m_PluginListsWriter(std::bind(&OrganizerCore::savePluginList, this)) {
+    // Setup download manager.
     m_DownloadManager.setOutputDirectory(m_Settings.getDownloadDirectory());
     m_DownloadManager.setPreferredServers(m_Settings.getPreferredServers());
 
+    // Setup Nexus Interface.
     NexusInterface::instance()->setCacheDirectory(m_Settings.getCacheDirectory());
     NexusInterface::instance()->setNMMVersion(m_Settings.getNMMVersion());
 
+    // FIXME: No Idea.
     MOBase::QuestionBoxMemory::init(initSettings.fileName());
 
+    // Setup Installer
     m_InstallationManager.setModsDirectory(m_Settings.getModDirectory());
     m_InstallationManager.setDownloadDirectory(m_Settings.getDownloadDirectory());
 
+    // Setup Slots.
     connect(&m_DownloadManager, SIGNAL(downloadSpeed(QString, int)), this, SLOT(downloadSpeed(QString, int)));
     connect(&m_DirectoryRefresher, SIGNAL(refreshed()), this, SLOT(directory_refreshed()));
 
