@@ -21,52 +21,25 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <DbgHelp.h>
 
-#include "MO/executableslist.h"
 #include "MO/helper.h"
 #include "MO/logbuffer.h"
 #include "MO/mainwindow.h"
 #include "MO/moapplication.h"
-#include "MO/modlist.h"
 #include "MO/nxmaccessmanager.h"
-#include "MO/profile.h"
 #include "MO/selectiondialog.h"
 #include "MO/singleinstance.h"
-#include "MO/spawn.h"
 #include "uibase/tutorialmanager.h"
-#include "uibase/utility.h"
 #include <MO/Shared/appconfig.h>
-#include <MO/Shared/inject.h>
 #include <MO/Shared/windows_error.h>
-#include <eh.h>
 #include <uibase/report.h>
-#include <uibase/scopeguard.h>
-#include <uibase/utility.h>
 
-#include <QApplication>
-#include <QBuffer>
-#include <QCheckBox>
-#include <QComboBox>
 #include <QDesktopServices>
-#include <QDir>
-#include <QDirIterator>
 #include <QFileDialog>
-#include <QFileInfo>
-#include <QLibraryInfo>
-#include <QListWidget>
 #include <QMessageBox>
-#include <QPushButton>
-#include <QSettings>
-#include <QSharedMemory>
 #include <QSplashScreen>
-#include <QSslSocket>
-#include <QToolBar>
-#include <QWhatsThis>
 
 #include <ShellAPI.h>
 
-#include <cstdarg>
-#include <iostream>
-#include <stdexcept>
 
 #pragma comment(linker, "/manifestdependency:\"name='dlls' version='1.0.0.0' type='win32'\"")
 
