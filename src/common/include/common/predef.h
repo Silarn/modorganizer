@@ -9,4 +9,10 @@
 #define COMMON_IS_64 0
 #endif
 
+#ifdef _DEBUG
+#define COMMON_IS_DEBUG 1
+#else
+#define COMMON_IS_DEBUG 0
+#endif
+
 #endif
