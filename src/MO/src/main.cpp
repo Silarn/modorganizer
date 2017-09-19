@@ -68,8 +68,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <iostream>
 #include <stdexcept>
 
-// #pragma comment(linker,                                                                                                \
-//                "/manifestDependency:\"name='dlls' processorArchitecture='x86' version='1.0.0.0' type='win32' \"")
+#pragma comment(linker, "/manifestdependency:\"name='dlls' version='1.0.0.0' type='win32'\"")
 
 using namespace MOBase;
 using namespace MOShared;
@@ -487,9 +486,9 @@ int main(int argc, char* argv[]) {
     }
 
     { // extend path to include dll directory so plugins don't need a manifest
-        // (using AddDllDirectory would be an alternative to this but it seems fairly complicated esp.
-        //  since it isn't easily accessible on Windows < 8
-        //  SetDllDirectory replaces other search directories and this seems to propagate to child processes)
+      // (using AddDllDirectory would be an alternative to this but it seems fairly complicated esp.
+      //  since it isn't easily accessible on Windows < 8
+      //  SetDllDirectory replaces other search directories and this seems to propagate to child processes)
         static const int BUFSIZE = 4096;
 
         std::vector<TCHAR> oldPath(BUFSIZE);
@@ -532,6 +531,7 @@ int main(int argc, char* argv[]) {
 
         QSettings settings(dataPath + "/" + QString::fromStdWString(AppConfig::iniFileName()), QSettings::IniFormat);
         qDebug("initializing core");
+        // FIXME: Crashes around here.
         OrganizerCore organizer(settings);
         qDebug("initialize plugins");
         PluginContainer pluginContainer(&organizer);
