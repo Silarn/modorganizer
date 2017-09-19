@@ -29,14 +29,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 class LogBuffer : public QAbstractItemModel {
     Q_OBJECT
-
   public:
     static void init(int messageCount, QtMsgType minMsgType, const QString& outputFileName);
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     static void log(QtMsgType type, const QMessageLogContext& context, const QString& message);
-#else
-    static void log(QtMsgType type, const char* message);
-#endif
 
     static void writeNow();
     static void cleanQuit();
@@ -55,9 +50,7 @@ class LogBuffer : public QAbstractItemModel {
     int rowCount(const QModelIndex& parent) const;
     int columnCount(const QModelIndex& parent) const;
     QVariant data(const QModelIndex& index, int role) const;
-
   signals:
-
   public slots:
 
   private:
@@ -86,6 +79,8 @@ class LogBuffer : public QAbstractItemModel {
     QtMsgType m_MinMsgType;
     size_t m_NumMessages;
     std::vector<Message> m_Messages;
+
+    static QtMessageHandler old_handler;
 };
 
 #endif // LOGBUFFER_H

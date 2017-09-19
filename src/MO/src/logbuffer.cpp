@@ -36,11 +36,7 @@ LogBuffer::LogBuffer(int messageCount, QtMsgType minMsgType, const QString& outp
 }
 
 LogBuffer::~LogBuffer() {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     qInstallMessageHandler(0);
-#else
-    qInstallMsgHandler(0);
-#endif
     //  if (!m_ShutDown) {
     write();
     //  }
@@ -93,11 +89,7 @@ void LogBuffer::init(int messageCount, QtMsgType minMsgType, const QString& outp
         s_Instance.reset();
     }
     s_Instance.reset(new LogBuffer(messageCount, minMsgType, outputFileName));
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-    qInstallMessageHandler(LogBuffer::log);
-#else
-    qInstallMsgHandler(LogBuffer::log);
-#endif
+    old_handler = qInstallMessageHandler(LogBuffer::log);
 }
 
 char LogBuffer::msgTypeID(QtMsgType type) {
@@ -115,8 +107,6 @@ char LogBuffer::msgTypeID(QtMsgType type) {
     }
 }
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
-
 void LogBuffer::log(QtMsgType type, const QMessageLogContext& context, const QString& message) {
     // QMutexLocker doesn't support timeout...
     if (!s_Mutex.tryLock(100)) {
@@ -124,6 +114,7 @@ void LogBuffer::log(QtMsgType type, const QMessageLogContext& context, const QSt
         return;
     }
     ON_BLOCK_EXIT([]() { s_Mutex.unlock(); });
+    old_handler(type, context, message); // INFO: Old handler registered in application main.cpp
 
     if (!s_Instance.isNull()) {
         s_Instance->logMessage(type, message);
@@ -143,19 +134,6 @@ void LogBuffer::log(QtMsgType type, const QMessageLogContext& context, const QSt
     }
     fflush(stdout);
 }
-
-#else
-
-void LogBuffer::log(QtMsgType type, const char* message) {
-    QMutexLocker guard(&s_Mutex);
-    if (!s_Instance.isNull()) {
-        s_Instance->logMessage(type, message);
-    }
-    fprintf(stdout, "%s [%c] %s\n", qPrintable(QTime::currentTime().toString()), msgTypeID(type), message);
-    fflush(stdout);
-}
-
-#endif
 
 QModelIndex LogBuffer::index(int row, int column, const QModelIndex&) const { return createIndex(row, column, row); }
 
@@ -230,22 +208,6 @@ void LogBuffer::cleanQuit() {
     if (!s_Instance.isNull()) {
         s_Instance->m_ShutDown = true;
     }
-}
-
-void log(const char* format, ...) {
-    va_list argList;
-    va_start(argList, format);
-
-    static const int BUFFERSIZE = 1000;
-
-    char buffer[BUFFERSIZE + 1];
-    buffer[BUFFERSIZE] = '\0';
-
-    vsnprintf(buffer, BUFFERSIZE, format, argList);
-
-    qCritical("%s", buffer);
-
-    va_end(argList);
 }
 
 QString LogBuffer::Message::toString() const {

@@ -41,7 +41,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <array>
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string>
 
@@ -56,73 +55,55 @@ using namespace MOShared;
 // This way it can be used in the Minidump.
 static thread_local std::stringstream errorLog;
 
-bool createAndMakeWritable(const std::wstring& subPath) {
+// Create directory and make sure it's writeable.
+static void createAndMakeWritable(const fs::path& fullPath) {
     QString const dataPath = qApp->property("dataPath").toString();
-    QString fullPath = dataPath + "/" + QString::fromStdWString(subPath);
-
-    if (!QDir(fullPath).exists()) {
-        QDir().mkdir(fullPath);
+    if (!fs::exists(fullPath)) {
+        fs::create_directories(fullPath);
     }
-
-    QFileInfo fileInfo(fullPath);
-    if (!fileInfo.exists() || !fileInfo.isWritable()) {
-        if (QMessageBox::question(
-                nullptr, QObject::tr("Permissions required"),
-                QObject::tr("The current user account doesn't have the required access rights to run "
-                            "Mod Organizer. The neccessary changes can be made automatically (the MO directory "
-                            "will be made writable for the current user account). You will be asked to run "
-                            "\"helper.exe\" with administrative rights."),
-                QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::Yes) {
-            if (!Helper::init(dataPath.toStdWString())) {
-                return false;
-            }
-        } else {
-            return false;
-        }
-        // no matter which directory didn't exist/wasn't writable, the helper
-        // should have created them all so we don't have to worry this message box would appear repeatedly
-    }
-    return true;
 }
 
-bool bootstrap() {
+// Bootstraping code
+// Creates required directories, removes old files, verifies can start.
+static void bootstrap() {
     // remove the temporary backup directory in case we're restarting after an update
-    QString backupDirectory = qApp->applicationDirPath() + "/update_backup";
-    if (QDir(backupDirectory).exists()) {
-        shellDelete(QStringList(backupDirectory));
+    fs::path backupDirectory = qApp->applicationDirPath().toStdString() / fs::path("update_backup");
+    if (fs::exists(backupDirectory)) {
+        fs::remove_all(backupDirectory);
     }
+    fs::path dataPath = qApp->property("dataPath").toString().toStdString();
 
-    // cycle logfile
-    removeOldFiles(qApp->property("dataPath").toString() + "/" + QString::fromStdWString(AppConfig::logPath()),
-                   "ModOrganizer*.log", 5, QDir::Name);
+    // Remove all logfiles matching ModOrganizer*.log, except for five. Sorted by name.
+    fs::path logPath = dataPath / AppConfig::logPath();
+    removeOldFiles(QString::fromStdString(logPath.string()), "ModOrganizer*.log", 5, QDir::Name);
 
-    createAndMakeWritable(AppConfig::profilesPath());
-    createAndMakeWritable(AppConfig::modsPath());
-    createAndMakeWritable(AppConfig::downloadPath());
-    createAndMakeWritable(AppConfig::overwritePath());
-    createAndMakeWritable(AppConfig::logPath());
+    // Create required directories.
+    createAndMakeWritable(dataPath / AppConfig::profilesPath());
+    createAndMakeWritable(dataPath / AppConfig::modsPath());
+    createAndMakeWritable(dataPath / AppConfig::downloadPath());
+    createAndMakeWritable(dataPath / AppConfig::overwritePath());
+    createAndMakeWritable(dataPath / AppConfig::logPath());
 
     // verify the hook-dll exists
-    QString dllName = qApp->applicationDirPath() + "/" + ToQString(AppConfig::hookDLLName());
+    fs::path dllPath = qApp->applicationDirPath().toStdString() / fs::path(AppConfig::hookDLLName());
 
-    if (::GetModuleHandleW(ToWString(dllName).c_str()) != nullptr) {
+    if (::GetModuleHandleW(dllPath.native().data())) {
         throw std::runtime_error(
-            "hook.dll already loaded! You can't start Mod Organizer from within itself (not even indirectly)");
+            "hook.dll already loaded! You can't start Mod Organizer from within itself! (not even indirectly)");
     }
 
-    HMODULE dllMod = ::LoadLibraryW(ToWString(dllName).c_str());
-    if (dllMod == nullptr) {
+    HMODULE dllMod = ::LoadLibraryW(dllPath.native().data());
+    if (!dllMod) {
         throw windows_error("hook.dll is missing or invalid");
     }
     ::FreeLibrary(dllMod);
-
-    return true;
 }
 
 void cleanupDir() {
     // files from previous versions of MO that are no longer
     // required (in that location)
     QStringList fileNames{"imageformats/",
+                          "platforms/" // TODO: Check correct.
                           "loot/resources/",
                           "plugins/previewDDS.dll",
                           "dlls/boost_python-vc100-mt-1_55.dll",
@@ -145,9 +126,9 @@ void cleanupDir() {
         QString fullPath = qApp->applicationDirPath() + "/" + fileName;
         if (QFile::exists(fullPath)) {
             if (shellDelete(QStringList(fullPath), true)) {
-                qDebug("removed obsolete file %s", qPrintable(fullPath));
+                qDebug("removed obsolete file %s", qUtf8Printable(fullPath));
             } else {
-                qDebug("failed to remove obsolete %s", qPrintable(fullPath));
+                qDebug("failed to remove obsolete %s", qUtf8Printable(fullPath));
             }
         }
     }
@@ -447,12 +428,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QS
         smsg = fmt::format("Fatal: {:s}", smsg);
         break;
     }
-    std::cout << smsg;
     errorLog << smsg;
-
-    if (type == QtFatalMsg) {
-        abort();
-    }
 }
 
 int main(int argc, char* argv[]) {
@@ -504,31 +480,38 @@ int main(int argc, char* argv[]) {
         ::ShellExecuteW(nullptr, L"runas", fileLoc.data(), params.data(), workDir.data(), SW_SHOWNORMAL);
         return 1;
     }
-    return 1;
 
+    // Display splash screen
     QPixmap pixmap(":/MO/gui/splash");
     QSplashScreen splash(pixmap);
 
+    // Bootstrap, logging, and cleanup.
     try {
-        if (!bootstrap()) {
-            return -1;
-        }
+        // Bootstrap
+        bootstrap();
 
-        LogBuffer::init(100, QtDebugMsg, qApp->property("dataPath").toString() + "/logs/mo_interface.log");
+        // Setup logging
+        // INFO: Calls qInstallMessageHandler, overwriting the one here.
+        // Solution was to remove printing from ours and only log it for the minidump
+        // And have LogBuffer call the old one.
+        const fs::path logPath = dataPath / "logs" / "mo_interface.log";
+        LogBuffer::init(100, QtDebugMsg, QString::fromStdString(logPath.string()));
 
-#if QT_VERSION >= 0x050000 && !defined(QT_NO_SSL)
+#if !defined(QT_NO_SSL)
         qDebug("ssl support: %d", QSslSocket::supportsSsl());
 #endif
-
-        qDebug("Working directory: %s", qPrintable(QDir::toNativeSeparators(QDir::currentPath())));
-        qDebug("MO at: %s", qPrintable(QDir::toNativeSeparators(application.applicationDirPath())));
+        qDebug("Working directory: %s", qUtf8Printable(QDir::toNativeSeparators(QDir::currentPath())));
+        qDebug("MO at: %s", qUtf8Printable(QDir::toNativeSeparators(application.applicationDirPath())));
         splash.show();
 
+        // Cleanup outdated files and directories.
         cleanupDir();
     } catch (const std::exception& e) {
         reportError(e.what());
         return 1;
     }
+
+    return 1; // test
 
     { // extend path to include dll directory so plugins don't need a manifest
       // (using AddDllDirectory would be an alternative to this but it seems fairly complicated esp.
