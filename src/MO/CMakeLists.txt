@@ -255,7 +255,7 @@ target_include_directories(${library_name} PUBLIC
 )
 # Dependencies
 target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::WebEngine Qt5::WebEngineWidgets Zlib
-                      common uibase bsatk gamefeatures archive
+                      common uibase bsatk gamefeatures archive fmt::fmt-header-only
                       ${library_name}Shared
                       # esptk
                       Dbghelp advapi32 Version Shlwapi)
