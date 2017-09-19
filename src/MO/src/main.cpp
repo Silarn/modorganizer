@@ -148,6 +148,8 @@ void cleanupDir() {
 
 bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
 
+static std::string CreateMiniDump(EXCEPTION_POINTERS* pep) {}
+
 // Error Handling for all Unhandled Exceptions.
 // Writes a minidump and displays information to the User.
 static LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* exceptionPtrs) {
@@ -159,41 +161,48 @@ static LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* except
     // This is so we can step into the handler.
     QMessageBox::critical(nullptr, QObject::tr("Test"), QObject::tr("TEST"));
 #endif
-    LONG result = EXCEPTION_CONTINUE_SEARCH;
-
+    LONG result = EXCEPTION_EXECUTE_HANDLER;
     HMODULE dbgDLL = ::LoadLibraryW(L"dbghelp.dll");
-
     // Message to display to the user for why this couldnt be handled.
     std::string errorMsg;
-
-    if (dbgDLL) {
-        FuncMiniDumpWriteDump funcDump =
-            reinterpret_cast<FuncMiniDumpWriteDump>(::GetProcAddress(dbgDLL, "MiniDumpWriteDump"));
-        if (funcDump) {
-            if (QMessageBox::question(
-                    nullptr, QObject::tr("Whoops"),
-                    QObject::tr("ModOrganizer has crashed! "
-                                "Should a diagnostic file be created? "
-                                "If you make an issue at https://github.com/ModOrganizer/modorganizer, "
-                                "including this file (%1), "
-                                "the bug is a lot more likely to be fixed. "
-                                "Please include a short description of what you were "
-                                "doing when the crash happened")
-                        .arg(qApp->applicationFilePath().append(".dmp")),
-                    QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
-
-                std::wstring dumpName = ToWString(qApp->applicationFilePath().append(".dmp"));
-
-                HANDLE dumpFile = ::CreateFile(dumpName.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr,
-                                               CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    bool createDump =
+        QMessageBox::question(nullptr, QObject::tr("Whoops!"),
+                              QObject::tr("ModOrganizer has crashed! "
+                                          "Should a diagnostic file be created? "
+                                          "If you make an issue at https://github.com/ModOrganizer/modorganizer, "
+                                          "including this file (%1), "
+                                          "the bug is a lot more likely to be fixed. "
+                                          "Please include a short description of what you were "
+                                          "doing when the crash happened")
+                                  .arg(qApp->applicationFilePath().append(".dmp"))) == QMessageBox::Yes;
+    // Create dump if user said Yes.
+    if (createDump) {
+        // Make sure it exists.
+        if (dbgDLL) {
+            FuncMiniDumpWriteDump funcDump =
+                reinterpret_cast<FuncMiniDumpWriteDump>(::GetProcAddress(dbgDLL, "MiniDumpWriteDump"));
+            // Make sure it has the API we need.
+            if (funcDump) {
+                // Create Dump File.
+                fs::path dumpPath = LR"(\\?\)" + ToWString(qApp->applicationFilePath().append(".dmp"));
+                HANDLE dumpFile =
+                    ::CreateFileW(dumpPath.native().data(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE, nullptr,
+                                  CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
                 if (dumpFile != INVALID_HANDLE_VALUE) {
                     _MINIDUMP_EXCEPTION_INFORMATION exceptionInfo;
                     exceptionInfo.ThreadId = ::GetCurrentThreadId();
                     exceptionInfo.ExceptionPointers = exceptionPtrs;
-                    exceptionInfo.ClientPointers = false;
+                    exceptionInfo.ClientPointers = FALSE;
+                    _MINIDUMP_USER_STREAM_INFORMATION userInfo;
+                    std::string txt = "TESTING TESTING";
+                    std::array<_MINIDUMP_USER_STREAM, 1> tmp = {
+                        {CommentStreamA, txt.size() + 1, txt.data()},
+                    };
+                    userInfo.UserStreamCount = tmp.size();
+                    userInfo.UserStreamArray = &tmp[0];
 
                     BOOL success = funcDump(::GetCurrentProcess(), ::GetCurrentProcessId(), dumpFile, MiniDumpNormal,
-                                            &exceptionInfo, nullptr, nullptr);
+                                            &exceptionInfo, &userInfo, nullptr);
 
                     ::FlushFileBuffers(dumpFile);
                     ::CloseHandle(dumpFile);
@@ -201,23 +210,23 @@ static LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* except
                         return EXCEPTION_EXECUTE_HANDLER;
                     }
                     errorMsg = QString("failed to save minidump to %1 (error %2)")
-                                   .arg(QString::fromStdWString(dumpName))
+                                   .arg(QString::fromStdWString(dumpPath.wstring()))
                                    .arg(::GetLastError())
                                    .toStdString();
                 } else {
                     errorMsg = QString("failed to create %1 (error %2)")
-                                   .arg(QString::fromStdWString(dumpName))
+                                   .arg(QString::fromStdWString(dumpPath.wstring()))
                                    .arg(::GetLastError())
                                    .toStdString();
                 }
             } else {
-                return result;
+                errorMsg = "dbghelp.dll outdated";
             }
         } else {
-            errorMsg = "dbghelp.dll outdated";
+            errorMsg = "dbghelp.dll not found";
         }
     } else {
-        errorMsg = "dbghelp.dll not found";
+        return result;
     }
 
     QMessageBox::critical(
