@@ -16,17 +16,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/syncoverwritedialog.h"
-
 #include "ui_syncoverwritedialog.h"
-#include <uibase/report.h>
-#include <uibase/utility.h>
 
 #include <QComboBox>
-#include <QDir>
 #include <QDirIterator>
-#include <QStringList>
+#include <uibase/report.h>
+#include <uibase/utility.h>
 
 using namespace MOBase;
 using namespace MOShared;

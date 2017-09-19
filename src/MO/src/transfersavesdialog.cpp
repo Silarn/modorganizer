@@ -16,26 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/transfersavesdialog.h"
-
-#include "uibase/iplugingame.h"
-#include "uibase/isavegame.h"
-#include "gamefeatures/savegameinfo.h"
 #include "ui_transfersavesdialog.h"
 
 #include <QDateTime>
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
-#include <QFlags>
-#include <QLabel>
-#include <QListWidget>
-#include <QListWidgetItem>
 #include <QMessageBox>
-#include <QPushButton>
-#include <QStringList>
-#include <QtDebug>
+#include <gamefeatures/savegameinfo.h>
+#include <uibase/iplugingame.h>
+#include <uibase/isavegame.h>
 
 using namespace MOBase;
 using namespace MOShared;

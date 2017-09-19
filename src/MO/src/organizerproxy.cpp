@@ -1,8 +1,7 @@
 #include "MO/organizerproxy.h"
-
-#include "MO/Shared/appconfig.h"
 #include "MO/organizercore.h"
 
+#include <MO/Shared/appconfig.h>
 #include <QApplication>
 
 using namespace MOBase;

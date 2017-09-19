@@ -17,35 +17,20 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/pluginlist.h"
-#include "MO/Shared/inject.h"
 #include "MO/modinfo.h"
 #include "MO/safewritefile.h"
 #include "MO/settings.h"
-#include "uibase/scopeguard.h"
-#include <MO/Shared/windows_error.h>
-// #include <espfile.h>
-#include <uibase/iplugingame.h>
-#include <uibase/report.h>
-#include <uibase/utility.h>
 
-#include <QApplication>
-#include <QCoreApplication>
+#include <MO/Shared/windows_error.h>
 #include <QDateTime>
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
-#include <QKeyEvent>
-#include <QListWidgetItem>
 #include <QMessageBox>
 #include <QMimeData>
 #include <QSortFilterProxyModel>
-#include <QString>
 #include <QTextCodec>
-#include <QtDebug>
+#include <uibase/iplugingame.h>
+#include <uibase/report.h>
 
-#include <algorithm>
-#include <ctime>
-#include <stdexcept>
+// #include <esptk/espfile.h>
 
 using namespace MOBase;
 using namespace MOShared;

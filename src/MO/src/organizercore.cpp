@@ -17,11 +17,12 @@
 #include <uibase/report.h>
 #include <uibase/scopeguard.h>
 
-#include <Psapi.h>
 #include <QApplication>
 #include <QMessageBox>
 #include <QNetworkInterface>
 #include <QProcess>
+
+#include <Psapi.h>
 #include <tchar.h> // for _tcsicmp
 
 using namespace MOShared;

@@ -16,14 +16,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/pluginlistsortproxy.h"
 #include "MO/messagedialog.h"
+
 #include <QApplication>
-#include <QCheckBox>
-#include <QMenu>
 #include <QTreeView>
-#include <QWidgetAction>
 
 PluginListSortProxy::PluginListSortProxy(QObject* parent)
     : QSortFilterProxyModel(parent), m_SortIndex(0), m_SortOrder(Qt::AscendingOrder) {

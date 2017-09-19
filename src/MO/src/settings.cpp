@@ -16,46 +16,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/settings.h"
-
-#include "MO/Shared/appconfig.h"
 #include "MO/serverinfo.h"
 #include "MO/settingsdialog.h"
-#include "uibase/pluginsetting.h"
-#include "uibase/versioninfo.h"
-#include <uibase/iplugin.h>
-#include <uibase/iplugingame.h>
-#include <uibase/questionboxmemory.h>
-#include <uibase/utility.h>
 
+#include <MO/Shared/appconfig.h>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
-#include <QDate>
-#include <QDialog>
-#include <QDir>
 #include <QDirIterator>
-#include <QFileInfo>
 #include <QLineEdit>
-#include <QListWidgetItem>
-#include <QLocale>
 #include <QMessageBox>
-#include <QRegExp>
-#include <QStringList>
-#include <QVariantMap>
-
-#include <Qt>      // for Qt::UserRole, etc
-#include <QtDebug> // for qDebug, qWarning
-
-#include <common/sane_windows.h> // For ShellExecuteW, HINSTANCE, etc
-#include <shellapi.h>
-
-#include <algorithm> // for sort
-#include <memory>
-#include <stdexcept> // for runtime_error
-#include <string>
-#include <utility> // for pair, make_pair
+#include <uibase/iplugingame.h>
+#include <uibase/questionboxmemory.h>
+#include <uibase/utility.h>
 
 using namespace MOBase;
 

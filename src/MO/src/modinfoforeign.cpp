@@ -1,9 +1,7 @@
 #include "MO/modinfoforeign.h"
 
-#include "uibase/iplugingame.h"
-#include "uibase/utility.h"
-
 #include <QApplication>
+#include <uibase/iplugingame.h>
 
 using namespace MOBase;
 using namespace MOShared;

@@ -1,5 +1,6 @@
 #include "MO/savetextasdialog.h"
 #include "ui_savetextasdialog.h"
+
 #include <QClipboard>
 #include <QFileDialog>
 #include <uibase/report.h>

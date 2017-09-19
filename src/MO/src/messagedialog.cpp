@@ -16,12 +16,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/messagedialog.h"
 #include "ui_messagedialog.h"
+
 #include <QResizeEvent>
 #include <QTimer>
-#include <common/sane_windows.h>
 
 MessageDialog::MessageDialog(const QString& text, QWidget* reference) : QDialog(reference), ui(new Ui::MessageDialog) {
     ui->setupUi(this);

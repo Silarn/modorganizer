@@ -19,7 +19,6 @@
 /**
  * \file json.cpp
  */
-
 #include "MO/json.h"
 
 namespace QtJson {

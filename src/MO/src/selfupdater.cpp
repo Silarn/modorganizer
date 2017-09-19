@@ -16,51 +16,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/selfupdater.h"
-
 #include "MO/downloadmanager.h"
 #include "MO/installationmanager.h"
 #include "MO/messagedialog.h"
 #include "MO/nexusinterface.h"
 #include "MO/nxmaccessmanager.h"
-#include "archive/archive.h"
-#include "archive/callback.h"
-#include "uibase/iplugingame.h"
-#include "uibase/utility.h"
-#include <MO/Shared/util.h>
-#include <uibase/report.h>
-#include <uibase/versioninfo.h>
 
+#include <MO/Shared/util.h>
 #include <QApplication>
-#include <QCoreApplication>
-#include <QDir>
-#include <QFileInfo>
 #include <QLibrary>
 #include <QMessageBox>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QNetworkRequest>
 #include <QProcess>
-#include <QProgressDialog>
-#include <QRegExp>
-#include <QStringList>
-#include <QTimer>
-#include <QUrl>
-#include <QVariantList>
-#include <QVariantMap>
-
-#include <Qt>
-#include <QtAlgorithms>
-#include <QtDebug>
-
-#include <common/sane_windows.h>
-
-#include <exception>
-#include <functional>
-#include <map>
-#include <stddef.h> //for size_t
-#include <stdexcept>
+#include <uibase/iplugingame.h>
+#include <uibase/report.h>
 
 using namespace MOBase;
 using namespace MOShared;

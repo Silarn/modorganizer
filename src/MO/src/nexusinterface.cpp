@@ -16,17 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/nexusinterface.h"
-
 #include "MO/json.h"
 #include "MO/nxmaccessmanager.h"
 #include "MO/selectiondialog.h"
-#include "uibase/iplugingame.h"
-#include <MO/Shared/util.h>
-#include <uibase/utility.h>
 
+#include <MO/Shared/util.h>
 #include <QApplication>
+#include <uibase/iplugingame.h>
 
 #include <regex>
 

@@ -16,14 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/overwriteinfodialog.h"
 #include "ui_overwriteinfodialog.h"
-#include "uibase/report.h"
-#include "uibase/utility.h"
+
 #include <QMenu>
 #include <QMessageBox>
-#include <Shlwapi.h>
+#include <uibase/report.h>
+#include <uibase/utility.h>
+
 #include <shellapi.h>
 
 using namespace MOBase;

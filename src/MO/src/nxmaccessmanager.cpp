@@ -16,25 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/nxmaccessmanager.h"
-
 #include "MO/persistentcookiejar.h"
-#include "MO/selfupdater.h"
 #include "MO/settings.h"
-#include "uibase/iplugingame.h"
-#include "uibase/nxmurl.h"
-#include "uibase/report.h"
-#include "uibase/utility.h"
+
 #include <QCoreApplication>
-#include <QDir>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QMessageBox>
 #include <QNetworkCookie>
-#include <QNetworkCookieJar>
-#include <QNetworkProxy>
-#include <QNetworkRequest>
 #include <QPushButton>
 #include <QThread>
 #include <QUrlQuery>

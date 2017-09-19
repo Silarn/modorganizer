@@ -16,31 +16,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/modinfo.h"
-
+#include "MO/categories.h"
 #include "MO/modinfobackup.h"
 #include "MO/modinfoforeign.h"
 #include "MO/modinfooverwrite.h"
-#include "MO/modinforegular.h"
-
-#include "MO/categories.h"
-#include "MO/modinfodialog.h"
 #include "MO/overwriteinfodialog.h"
-#include "uibase/filenamestring.h"
-#include "uibase/installationtester.h"
-#include "uibase/versioninfo.h"
-
-#include <MO/Shared/appconfig.h>
-#include <gamefeatures/scriptextender.h>
-#include <uibase/iplugingame.h>
-#include <uibase/versioninfo.h>
 
 #include <QApplication>
-#include <QDirIterator>
-#include <QMutexLocker>
-#include <QSettings>
-#include <functional>
+#include <uibase/filenamestring.h>
+#include <uibase/installationtester.h>
+#include <uibase/iplugingame.h>
 
 using namespace MOBase;
 using namespace MOShared;

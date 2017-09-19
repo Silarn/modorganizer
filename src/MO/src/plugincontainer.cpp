@@ -1,14 +1,11 @@
 #include "MO/plugincontainer.h"
 #include "MO/organizerproxy.h"
-#include "uibase/report.h"
+
 #include <MO/Shared/appconfig.h>
-#include <QAction>
 #include <QCoreApplication>
 #include <QDirIterator>
 #include <QMessageBox>
-#include <QToolButton>
-#include <uibase/idownloadmanager.h>
-#include <uibase/ipluginproxy.h>
+#include <uibase/report.h>
 
 using namespace MOBase;
 using namespace MOShared;

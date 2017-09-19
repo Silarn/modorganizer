@@ -1,7 +1,7 @@
 #include "MO/modinfowithconflictinfo.h"
 
-#include "MO/Shared/directoryentry.h"
-#include "uibase/utility.h"
+#include <MO/Shared/directoryentry.h>
+#include <uibase/utility.h>
 
 using namespace MOBase;
 using namespace MOShared;

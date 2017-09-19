@@ -19,7 +19,6 @@
 #include "MO/qtgroupingproxy.h"
 
 #include <QDebug>
-#include <QIcon>
 #include <QInputDialog>
 
 /*!

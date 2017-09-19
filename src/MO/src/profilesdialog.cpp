@@ -16,31 +16,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/profilesdialog.h"
-#include "ui_profilesdialog.h"
-
-#include "MO/Shared/appconfig.h"
-#include "MO/profile.h"
 #include "MO/profileinputdialog.h"
 #include "MO/transfersavesdialog.h"
-#include "gamefeatures/bsainvalidation.h"
-#include "uibase/iplugingame.h"
-#include "uibase/report.h"
-#include "uibase/utility.h"
+#include "ui_profilesdialog.h"
 
-#include <QDir>
+#include <MO/Shared/appconfig.h>
 #include <QDirIterator>
 #include <QInputDialog>
-#include <QLineEdit>
-#include <QListWidgetItem>
 #include <QMessageBox>
 #include <QWhatsThis>
-#include <Qt>
-
-#include <common/sane_windows.h>
-
-#include <exception>
+#include <gamefeatures/bsainvalidation.h>
+#include <uibase/iplugingame.h>
+#include <uibase/report.h>
+#include <uibase/utility.h>
 
 using namespace MOBase;
 using namespace MOShared;

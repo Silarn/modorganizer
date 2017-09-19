@@ -16,37 +16,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/modlist.h"
-
 #include "MO/messagedialog.h"
 #include "MO/modlistsortproxy.h"
 #include "MO/qtgroupingproxy.h"
 #include "MO/viewmarkingscrollbar.h"
-#include "uibase/installationtester.h"
-#include <MO/Shared/appconfig.h>
-#include <uibase/report.h>
-#include <uibase/utility.h>
 
-#include <QAbstractItemView>
+#include <MO/Shared/appconfig.h>
 #include <QApplication>
-#include <QCheckBox>
 #include <QContextMenuEvent>
-#include <QDir>
-#include <QDirIterator>
-#include <QEvent>
-#include <QFileInfo>
-#include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QSortFilterProxyModel>
-#include <QStandardItemModel>
-#include <QStringList>
-#include <QWidgetAction>
+#include <uibase/report.h>
 
-#include <algorithm>
 #include <sstream>
-#include <stdexcept>
 
 using namespace MOBase;
 

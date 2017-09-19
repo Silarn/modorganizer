@@ -16,36 +16,20 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/installationmanager.h"
-
 #include "MO/categories.h"
-#include "MO/messagedialog.h"
 #include "MO/modinfo.h"
 #include "MO/nexusinterface.h"
 #include "MO/queryoverwritedialog.h"
-#include "MO/selectiondialog.h"
 #include "MO/settings.h"
-#include "uibase/iplugininstallercustom.h"
-#include "uibase/iplugininstallersimple.h"
-#include "uibase/questionboxmemory.h"
-#include "uibase/report.h"
-#include "uibase/utility.h"
-#include <uibase/installationtester.h>
-#include <uibase/scopeguard.h>
-#include <uibase/utility.h>
 
-#include <QApplication>
-#include <QDateTime>
-#include <QDir>
-#include <QDirIterator>
-#include <QFileInfo>
 #include <QInputDialog>
 #include <QLibrary>
-#include <QMessageBox>
-#include <QPushButton>
-#include <QRegExp>
-#include <QSettings>
+#include <uibase/installationtester.h>
+#include <uibase/iplugininstallercustom.h>
+#include <uibase/iplugininstallersimple.h>
+#include <uibase/report.h>
+#include <uibase/scopeguard.h>
 
 using namespace MOBase;
 using namespace MOShared;

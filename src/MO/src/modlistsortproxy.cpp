@@ -16,19 +16,13 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/modlistsortproxy.h"
 #include "MO/messagedialog.h"
-#include "MO/modinfo.h"
-#include "MO/profile.h"
 #include "MO/qtgroupingproxy.h"
+
 #include <QApplication>
-#include <QCheckBox>
-#include <QDebug>
-#include <QMenu>
 #include <QMimeData>
 #include <QTreeView>
-#include <QWidgetAction>
 
 ModListSortProxy::ModListSortProxy(Profile* profile, QObject* parent)
     : QSortFilterProxyModel(parent), m_Profile(profile), m_CategoryFilter(), m_CurrentFilter(), m_FilterActive(false),

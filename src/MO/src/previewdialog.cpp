@@ -1,5 +1,6 @@
 #include "MO/previewdialog.h"
 #include "ui_previewdialog.h"
+
 #include <QFileInfo>
 
 PreviewDialog::PreviewDialog(const QString& fileName, QWidget* parent) : QDialog(parent), ui(new Ui::PreviewDialog) {

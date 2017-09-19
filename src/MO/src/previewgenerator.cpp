@@ -16,17 +16,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/previewgenerator.h"
+
 #include <QDesktopWidget>
 #include <QFileInfo>
-#include <QImageReader>
-#include <QLabel>
-#include <QTextEdit>
-#include <uibase/utility.h>
 
 PreviewGenerator::PreviewGenerator() {
-
     QDesktopWidget desk;
     m_MaxSize = desk.screenGeometry().size() * 0.8;
 }

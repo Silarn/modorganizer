@@ -16,35 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/mainwindow.h"
-#include "ui_mainwindow.h"
-
-#include "MO/Shared/directoryentry.h"
-#include "MO/directoryrefresher.h"
-#include "MO/executableslist.h"
-#include "MO/nexusinterface.h"
-#include "MO/organizercore.h"
-#include "MO/pluginlistsortproxy.h"
-#include "MO/previewgenerator.h"
-#include "MO/serverinfo.h"
-#include "MO/spawn.h"
-#include "gamefeatures/savegameinfo.h"
-#include "uibase/executableinfo.h"
-#include "uibase/guessedvalue.h"
-#include "uibase/imodinterface.h"
-#include "uibase/iplugindiagnose.h"
-#include "uibase/iplugingame.h"
-#include "uibase/isavegame.h"
-#include "uibase/isavegameinfowidget.h"
-#include "uibase/versioninfo.h"
-#include <common/stringutils.h>
-
-#include "MO/Shared/appconfig.h"
 #include "MO/aboutdialog.h"
 #include "MO/activatemodsdialog.h"
-#include "MO/browserdialog.h"
-#include "MO/categories.h"
 #include "MO/categoriesdialog.h"
 #include "MO/csvbuilder.h"
 #include "MO/downloadlist.h"
@@ -54,115 +28,57 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/editexecutablesdialog.h"
 #include "MO/filedialogmemory.h"
 #include "MO/genericicondelegate.h"
-#include "MO/installationmanager.h"
 #include "MO/lockeddialog.h"
 #include "MO/logbuffer.h"
 #include "MO/messagedialog.h"
 #include "MO/modflagicondelegate.h"
 #include "MO/modinfodialog.h"
-#include "MO/modlist.h"
-#include "MO/modlistsortproxy.h"
 #include "MO/motddialog.h"
 #include "MO/nxmaccessmanager.h"
 #include "MO/overwriteinfodialog.h"
 #include "MO/pluginlist.h"
+#include "MO/pluginlistsortproxy.h"
 #include "MO/previewdialog.h"
 #include "MO/problemsdialog.h"
-#include "MO/profile.h"
 #include "MO/profilesdialog.h"
 #include "MO/qtgroupingproxy.h"
 #include "MO/safewritefile.h"
 #include "MO/savetextasdialog.h"
 #include "MO/selectiondialog.h"
-#include "uibase/report.h"
-#include "uibase/tutorialmanager.h"
-#include <gamefeatures/bsainvalidation.h>
-#include <gamefeatures/dataarchives.h>
-#include <uibase/scopeguard.h>
-#include <uibase/taskprogressmanager.h>
-#include <uibase/utility.h>
+#include "MO/serverinfo.h"
+#include "MO/spawn.h"
+#include "ui_mainwindow.h"
 
-#include <QAbstractItemDelegate>
-#include <QAbstractProxyModel>
-#include <QAction>
-#include <QApplication>
+#include <MO/Shared/appconfig.h>
 #include <QBuffer>
-#include <QCheckBox>
 #include <QClipboard>
-#include <QCloseEvent>
-#include <QCoreApplication>
-#include <QCursor>
-#include <QDebug>
 #include <QDesktopWidget>
-#include <QDialog>
-#include <QDirIterator>
-#include <QDragEnterEvent>
-#include <QDropEvent>
-#include <QEvent>
-#include <QFileDialog>
-#include <QFont>
-#include <QFuture>
-#include <QHash>
-#include <QIODevice>
-#include <QIcon>
 #include <QInputDialog>
-#include <QItemSelection>
-#include <QItemSelectionModel>
 #include <QJsonArray>
 #include <QJsonDocument>
-#include <QJsonObject>
-#include <QJsonValueRef>
-#include <QLineEdit>
-#include <QListWidgetItem>
 #include <QMenu>
 #include <QMessageBox>
 #include <QMimeData>
-#include <QModelIndex>
 #include <QNetworkProxyFactory>
-#include <QPainter>
-#include <QPixmap>
-#include <QPoint>
-#include <QProcess>
-#include <QProgressDialog>
-#include <QPushButton>
-#include <QRadioButton>
-#include <QRect>
-#include <QRegExp>
-#include <QResizeEvent>
-#include <QScopedPointer>
-#include <QSettings>
-#include <QSize>
-#include <QSizePolicy>
-#include <QTime>
-#include <QTimer>
 #include <QToolButton>
 #include <QToolTip>
 #include <QTranslator>
-#include <QTreeWidget>
-#include <QUrl>
-#include <QVariantList>
 #include <QWhatsThis>
 #include <QWidgetAction>
-
-#include <QtDebug>
-#include <QtGlobal>
-
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
 #include <QtConcurrent/QtConcurrentRun>
-#else
-#include <QtConcurrentRun>
-#endif
+#include <common/stringutils.h>
+#include <gamefeatures/bsainvalidation.h>
+#include <gamefeatures/dataarchives.h>
+#include <uibase/isavegame.h>
+#include <uibase/isavegameinfowidget.h>
+#include <uibase/report.h>
+#include <uibase/scopeguard.h>
+#include <uibase/taskprogressmanager.h>
+#include <uibase/tutorialmanager.h>
 
-#include <shlobj.h>
-
-#include <exception>
-#include <functional>
-#include <limits.h>
-#include <map>
 #include <regex>
+#include <shlobj.h>
 #include <sstream>
-#include <stdexcept>
-#include <utility>
 
 #ifdef TEST_MODELS
 #include "modeltest.h"

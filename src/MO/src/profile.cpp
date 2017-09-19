@@ -16,42 +16,19 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/profile.h"
-
-#include "MO/modinfo.h"
 #include "MO/safewritefile.h"
-#include "Mo/Shared/appconfig.h"
+
 #include <MO/Shared/error_report.h>
+#include <Mo/Shared/appconfig.h>
+#include <QApplication>
+#include <QMessageBox>
 #include <gamefeatures/bsainvalidation.h>
 #include <gamefeatures/dataarchives.h>
 #include <uibase/iplugingame.h>
 #include <uibase/report.h>
-#include <uibase/utility.h>
-
-#include <QApplication>
-#include <QFile>     // for QFile
-#include <QFlags>    // for operator|, QFlags
-#include <QIODevice> // for QIODevice, etc
-#include <QMessageBox>
-#include <QScopedArrayPointer>
-#include <QStringList> // for QStringList
-#include <QtDebug>     // for qDebug, qWarning, etc
-#include <QtGlobal>    // for qPrintable
-
-#include <common/sane_windows.h>
 
 #include <assert.h> // for assert
-#include <limits.h> // for UINT_MAX, INT_MAX, etc
-#include <stddef.h> // for size_t
-#include <string.h> // for wcslen
-
-#include <algorithm> // for max, min
-#include <exception> // for exception
-#include <functional>
-#include <set> // for set
-#include <stdexcept>
-#include <utility> // for find
 
 using namespace MOBase;
 using namespace MOShared;

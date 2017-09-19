@@ -16,19 +16,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/moapplication.h"
-#include <QFile>
+
+#include <MO/Shared/appconfig.h>
 #include <QPainter>
 #include <QProxyStyle>
-#include <QStringList>
 #include <QStyleFactory>
 #include <QStyleOption>
-#include <MO/Shared/appconfig.h>
 #include <uibase/report.h>
 #include <uibase/utility.h>
-
-#include <QDebug>
 
 using MOBase::reportError;
 

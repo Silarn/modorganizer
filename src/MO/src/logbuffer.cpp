@@ -17,10 +17,9 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/logbuffer.h"
-#include <QDateTime>
+
 #include <QFile>
 #include <QIcon>
-#include <QMutexLocker>
 #include <common/sane_windows.h>
 #include <uibase/report.h>
 #include <uibase/scopeguard.h>

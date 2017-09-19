@@ -16,20 +16,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/loadmechanism.h"
-#include "MO/Shared/util.h"
-#include "uibase/utility.h"
+
+#include <MO/Shared/appconfig.h>
+#include <MO/Shared/util.h>
 #include <QCoreApplication>
 #include <QCryptographicHash>
-#include <QDir>
-#include <QFile>
-#include <QFileInfo>
 #include <QMessageBox>
-#include <QString>
-#include <MO/Shared/appconfig.h>
-#include <uibase/iplugingame.h>
 #include <gamefeatures/scriptextender.h>
+#include <uibase/iplugingame.h>
+#include <uibase/utility.h>
 
 using namespace MOBase;
 using namespace MOShared;

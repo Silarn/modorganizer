@@ -16,27 +16,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/modinfodialog.h"
-#include "ui_modinfodialog.h"
-
 #include "MO/bbcode.h"
 #include "MO/categories.h"
 #include "MO/messagedialog.h"
 #include "MO/nexusinterface.h"
-#include "MO/settings.h"
-#include "uibase/iplugingame.h"
-#include "uibase/questionboxmemory.h"
-#include "uibase/report.h"
-#include "uibase/utility.h"
+#include "ui_modinfodialog.h"
 
-#include <QDir>
-#include <QDirIterator>
 #include <QFileSystemModel>
 #include <QInputDialog>
 #include <QMenu>
 #include <QMessageBox>
-#include <QPushButton>
+#include <uibase/report.h>
 
 #include <sstream>
 

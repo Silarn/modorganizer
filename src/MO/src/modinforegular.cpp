@@ -1,14 +1,13 @@
 #include "MO/modinforegular.h"
-
 #include "MO/categories.h"
 #include "MO/messagedialog.h"
-#include "gamefeatures/scriptextender.h"
-#include "uibase/iplugingame.h"
-#include "uibase/report.h"
 
 #include <QApplication>
 #include <QDirIterator>
 #include <QSettings>
+#include <gamefeatures/scriptextender.h>
+#include <uibase/iplugingame.h>
+#include <uibase/report.h>
 
 #include <sstream>
 

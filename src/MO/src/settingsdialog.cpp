@@ -16,22 +16,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/settingsdialog.h"
-
 #include "MO/categoriesdialog.h"
 #include "MO/helper.h"
 #include "MO/noeditdelegate.h"
 #include "MO/settings.h"
 #include "ui_settingsdialog.h"
-#include "uibase/iplugingame.h"
 
-#include <QDirIterator>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QShortcut>
-
-#include <common/sane_windows.h>
+#include <uibase/iplugingame.h>
 
 using namespace MOBase;
 

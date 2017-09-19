@@ -16,14 +16,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/lockeddialog.h"
 #include "ui_lockeddialog.h"
 
-#include <QPoint>
 #include <QResizeEvent>
-#include <QWidget>
-#include <Qt> // for Qt::FramelessWindowHint, etc
 
 LockedDialog::LockedDialog(QWidget* parent, const QString& text, bool unlockButton)
     : QDialog(parent), ui(new Ui::LockedDialog), m_UnlockClicked(false) {

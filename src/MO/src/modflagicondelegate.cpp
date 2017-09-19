@@ -1,5 +1,4 @@
 #include "MO/modflagicondelegate.h"
-#include <QList>
 
 ModInfo::EFlag ModFlagIconDelegate::m_ConflictFlags[4] = {
     ModInfo::FLAG_CONFLICT_MIXED, ModInfo::FLAG_CONFLICT_OVERWRITE, ModInfo::FLAG_CONFLICT_OVERWRITTEN,

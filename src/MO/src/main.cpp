@@ -26,7 +26,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/selectiondialog.h"
 #include "MO/singleinstance.h"
 
-#include <common/sane_windows.h>
 #include <uibase/report.h>
 #include <uibase/tutorialmanager.h>
 
