@@ -127,6 +127,7 @@ void NexusBridge::nxmRequestFailed(int modID, int fileID, QVariant userData, int
 QAtomicInt NexusInterface::NXMRequestInfo::s_NextID(0);
 
 NexusInterface::NexusInterface() : m_NMMVersion() {
+    // FIXME: This Crashes MO if fails.
     VS_FIXEDFILEINFO version = GetFileVersion(ToWString(QApplication::applicationFilePath()));
     m_MOVersion =
         VersionInfo(version.dwFileVersionMS >> 16, version.dwFileVersionMS & 0xFFFF, version.dwFileVersionLS >> 16);
