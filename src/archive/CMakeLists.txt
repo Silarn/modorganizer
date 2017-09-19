@@ -48,13 +48,15 @@ target_include_directories(${library_name} PUBLIC
 )
 # Dependencies
 target_link_libraries(${library_name} PUBLIC common Qt5::Core 7zip)
+set_target_properties(${library_name} PROPERTIES AUTOMOC ON)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.
     LIBRARY  DESTINATION lib # <prefix>/lib. Shared Libs, non DLL.
-    RUNTIME  DESTINATION bin # <prefix>/bin. EXEs, DLLs and shit.
+    RUNTIME  DESTINATION bin/dlls # <prefix>/bin. EXEs, DLLs and shit.
 )
 install(DIRECTORY include/ DESTINATION include)
+INSTALL(FILES $<TARGET_FILE_DIR:${library_name}>/archive.pdb DESTINATION pdb)
 # This makes the project importable from the install directory
 # Put config file in per-project dir (name MUST match), can also
 # just go into 'cmake'.

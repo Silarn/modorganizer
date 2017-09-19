@@ -39,12 +39,14 @@ SET(SRCS
     src/profile.cpp
     src/skyriminfo.cpp
     src/utility.cpp
-    # src/version.rc
+    #
+    src/version.rc
 )
 
 ## Library ##
 add_library(${library_name} SHARED ${HDRS} ${SRCS})
 set_target_properties(${library_name} PROPERTIES OUTPUT_NAME "hook")
+add_definitions(-DDEBUG_LOG)
 # Headers
 target_include_directories(${library_name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

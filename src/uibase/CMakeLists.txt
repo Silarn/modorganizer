@@ -116,6 +116,7 @@ install(TARGETS ${library_name} EXPORT ${library_name}Config
     LIBRARY  DESTINATION lib # <prefix>/lib. Shared Libs, non DLL.
     RUNTIME  DESTINATION bin # <prefix>/bin. EXEs, DLLs and shit.
 )
+INSTALL(FILES $<TARGET_FILE_DIR:${library_name}>/uibase.pdb DESTINATION pdb)
 install(DIRECTORY include/ DESTINATION include)
 # This makes the project importable from the install directory
 # Put config file in per-project dir (name MUST match), can also
