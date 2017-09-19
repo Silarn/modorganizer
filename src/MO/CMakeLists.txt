@@ -215,7 +215,10 @@ SET(QTs
     src/stylesheet_resource.qrc
     #
     src/app_icon.rc
-    # src/version.rc
+    src/version.rc
+    #
+    src/dlls.manifest.qt5
+    src/dlls.manifest.debug.qt5
 )
 #endif
 
@@ -243,6 +246,7 @@ target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets
 
 ## Executable ##
 add_executable(${library_name} WIN32 ${HDRS} ${SRCS} ${QTs})
+set_target_properties(${library_name} PROPERTIES OUTPUT_NAME "ModOrganizer")
 # Headers
 target_include_directories(${library_name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -255,12 +259,11 @@ target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::We
                       ${library_name}Shared
                       # esptk
                       Dbghelp advapi32 Version Shlwapi)
+add_definitions(-DQT_MESSAGELOGCONTEXT)
 # QT
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 if(WIN32)
-    # FIXME: --libdir dlls doesnt work, puts it in wrong directory.
-    # SET(windeploy_parameters --no-translations --no-plugins --release-with-debug-info --no-compiler-runtime)
-    SET(windeploy_parameters --no-translations --no-plugins --dir dlls --release --pdb
+    SET(windeploy_parameters --no-translations --no-plugins --dir dlls --release-with-debug-info
         # --no-printsupport --no-qml --no-positioning
         --no-compiler-runtime
     )
@@ -268,8 +271,31 @@ if(WIN32)
     find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${QTDIR} ENV QTDIR PATH_SUFFIXES bin)
     add_custom_command(TARGET ${library_name} POST_BUILD
         COMMAND ${WINDEPLOYQT_EXECUTABLE} ${windeploy_parameters} $<TARGET_FILE:${library_name}>
+        WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin
+    )
+    add_custom_command(TARGET ${library_name} POST_BUILD
+        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${windeploy_parameters} $<TARGET_FILE:${library_name}>
+    )
+    add_custom_command(TARGET ${library_name} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_INSTALL_PREFIX}/bin/dlls $<TARGET_FILE_DIR:${library_name}>/dlls
     )
 endif()
+## WIP New Install targets
+INSTALL(TARGETS ${library_name}
+        RUNTIME DESTINATION bin
+)
+INSTALL(FILES $<TARGET_FILE_DIR:${library_name}>/ModOrganizer.pdb
+        DESTINATION pdb
+)
+INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/dlls.manifest$<$<CONFIG:Debug>:.debug>.qt5
+        DESTINATION bin/dlls
+        RENAME dlls.manifest
+)
+INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/stylesheets
+                  ${CMAKE_CURRENT_SOURCE_DIR}/src/tutorials
+        DESTINATION bin
+)
+        
 # Install Targets
 install(TARGETS ${library_name}Shared EXPORT ${library_name}SharedConfig
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.
@@ -291,7 +317,6 @@ export(TARGETS ${library_name}Shared FILE ${library_name}SharedConfig.cmake)
 # target_include_directories(${library_name}Tests PRIVATE test)
 # target_link_libraries(${library_name}Tests PRIVATE ${library_name} spdlog GTest)
 # add_test(${library_name}_Tests Tests)
-
 
 
 
