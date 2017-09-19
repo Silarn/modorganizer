@@ -134,6 +134,7 @@ void cleanupDir() {
     }
 }
 
+// Determines if the string `link` is a nexus link.
 bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
 
 static BOOL CALLBACK MyMiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_INPUT pInput,
@@ -534,6 +535,7 @@ int main(int argc, char* argv[]) {
         ::SetEnvironmentVariableW(L"PATH", newPath.c_str());
     }
 
+    // Handle CMD arguments.
     QStringList arguments = application.arguments();
 
     bool forcePrimary = false;
@@ -543,11 +545,13 @@ int main(int argc, char* argv[]) {
     }
 
     try {
+        // Make sure we only have one instance.
         SingleInstance instance(forcePrimary);
         if (!instance.primaryInstance()) {
-            if ((arguments.size() == 2) && isNxmLink(arguments.at(1))) {
+            QString url = arguments.at(1);
+            if ((arguments.size() == 2) && isNxmLink(url)) {
                 qDebug("not primary instance, sending download message");
-                instance.sendMessage(arguments.at(1));
+                instance.sendMessage(url);
                 return 0;
             } else if (arguments.size() == 1) {
                 QMessageBox::information(nullptr, QObject::tr("Mod Organizer"),
