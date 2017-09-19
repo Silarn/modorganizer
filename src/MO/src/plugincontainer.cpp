@@ -7,10 +7,12 @@
 #include <QMessageBox>
 #include <uibase/report.h>
 
+#include <memory>
+
 using namespace MOBase;
 using namespace MOShared;
 
-PluginContainer::PluginContainer(OrganizerCore* organizer) : m_Organizer(organizer), m_UserInterface(nullptr) {}
+PluginContainer::PluginContainer(OrganizerCore* organizer) : m_Organizer(organizer) {}
 
 void PluginContainer::setUserInterface(IUserInterface* userInterface, QWidget* widget) {
     // FIXME: This.
@@ -163,29 +165,31 @@ struct clearPlugins {
 };
 
 void PluginContainer::unloadPlugins() {
-    if (m_UserInterface != nullptr) {
+    if (m_UserInterface) {
         m_UserInterface->disconnectPlugins();
     }
 
     // disconnect all slots before unloading plugins so plugins don't have to take care of that
     m_Organizer->disconnectPlugins();
 
-    // FIXME: BF
-    // bf::for_each(m_Plugins, clearPlugins());
+    // FIXME: this
+    // for (const auto& t : m_Plugins) {
+    //    clearPlugins()(t);
+    //}
 
     // FIXME: Signals
-    // for (const  boost::signals2::connection& : m_DiagnosisConnections) {
+    // for (const boost::signals2::connection& : m_DiagnosisConnections) {
     //    connection.disconnect();
     //}
     // m_DiagnosisConnections.clear();
 
     while (!m_PluginLoaders.empty()) {
-        QPluginLoader* loader = m_PluginLoaders.back();
+        std::unique_ptr<QPluginLoader> loader(m_PluginLoaders.back());
         m_PluginLoaders.pop_back();
-        if ((loader != nullptr) && !loader->unload()) {
-            qDebug("failed to unload %s: %s", qPrintable(loader->fileName()), qPrintable(loader->errorString()));
+        if (loader && !loader->unload()) {
+            qDebug("failed to unload %s: %s", qUtf8Printable(loader->fileName()),
+                   qUtf8Printable(loader->errorString()));
         }
-        delete loader;
     }
 }
 
@@ -201,8 +205,10 @@ IPluginGame* PluginContainer::managedGame(const QString& name) const {
 const PreviewGenerator& PluginContainer::previewGenerator() const { return m_PreviewGenerator; }
 
 void PluginContainer::loadPlugins() {
+    // Unload existing.
     unloadPlugins();
 
+    // Register plugins
     for (QObject* plugin : QPluginLoader::staticInstances()) {
         registerPlugin(plugin, "");
     }

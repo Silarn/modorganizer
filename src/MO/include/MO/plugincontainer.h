@@ -16,10 +16,12 @@
 #include <utility>
 #include <vector>
 
+// Manages Plugins.
 class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
   private:
+    // FIXME: BF
     // typedef boost::fusion::map<boost::fusion::pair<MOBase::IPlugin, std::vector<MOBase::IPlugin*>>,
     //                           boost::fusion::pair<MOBase::IPluginDiagnose, std::vector<MOBase::IPluginDiagnose*>>,
     //                           boost::fusion::pair<MOBase::IPluginGame, std::vector<MOBase::IPluginGame*>>,
@@ -37,13 +39,15 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
 
     void setUserInterface(IUserInterface* userInterface, QWidget* widget);
 
+    // Load plugins.
+    // First unloads any already loaded plugins.
     void loadPlugins();
     void unloadPlugins();
 
     MOBase::IPluginGame* managedGame(const QString& name) const;
 
     template <typename T>
-    const std::vector<T*>& plugins() const {
+    std::vector<T*> plugins() const {
         // FIXME: This.
         return {};
         // typename boost::fusion::result_of::at_key<const PluginMap, T>::type temp =
@@ -68,12 +72,13 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
   private:
     bool verifyPlugin(MOBase::IPlugin* plugin);
     void registerGame(MOBase::IPluginGame* game);
+    // Registers plugins?
     bool registerPlugin(QObject* pluginObj, const QString& fileName);
     bool unregisterPlugin(QObject* pluginObj, const QString& fileName);
 
     OrganizerCore* m_Organizer;
 
-    IUserInterface* m_UserInterface;
+    IUserInterface* m_UserInterface = nullptr;
 
     // PluginMap m_Plugins;
 
