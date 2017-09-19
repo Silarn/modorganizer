@@ -559,10 +559,10 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
         } // we continue for the primary instance OR if MO has been called with parameters
+        // Setup settings
+        fs::path settingsPath = dataPath / AppConfig::iniFileName();
+        QSettings settings(QString::fromStdString(settingsPath.string()), QSettings::IniFormat);
 
-        QSettings settings(QString::fromStdString(dataPath.string()) + "/" +
-                               QString::fromStdWString(AppConfig::iniFileName()),
-                           QSettings::IniFormat);
         qDebug("initializing core");
         // FIXME: Crashes around here.
         OrganizerCore organizer(settings);
