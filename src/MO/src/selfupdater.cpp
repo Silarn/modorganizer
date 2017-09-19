@@ -88,7 +88,8 @@ SelfUpdater::SelfUpdater(NexusInterface* nexusInterface)
 
     m_ArchiveHandler = CreateArchiveFunc();
     if (!m_ArchiveHandler->isValid()) {
-        throw MyException(InstallationManager::getErrorString(m_ArchiveHandler->getLastError()));
+        // FIXME: This.
+        // throw MyException(InstallationManager::getErrorString(m_ArchiveHandler->getLastError()));
     }
 
     VS_FIXEDFILEINFO version = GetFileVersion(ToWString(QApplication::applicationFilePath()));
