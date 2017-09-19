@@ -52,7 +52,7 @@ if (MSVC)
                         "Only tested with Visual Studio 2017 15.3")
     endif()
     ## For all configurations ##
-    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS -DUNICODE -D_UNICODE -DASMJIT_STATIC)
+    add_definitions(-D_SCL_SECURE_NO_WARNINGS -D_CRT_SECURE_NO_WARNINGS -DUNICODE -D_UNICODE)
     # For C++17, Standards Conformance, and Proper Warning Levels.
     set(COMPILER
         "/std:c++17"
