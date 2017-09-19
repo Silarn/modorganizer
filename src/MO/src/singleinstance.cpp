@@ -27,8 +27,11 @@ static const int s_Timeout = 5000;
 
 using MOBase::reportError;
 
-SingleInstance::SingleInstance(bool forcePrimary, QObject* parent) : QObject(parent), m_PrimaryInstance(false) {
+SingleInstance::SingleInstance(bool forcePrimary, QObject* parent) : QObject(parent) {
     m_SharedMem.setKey(s_Key);
+    // Create shared memory.
+    // If failure, check if forcePrimary is true and do it anyway.
+    // If forcePrimary is false, attempt to attatch to the already existing memory.
     if (!m_SharedMem.create(1)) {
         if (forcePrimary) {
             while (m_SharedMem.error() == QSharedMemory::AlreadyExists) {
@@ -50,6 +53,7 @@ SingleInstance::SingleInstance(bool forcePrimary, QObject* parent) : QObject(par
     } else {
         m_PrimaryInstance = true;
     }
+    // Listen for messages if we're the primary instance.
     if (m_PrimaryInstance) {
         connect(&m_Server, SIGNAL(newConnection()), this, SLOT(receiveMessage()));
         // has to be called before listen

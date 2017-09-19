@@ -75,7 +75,7 @@ class SingleInstance : public QObject {
     void receiveMessage();
 
   private:
-    bool m_PrimaryInstance;
+    bool m_PrimaryInstance = false;
     QSharedMemory m_SharedMem;
     QLocalServer m_Server;
 };
