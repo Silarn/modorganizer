@@ -283,54 +283,10 @@ static LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* except
     return result;
 }
 
-static bool HaveWriteAccess(const std::wstring& path) {
-    bool writable = false;
-
-    const static SECURITY_INFORMATION requestedFileInformation =
-        OWNER_SECURITY_INFORMATION | GROUP_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION;
-
-    DWORD length = 0;
-    if (!::GetFileSecurityW(path.c_str(), requestedFileInformation, nullptr, 0UL, &length) &&
-        (::GetLastError() == ERROR_INSUFFICIENT_BUFFER)) {
-        std::string tempBuffer;
-        tempBuffer.reserve(length);
-        PSECURITY_DESCRIPTOR security = (PSECURITY_DESCRIPTOR)tempBuffer.data();
-        if (security && ::GetFileSecurity(path.c_str(), requestedFileInformation, security, length, &length)) {
-            HANDLE token = nullptr;
-            const static DWORD tokenDesiredAccess =
-                TOKEN_IMPERSONATE | TOKEN_QUERY | TOKEN_DUPLICATE | STANDARD_RIGHTS_READ;
-            if (!::OpenThreadToken(::GetCurrentThread(), tokenDesiredAccess, TRUE, &token)) {
-                if (!::OpenProcessToken(::GetCurrentProcess(), tokenDesiredAccess, &token)) {
-                    throw std::runtime_error("Unable to get any thread or process token");
-                }
-            }
-
-            HANDLE impersonatedToken = nullptr;
-            if (::DuplicateToken(token, SecurityImpersonation, &impersonatedToken)) {
-                GENERIC_MAPPING mapping = {0xFFFFFFFF};
-                mapping.GenericRead = FILE_GENERIC_READ;
-                mapping.GenericWrite = FILE_GENERIC_WRITE;
-                mapping.GenericExecute = FILE_GENERIC_EXECUTE;
-                mapping.GenericAll = FILE_ALL_ACCESS;
-
-                DWORD genericAccessRights = FILE_GENERIC_WRITE;
-                ::MapGenericMask(&genericAccessRights, &mapping);
-
-                PRIVILEGE_SET privileges = {0};
-                DWORD grantedAccess = 0;
-                DWORD privilegesLength = sizeof(privileges);
-                BOOL result = 0;
-                if (::AccessCheck(security, impersonatedToken, genericAccessRights, &mapping, &privileges,
-                                  &privilegesLength, &grantedAccess, &result)) {
-                    writable = result != 0;
-                }
-                ::CloseHandle(impersonatedToken);
-            }
-
-            ::CloseHandle(token);
-        }
-    }
-    return writable;
+// Test whether we have write access for path `path`
+static bool HaveWriteAccess(const fs::path& path) {
+    auto perms = fs::status(path).permissions();
+    return (perms & fs::perms::owner_write) != fs::perms::none;
 }
 
 QString determineProfile(QStringList& arguments, const QSettings& settings) {
@@ -510,6 +466,7 @@ int main(int argc, char* argv[]) {
     // Instance Handling.
     std::string instanceID;
     const fs::path appDirPath = application.applicationDirPath().toStdString();
+    const fs::path appFilePath = application.applicationFilePath().toStdString();
     const fs::path instancePath = appDirPath / "INSTANCE";
     std::ifstream instanceFile(instancePath, std::ios::binary);
     if (instanceFile.is_open()) {
@@ -532,19 +489,22 @@ int main(int argc, char* argv[]) {
 
     // Unhandled Exception Error Handling.
     SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
-    std::string t = "666";
-    throw std::runtime_error("Test" + t);
-    throw "Test";
-    return 1;
 
-    if (!HaveWriteAccess(ToWString(application.applicationDirPath()))) {
+    // Make sure we can write to our current directory.
+    // If not, restart as admin.
+    if (!HaveWriteAccess(appDirPath)) {
+        // Get current arguments
         QStringList arguments = application.arguments();
+        // Pop off the executable from the front.
         arguments.pop_front();
-        ::ShellExecuteW(nullptr, L"runas",
-                        ToWString(QString("\"%1\"").arg(QCoreApplication::applicationFilePath())).c_str(),
-                        ToWString(arguments.join(" ")).c_str(), ToWString(QDir::currentPath()).c_str(), SW_SHOWNORMAL);
+        std::wstring fileLoc = ToWString(QString("\"%1\"").arg(QString::fromStdString(appFilePath.string())));
+        std::wstring params = ToWString(arguments.join(" "));
+        std::wstring workDir = ToWString(QDir::currentPath());
+        // Restart with current commandline arguments, as admin.
+        ::ShellExecuteW(nullptr, L"runas", fileLoc.data(), params.data(), workDir.data(), SW_SHOWNORMAL);
         return 1;
     }
+    return 1;
 
     QPixmap pixmap(":/MO/gui/splash");
     QSplashScreen splash(pixmap);
