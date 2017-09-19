@@ -29,13 +29,9 @@ class MOApplication : public QApplication {
     MOApplication(int& argc, char** argv);
 
     virtual bool notify(QObject* receiver, QEvent* event);
-
   public slots:
-
     bool setStyleFile(const QString& style);
-
   private slots:
-
     void updateStyle(const QString& fileName);
 
   private:

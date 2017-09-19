@@ -96,28 +96,18 @@ bool MOApplication::notify(QObject* receiver, QEvent* event) {
         qCritical("uncaught exception in handler (object %s, eventtype %d): %s",
                   receiver->objectName().toUtf8().constData(), event->type(), e.what());
         reportError(tr("an error occured: %1").arg(e.what()));
-        return false;
     } catch (...) {
         qCritical("uncaught non-std exception in handler (object %s, eventtype %d)",
                   receiver->objectName().toUtf8().constData(), event->type());
         reportError(tr("an error occured"));
-        return false;
     }
+    return false;
 }
 
 void MOApplication::updateStyle(const QString& fileName) {
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     if (fileName == "Fusion") {
         setStyle(QStyleFactory::create("fusion"));
         setStyleSheet("");
-#else
-    if (fileName == "Plastique") {
-        setStyle(new ProxyStyle(new QPlastiqueStyle));
-        setStyleSheet("");
-    } else if (fileName == "Cleanlooks") {
-        setStyle(new ProxyStyle(new QCleanlooksStyle));
-        setStyleSheet("");
-#endif
     } else {
         setStyle(new ProxyStyle(QStyleFactory::create(m_DefaultStyle)));
         if (QFile::exists(fileName)) {
