@@ -1,5 +1,4 @@
 #pragma once
-
 #include "MO/directoryrefresher.h"
 #include "MO/downloadmanager.h"
 #include "MO/executableslist.h"
