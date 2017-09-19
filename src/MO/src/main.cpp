@@ -167,7 +167,9 @@ static std::string CreateMiniDump(EXCEPTION_POINTERS* exceptionPtrs) {
         userInfo.UserStreamCount = tmp.size();
         userInfo.UserStreamArray = &tmp[0];
 
-        BOOL success = MiniDumpWriteDump(::GetCurrentProcess(), ::GetCurrentProcessId(), dumpFile, MiniDumpNormal,
+        MINIDUMP_TYPE mtype = static_cast<MINIDUMP_TYPE>(MiniDumpNormal | MiniDumpWithPrivateReadWriteMemory |
+                                                         MiniDumpWithIndirectlyReferencedMemory | MiniDumpWithDataSegs);
+        BOOL success = MiniDumpWriteDump(::GetCurrentProcess(), ::GetCurrentProcessId(), dumpFile, mtype,
                                          &exceptionInfo, &userInfo, nullptr);
 
         ::FlushFileBuffers(dumpFile);
@@ -436,6 +438,8 @@ int main(int argc, char* argv[]) {
 
     // Unhandled Exception Error Handling.
     SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
+    std::string t = "666";
+    throw std::runtime_error("Test" + t);
     throw "Test";
     return 1;
 
