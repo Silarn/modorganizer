@@ -444,13 +444,15 @@ int main(int argc, char* argv[]) {
     const fs::path appDirPath = application.applicationDirPath().toStdString();
     const fs::path appFilePath = application.applicationFilePath().toStdString();
     const fs::path instancePath = appDirPath / "INSTANCE";
-    std::ifstream instanceFile(instancePath, std::ios::binary);
-    if (instanceFile.is_open()) {
-        auto size = fs::file_size(instancePath);
-        std::vector<char> tmp(size);
-        instanceFile.read(tmp.data(), size);
-        instanceID = std::string(tmp.begin(), tmp.end());
-        common::trim(instanceID);
+    {
+        std::ifstream instanceFile(instancePath, std::ios::binary);
+        if (instanceFile.is_open()) {
+            auto size = fs::file_size(instancePath);
+            std::vector<char> tmp(size);
+            instanceFile.read(tmp.data(), size);
+            instanceID = std::string(tmp.begin(), tmp.end());
+            common::trim(instanceID);
+        }
     }
     const fs::path dataLocation = std::getenv("APPDATA") / fs::path("ModOrganizer");
     const fs::path dataPath = instanceID.empty() ? appDirPath : dataLocation / instanceID;
