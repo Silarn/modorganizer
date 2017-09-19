@@ -107,14 +107,9 @@ QStringList toStringList(InputIterator current, InputIterator end) {
 }
 
 OrganizerCore::OrganizerCore(const QSettings& initSettings)
-    : m_UserInterface(nullptr), m_PluginContainer(nullptr), m_GameName(), m_CurrentProfile(nullptr),
-      m_Settings(initSettings), m_Updater(NexusInterface::instance()), //, m_AboutToRun(), m_FinishedRun(),
-                                                                       // m_ModInstalled(),
-                                                                       // FIXME: This.
-      m_ModList(this), m_PluginList(this), m_DirectoryRefresher(),
-      m_DirectoryStructure(new DirectoryEntry(L"data", nullptr, 0)),
+    : m_Settings(initSettings), m_Updater(NexusInterface::instance()), m_ModList(this), m_PluginList(this),
+      m_DirectoryRefresher(), m_DirectoryStructure(new DirectoryEntry(L"data", nullptr, 0)),
       m_DownloadManager(NexusInterface::instance(), this), m_InstallationManager(), m_RefresherThread(),
-      m_AskForNexusPW(false), m_DirectoryUpdate(false), m_ArchivesInit(false),
       m_PluginListsWriter(std::bind(&OrganizerCore::savePluginList, this)) {
     m_DownloadManager.setOutputDirectory(m_Settings.getDownloadDirectory());
     m_DownloadManager.setPreferredServers(m_Settings.getPreferredServers());

@@ -54,6 +54,9 @@ namespace MOBase {
 class IPluginGame;
 }
 
+// TODO: Refactor all of this. This class is too big and does too much.
+
+// Core of Mod Organizer.
 class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
@@ -244,12 +247,12 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     static const unsigned int PROBLEM_TOOMANYPLUGINS = 1;
 
   private:
-    IUserInterface* m_UserInterface;
-    PluginContainer* m_PluginContainer;
+    IUserInterface* m_UserInterface = nullptr;
+    PluginContainer* m_PluginContainer = nullptr;
     QString m_GameName;
     MOBase::IPluginGame const* m_GamePlugin;
 
-    Profile* m_CurrentProfile;
+    Profile* m_CurrentProfile = nullptr;
 
     Settings m_Settings;
 
@@ -271,16 +274,16 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     QStringList m_ActiveArchives;
 
     DirectoryRefresher m_DirectoryRefresher;
-    MOShared::DirectoryEntry* m_DirectoryStructure;
+    MOShared::DirectoryEntry* m_DirectoryStructure = nullptr;
 
     DownloadManager m_DownloadManager;
     InstallationManager m_InstallationManager;
 
     QThread m_RefresherThread;
 
-    bool m_AskForNexusPW;
-    bool m_DirectoryUpdate;
-    bool m_ArchivesInit;
+    bool m_AskForNexusPW = false;
+    bool m_DirectoryUpdate = false;
+    bool m_ArchivesInit = false;
 
     MOBase::DelayedFileWriter m_PluginListsWriter;
 };
