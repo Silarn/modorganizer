@@ -148,23 +148,53 @@ void cleanupDir() {
 
 bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
 
-static std::string CreateMiniDump(EXCEPTION_POINTERS* pep) {}
+static std::string CreateMiniDump(EXCEPTION_POINTERS* exceptionPtrs) {
+    std::string errorMsg;
+    // Create Dump File.
+    fs::path dumpPath = LR"(\\?\)" + ToWString(qApp->applicationFilePath().append(".dmp"));
+    HANDLE dumpFile = ::CreateFileW(dumpPath.native().data(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE, nullptr,
+                                    CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    if (dumpFile != INVALID_HANDLE_VALUE) {
+        _MINIDUMP_EXCEPTION_INFORMATION exceptionInfo;
+        exceptionInfo.ThreadId = ::GetCurrentThreadId();
+        exceptionInfo.ExceptionPointers = exceptionPtrs;
+        exceptionInfo.ClientPointers = FALSE;
+        _MINIDUMP_USER_STREAM_INFORMATION userInfo;
+        std::string txt = "TESTING TESTING";
+        std::array<_MINIDUMP_USER_STREAM, 1> tmp = {
+            {CommentStreamA, txt.size() + 1, txt.data()},
+        };
+        userInfo.UserStreamCount = tmp.size();
+        userInfo.UserStreamArray = &tmp[0];
+
+        BOOL success = MiniDumpWriteDump(::GetCurrentProcess(), ::GetCurrentProcessId(), dumpFile, MiniDumpNormal,
+                                         &exceptionInfo, &userInfo, nullptr);
+
+        ::FlushFileBuffers(dumpFile);
+        ::CloseHandle(dumpFile);
+        if (!success) {
+            errorMsg = QString("failed to save minidump to %1 (error %2)")
+                           .arg(QString::fromStdWString(dumpPath.wstring()))
+                           .arg(::GetLastError())
+                           .toStdString();
+        }
+    } else {
+        errorMsg = QString("failed to create %1 (error %2)")
+                       .arg(QString::fromStdWString(dumpPath.wstring()))
+                       .arg(::GetLastError())
+                       .toStdString();
+    }
+    return errorMsg;
+}
 
 // Error Handling for all Unhandled Exceptions.
 // Writes a minidump and displays information to the User.
 static LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* exceptionPtrs) {
-    using FuncMiniDumpWriteDump = BOOL(WINAPI*)(HANDLE process, DWORD pid, HANDLE file, MINIDUMP_TYPE dumpType,
-                                                const PMINIDUMP_EXCEPTION_INFORMATION exceptionParam,
-                                                const PMINIDUMP_USER_STREAM_INFORMATION userStreamParam,
-                                                const PMINIDUMP_CALLBACK_INFORMATION callbackParam);
 #ifdef COMMON_IS_DEBUG
     // This is so we can step into the handler.
     QMessageBox::critical(nullptr, QObject::tr("Test"), QObject::tr("TEST"));
 #endif
     LONG result = EXCEPTION_EXECUTE_HANDLER;
-    HMODULE dbgDLL = ::LoadLibraryW(L"dbghelp.dll");
-    // Message to display to the user for why this couldnt be handled.
-    std::string errorMsg;
     bool createDump =
         QMessageBox::question(nullptr, QObject::tr("Whoops!"),
                               QObject::tr("ModOrganizer has crashed! "
@@ -175,64 +205,16 @@ static LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* except
                                           "Please include a short description of what you were "
                                           "doing when the crash happened")
                                   .arg(qApp->applicationFilePath().append(".dmp"))) == QMessageBox::Yes;
-    // Create dump if user said Yes.
     if (createDump) {
-        // Make sure it exists.
-        if (dbgDLL) {
-            FuncMiniDumpWriteDump funcDump =
-                reinterpret_cast<FuncMiniDumpWriteDump>(::GetProcAddress(dbgDLL, "MiniDumpWriteDump"));
-            // Make sure it has the API we need.
-            if (funcDump) {
-                // Create Dump File.
-                fs::path dumpPath = LR"(\\?\)" + ToWString(qApp->applicationFilePath().append(".dmp"));
-                HANDLE dumpFile =
-                    ::CreateFileW(dumpPath.native().data(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE, nullptr,
-                                  CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-                if (dumpFile != INVALID_HANDLE_VALUE) {
-                    _MINIDUMP_EXCEPTION_INFORMATION exceptionInfo;
-                    exceptionInfo.ThreadId = ::GetCurrentThreadId();
-                    exceptionInfo.ExceptionPointers = exceptionPtrs;
-                    exceptionInfo.ClientPointers = FALSE;
-                    _MINIDUMP_USER_STREAM_INFORMATION userInfo;
-                    std::string txt = "TESTING TESTING";
-                    std::array<_MINIDUMP_USER_STREAM, 1> tmp = {
-                        {CommentStreamA, txt.size() + 1, txt.data()},
-                    };
-                    userInfo.UserStreamCount = tmp.size();
-                    userInfo.UserStreamArray = &tmp[0];
-
-                    BOOL success = funcDump(::GetCurrentProcess(), ::GetCurrentProcessId(), dumpFile, MiniDumpNormal,
-                                            &exceptionInfo, &userInfo, nullptr);
-
-                    ::FlushFileBuffers(dumpFile);
-                    ::CloseHandle(dumpFile);
-                    if (success) {
-                        return EXCEPTION_EXECUTE_HANDLER;
-                    }
-                    errorMsg = QString("failed to save minidump to %1 (error %2)")
-                                   .arg(QString::fromStdWString(dumpPath.wstring()))
-                                   .arg(::GetLastError())
-                                   .toStdString();
-                } else {
-                    errorMsg = QString("failed to create %1 (error %2)")
-                                   .arg(QString::fromStdWString(dumpPath.wstring()))
-                                   .arg(::GetLastError())
-                                   .toStdString();
-                }
-            } else {
-                errorMsg = "dbghelp.dll outdated";
-            }
-        } else {
-            errorMsg = "dbghelp.dll not found";
+        // Message to display to the user for why this couldnt be handled.
+        std::string errorMsg = CreateMiniDump(exceptionPtrs);
+        if (!errorMsg.empty()) {
+            QMessageBox::critical(
+                nullptr, QObject::tr("Whoops!"),
+                QObject::tr("ModOrganizer has crashed! Unfortunately I was not able to write a diagnostic file: %1")
+                    .arg(QString::fromStdString(errorMsg)));
         }
-    } else {
-        return result;
     }
-
-    QMessageBox::critical(
-        nullptr, QObject::tr("Whoops!"),
-        QObject::tr("ModOrganizer has crashed! Unfortunately I was not able to write a diagnostic file: %1")
-            .arg(QString::fromStdString(errorMsg)));
     return result;
 }
 
