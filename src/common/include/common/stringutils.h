@@ -9,7 +9,7 @@ namespace common {
 
 // Splits the string `str` by `delim` into `lines`
 // Taken from https://stackoverflow.com/a/9676623/3665377
-void split(std::vector<std::string>& lines, const std::string& str, const std::string& delim) {
+static inline void split(std::vector<std::string>& lines, const std::string& str, const std::string& delim) {
     std::string::size_type start = 0;
     auto pos = str.find(delim, start);
     while (pos != std::string::npos) {
