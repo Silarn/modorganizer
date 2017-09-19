@@ -564,10 +564,10 @@ int main(int argc, char* argv[]) {
         QSettings settings(QString::fromStdString(settingsPath.string()), QSettings::IniFormat);
 
         qDebug("initializing core");
-        // FIXME: Crashes around here.
         OrganizerCore organizer(settings);
         qDebug("initialize plugins");
         PluginContainer pluginContainer(&organizer);
+        // FIXME: Crashes here.
         pluginContainer.loadPlugins();
 
         MOBase::IPluginGame* game = determineCurrentGame(application.applicationDirPath(), settings, pluginContainer);
