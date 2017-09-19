@@ -41,7 +41,10 @@ class QNetworkReply;
 class QUrl;
 class QWidget;
 
-#include <common/sane_windows.h> // for HANDLE, LPDWORD
+// #include <common/sane_windows.h> // for HANDLE, LPDWORD
+using HANDLE = void*;
+using DWORD = unsigned long;
+using LPDWORD = DWORD*;
 
 #include <functional>
 #include <vector>
@@ -53,10 +56,8 @@ class IPluginGame;
 }
 
 class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
-
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
-
   private:
     struct SignalCombinerAnd {
         typedef bool result_type;
