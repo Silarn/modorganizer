@@ -26,14 +26,14 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/selectiondialog.h"
 #include "MO/singleinstance.h"
 
-#include <uibase/report.h>
-#include <uibase/tutorialmanager.h>
-
-#include <DbgHelp.h>
 #include <QDesktopServices>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSplashScreen>
+#include <uibase/report.h>
+#include <uibase/tutorialmanager.h>
+
+#include <DbgHelp.h>
 #include <ShellAPI.h>
 
 #pragma comment(linker, "/manifestdependency:\"name='dlls' version='1.0.0.0' type='win32'\"")
