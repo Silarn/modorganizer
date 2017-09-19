@@ -318,7 +318,7 @@ QDLLEXPORT QString readFileText(const QString& fileName, QString* encoding = nul
  * @param directory in which to delete files
  * @param pattern the name pattern files have to match
  * @param numToKeep the number of files to keep
- * @param sorting if numToKeep is not 0, the last numToKeep files according to this sorting a kept
+ * @param sorting if numToKeep is not 0, the last numToKeep files according to this sorting are kept
  **/
 QDLLEXPORT void removeOldFiles(const QString& path, const QString& pattern, int numToKeep,
                                QDir::SortFlags sorting = QDir::Time);
