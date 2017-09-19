@@ -3,62 +3,27 @@
 #include "MO/Shared/appconfig.h"
 #include "MO/credentialsdialog.h"
 #include "MO/filedialogmemory.h"
-#include "MO/iuserinterface.h"
-#include "MO/loadmechanism.h"
-#include "MO/lockeddialog.h"
 #include "MO/logbuffer.h"
 #include "MO/messagedialog.h"
 #include "MO/modinfodialog.h"
 #include "MO/modlistsortproxy.h"
-#include "MO/nexusinterface.h"
 #include "MO/nxmaccessmanager.h"
 #include "MO/plugincontainer.h"
 #include "MO/pluginlistsortproxy.h"
-#include "MO/profile.h"
 #include "MO/spawn.h"
 #include "MO/syncoverwritedialog.h"
-#include "uibase/delayedfilewriter.h"
-#include "uibase/guessedvalue.h"
-#include "uibase/imodinterface.h"
-#include "uibase/imoinfo.h"
-#include "uibase/iplugingame.h"
-#include "uibase/modrepositoryfileinfo.h"
-#include <MO/Shared/directoryentry.h>
 #include <gamefeatures/dataarchives.h>
-#include <uibase/ipluginmodpage.h>
 #include <uibase/questionboxmemory.h>
 #include <uibase/report.h>
 #include <uibase/scopeguard.h>
-#include <uibase/utility.h>
 
 #include <QApplication>
-#include <QCoreApplication>
-#include <QDialog>
-#include <QDialogButtonBox>
 #include <QMessageBox>
 #include <QNetworkInterface>
 #include <QProcess>
-#include <QTimer>
-#include <QUrl>
-#include <QWidget>
-
-#include <QtDebug>
-#include <QtGlobal> // for qPrintable, etc
 
 #include <Psapi.h>
 #include <tchar.h> // for _tcsicmp
-
-#include <limits.h>
-#include <stddef.h>
-#include <string.h> // for memset, wcsrchr
-
-#include <exception>
-#include <functional>
-#include <memory>
-#include <set>
-#include <string> //for wstring
-#include <tuple>
-#include <utility>
 
 using namespace MOShared;
 using namespace MOBase;
