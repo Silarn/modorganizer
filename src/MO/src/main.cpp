@@ -501,7 +501,7 @@ int main(int argc, char* argv[]) {
         qDebug("ssl support: %d", QSslSocket::supportsSsl());
 #endif
         qDebug("Working directory: %s", qUtf8Printable(QDir::toNativeSeparators(QDir::currentPath())));
-        qDebug("MO at: %s", qUtf8Printable(QDir::toNativeSeparators(application.applicationDirPath())));
+        qDebug("MO at: %s", qUtf8Printable(QString::fromStdString(appDirPath.string())));
         splash.show();
 
         // Cleanup outdated files and directories.
@@ -511,8 +511,6 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    return 1; // test
-
     { // extend path to include dll directory so plugins don't need a manifest
       // (using AddDllDirectory would be an alternative to this but it seems fairly complicated esp.
       //  since it isn't easily accessible on Windows < 8
@@ -520,17 +518,16 @@ int main(int argc, char* argv[]) {
         static const int BUFSIZE = 4096;
 
         std::vector<TCHAR> oldPath(BUFSIZE);
-        DWORD offset = ::GetEnvironmentVariable(TEXT("PATH"), oldPath.data(), BUFSIZE);
+        DWORD offset = ::GetEnvironmentVariableW(L"PATH", oldPath.data(), BUFSIZE);
         if (offset > BUFSIZE) {
             oldPath.clear();
             oldPath.resize(offset);
-            ::GetEnvironmentVariable(TEXT("PATH"), oldPath.data(), offset);
+            ::GetEnvironmentVariableW(L"PATH", oldPath.data(), offset);
         }
 
         std::wstring newPath(oldPath.data());
         newPath += L";";
-        newPath += ToWString(QDir::toNativeSeparators(QCoreApplication::applicationDirPath())).c_str();
-        newPath += L"\\dlls";
+        newPath += appDirPath / "dlls";
 
         ::SetEnvironmentVariableW(L"PATH", newPath.c_str());
     }
