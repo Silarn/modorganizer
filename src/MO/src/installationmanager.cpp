@@ -72,7 +72,8 @@ InstallationManager::InstallationManager()
 
     m_ArchiveHandler = CreateArchiveFunc();
     if (!m_ArchiveHandler->isValid()) {
-        throw MyException(getErrorString(m_ArchiveHandler->getLastError()));
+        // FIXME:
+        // throw MyException(getErrorString(m_ArchiveHandler->getLastError()));
     }
 }
 
