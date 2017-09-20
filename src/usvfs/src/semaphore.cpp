@@ -1,6 +1,6 @@
 #include "usvfs/semaphore.h"
 #include "usvfs_shared/scopeguard.h"
-#include <Windows.h>
+#include <common/sane_windows.h>
 #include <spdlog/spdlog.h>
 
 RecursiveBenaphore::RecursiveBenaphore() : m_Counter(0), m_OwnerId(0UL), m_Recursion(0) {

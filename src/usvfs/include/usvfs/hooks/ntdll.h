@@ -2,7 +2,8 @@
 #include "usvfs/dllimport.h"
 #include "usvfs/loghelpers.h"
 #include "usvfs_shared/ntdll_declarations.h"
-#include "usvfs_shared/windows_sane.h"
+#include <common/sane_windows.h>
+
 #include <sstream>
 #include <vector>
 

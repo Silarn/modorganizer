@@ -11,6 +11,7 @@
 #include "usvfs_shared/unicodestring.h"
 #include "usvfs_shared/windows_error.h"
 #include <codecvt>
+#include <common/sane_windows.h>
 #include <cstdint>
 #include <cwctype>
 #include <deque>
@@ -20,7 +21,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <windows.h>
 
 namespace ulog = usvfs::log;
 namespace ush = usvfs::shared;

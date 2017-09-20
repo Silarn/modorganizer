@@ -1,7 +1,8 @@
 #pragma once
 #include "usvfs/dllimport.h"
 #include "usvfs_shared/ntdll_declarations.h"
-#include "usvfs_shared/windows_sane.h"
+
+#include <common/sane_windows.h>
 
 namespace usvfs {
 

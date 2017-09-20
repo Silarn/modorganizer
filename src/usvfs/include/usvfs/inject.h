@@ -20,7 +20,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 #include "usvfs/usvfsparameters.h"
-#include "usvfs_shared/windows_sane.h"
+#include <common/sane_windows.h>
 #include <string>
 
 namespace usvfs {

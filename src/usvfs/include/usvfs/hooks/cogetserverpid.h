@@ -9,6 +9,7 @@ Released under the Modified BSD license. For details, please see LICENSE file.
 #define INCLUDED_COGETSERVERPID_H__
 
 #include "usvfs_shared/logging.h"
+
 #include <objbase.h>
 #include <stdio.h>
 

@@ -23,10 +23,12 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs/redirectiontree.h"
 #include "usvfs/semaphore.h"
 #include "usvfs/usvfsparameters.h"
-#include "usvfs_shared/directory_tree.h"
-#include "usvfs_shared/exceptionex.h"
-#include "usvfs_shared/winapi.h"
-#include "usvfs_shared/windows_sane.h"
+
+#include <common/sane_windows.h>
+#include <usvfs_shared/directory_tree.h>
+#include <usvfs_shared/exceptionex.h>
+#include <usvfs_shared/winapi.h>
+
 #include <any>
 #include <filesystem>
 #include <future>
