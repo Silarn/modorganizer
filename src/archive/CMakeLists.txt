@@ -49,6 +49,12 @@ target_include_directories(${library_name} PUBLIC
 # Dependencies
 target_link_libraries(${library_name} PUBLIC common Qt5::Core 7zip)
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON)
+
+add_custom_command(TARGET ${library_name} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:${library_name}>/dlls
+    COMMAND ${CMAKE_COMMAND} -E rename $<TARGET_FILE_DIR:${library_name}>/archive.dll
+        $<TARGET_FILE_DIR:${library_name}>/dlls/archive.dll
+)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.
