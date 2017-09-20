@@ -28,8 +28,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #include <QStringList>
 #include <QVariant>
 #include <Windows.h>
-#include <functional>
 #include <common/sane_windows.h>
+#include <functional>
 
 namespace MOBase {
 
@@ -83,6 +83,11 @@ class IOrganizer {
      * @return the (absolute) path to the overwrite directory
      */
     virtual QString overwritePath() const = 0;
+
+    /**
+     * @return the (absolute) path to the base directory
+     */
+    virtual QString basePath() const = 0;
 
     /**
      * @return the running version of Mod Organizer
