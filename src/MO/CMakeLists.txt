@@ -276,9 +276,6 @@ if(WIN32)
         WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin
     )
     add_custom_command(TARGET ${library_name} POST_BUILD
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${windeploy_parameters} $<TARGET_FILE:${library_name}>
-    )
-    add_custom_command(TARGET ${library_name} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_INSTALL_PREFIX}/bin/dlls $<TARGET_FILE_DIR:${library_name}>/dlls
     )
 endif()
