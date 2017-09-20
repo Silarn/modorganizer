@@ -87,7 +87,7 @@ class GamebryoSaveGame : public MOBase::ISaveGame {
         void readImage(unsigned long width, unsigned long height, int scale = 0, bool alpha = false);
 
         /* Read the plugin list */
-        void readPlugins();
+        void readPlugins(int bytesToIgnore = 0);
 
         /* Set the creation time from a system date */
         void setCreationTime(::_SYSTEMTIME const&);
@@ -110,6 +110,7 @@ class GamebryoSaveGame : public MOBase::ISaveGame {
     QStringList m_Plugins;
     QImage m_Screenshot;
     MOBase::IPluginGame const* m_Game;
+    unsigned short compressionType;
 };
 
 template <>

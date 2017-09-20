@@ -196,6 +196,8 @@ import_target(UDIS86 "libudis86" ${PREFIX_PATH}/include "udis86.h" "STATIC")
 import_target(bit7z "bit7z" ${PREFIX_PATH}/include "bit7z.hpp" "STATIC")
 # 7Zip
 import_target(7zip "" "C:/_Diana/Dev/C++/- Libraries/sources/lzma/C" "7z.h" "INTERFACE")
+# Lz4
+import_target(lz4 "liblz4_static" ${PREFIX_PATH}/include "lz4.h" "STATIC")
 
 ## Targets ##
 # add_subdirectory(usvfs_shared)
