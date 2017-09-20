@@ -77,9 +77,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <uibase/scopeguard.h>
 #include <uibase/taskprogressmanager.h>
 #include <uibase/tutorialmanager.h>
-// #include <usvfs/usvfs.h>
+#include <usvfs/usvfs.h>
 
 #include <regex>
+#include <shellapi.h>
 #include <shlobj.h>
 #include <sstream>
 
@@ -3124,9 +3125,9 @@ void MainWindow::addAsExecutable() {
                                                  QLineEdit::Normal, targetInfo.baseName());
             if (!name.isEmpty()) {
                 // Note: If this already exists, you'll lose custom settings
-                m_OrganizerCore.executablesList()->addExecutable(
-                    name, binaryInfo.absoluteFilePath(), arguments, targetInfo.absolutePath(),
-                    ExecutableInfo::CloseMOStyle::DEFAULT_STAY, QString(), Executable::CustomExecutable);
+                m_OrganizerCore.executablesList()->addExecutable(name, binaryInfo.absoluteFilePath(), arguments,
+                                                                 targetInfo.absolutePath(), QString(),
+                                                                 Executable::CustomExecutable);
                 refreshExecutablesList();
             }
         } break;

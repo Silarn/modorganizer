@@ -75,7 +75,7 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
     { // file mapper plugin
         IPluginFileMapper* mapper = qobject_cast<IPluginFileMapper*>(plugin);
         if (mapper != nullptr) {
-            this->plugins<IPluginDiagnose>().push_back(mapper);
+            this->plugins<IPluginFileMapper>().push_back(mapper);
         }
     }
     { // mod page plugin

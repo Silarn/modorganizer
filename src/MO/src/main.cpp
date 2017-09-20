@@ -436,7 +436,7 @@ int runApplication(MOApplication& application, SingleInstance& instance, const Q
     }
     try {
         // Setup settings
-        fs::path settingsPath = dataPath / AppConfig::iniFileName();
+        fs::path settingsPath = fs::path(dataPath.toStdString()) / AppConfig::iniFileName();
         QSettings settings(QString::fromStdString(settingsPath.string()), QSettings::IniFormat);
         // Setup the Core application.
         qDebug("initializing core");

@@ -506,9 +506,8 @@ bool OrganizerCore::bootstrap() {
 }
 
 void OrganizerCore::createDefaultProfile() {
-    QString profilesPath =
-        settings()
-            .getProfileDirectory() if (QDir(profilesPath).entryList(QDir::AllDirs | QDir::NoDotAndDotDot).size() == 0) {
+    QString profilesPath = settings().getProfileDirectory();
+    if (QDir(profilesPath).entryList(QDir::AllDirs | QDir::NoDotAndDotDot).size() == 0) {
         Profile newProf("Default", managedGame(), false);
     }
 }
@@ -993,7 +992,7 @@ HANDLE OrganizerCore::startApplication(const QString& executable, const QStringL
         }
     }
 
-    return spawnBinaryDirect(binary, arguments, profileName, currentDirectory, steamAppID);
+    return spawnBinaryDirect(binary, arguments, profileName, currentDirectory, steamAppID, customOverwrite);
 }
 
 bool OrganizerCore::waitForApplication(HANDLE handle, LPDWORD exitCode) {

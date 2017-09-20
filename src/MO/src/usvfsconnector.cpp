@@ -74,7 +74,7 @@ void LogWorker::process() {
 void LogWorker::exit() { m_QuitRequested = true; }
 
 LogLevel logLevel(int level) {
-    switch (level) {
+    switch (static_cast<LogLevel>(level)) {
     case LogLevel::Info:
         return LogLevel::Info;
     case LogLevel::Warning:
@@ -143,7 +143,7 @@ void UsvfsConnector::updateMapping(const MappingType& mapping) {
 }
 
 void UsvfsConnector::setLogLevel(int logLevel) {
-    switch (logLevel) {
+    switch (static_cast<LogLevel>(logLevel)) {
     case LogLevel::Debug:
         SetLogLevel(LogLevel::Debug);
         break;

@@ -25,14 +25,23 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
+#include <QDate>
+#include <QDialog>
 #include <QDir>
 #include <QDirIterator>
+#include <QFileInfo>
 #include <QLineEdit>
+#include <QListWidgetItem>
+#include <QLocale>
 #include <QMessageBox>
+#include <QRegExp>
+#include <QStringList>
+#include <QVariantMap>
+#include <Qt>      // for Qt::UserRole, etc
+#include <QtDebug> // for qDebug, qWarning
 #include <uibase/iplugingame.h>
 #include <uibase/questionboxmemory.h>
 #include <uibase/utility.h>
-
 using namespace MOBase;
 
 template <typename T>
@@ -492,14 +501,17 @@ Settings::GeneralTab::GeneralTab(Settings* m_parent, SettingsDialog& m_dialog)
       m_styleBox(m_dialog.findChild<QComboBox*>("styleBox")),
       m_logLevelBox(m_dialog.findChild<QComboBox*>("logLevelBox")),
       m_compactBox(m_dialog.findChild<QCheckBox*>("compactBox")),
-      m_showMetaBox(m_dialog.findChild<QCheckBox*>("showMetaBox")) {
+      m_showMetaBox(m_dialog.findChild<QCheckBox*>("showMetaBox")),
+      m_usePrereleaseBox(m_dialog.findChild<QCheckBox*>("usePrereleaseBox")) {
     // FIXME I think 'addLanguages' lives in here not in parent
     m_parent->addLanguages(m_languageBox);
     {
         QString languageCode = m_parent->language();
         int currentID = m_languageBox->findData(languageCode);
-        // I made a mess. :( Most languages are stored with only the iso country code (2 characters like "de") but
-        // chinese with the exact language variant (zh_TW) so I have to search for both variants
+        // I made a mess. :( Most languages are stored with only the iso country
+        // code (2 characters like "de") but chinese
+        // with the exact language variant (zh_TW) so I have to search for both
+        // variants
         if (currentID == -1) {
             currentID = m_languageBox->findData(languageCode.mid(0, 2));
         }

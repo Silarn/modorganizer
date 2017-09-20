@@ -26,6 +26,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDebug>
 #include <QInputDialog>
 #include <QLibrary>
+#include <QCoreApplication>
 #include <QTextDocument>
 #include <uibase/installationtester.h>
 #include <uibase/iplugininstallercustom.h>

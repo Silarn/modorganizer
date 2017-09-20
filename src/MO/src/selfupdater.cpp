@@ -34,6 +34,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <uibase/iplugingame.h>
 #include <uibase/report.h>
 
+#include <shellapi.h>
+
 using namespace MOBase;
 using namespace MOShared;
 

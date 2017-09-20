@@ -90,6 +90,7 @@ SET(HDRS
     include/${library_name}/organizercore.h
     include/${library_name}/iuserinterface.h
     include/${library_name}/usvfsconnector.h
+    include/${library_name}/eventfilter.h
 )
 #endif
 

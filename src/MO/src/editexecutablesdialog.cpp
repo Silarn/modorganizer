@@ -195,11 +195,10 @@ bool EditExecutablesDialog::executableChanged() {
 
         QString storedCustomOverwrite = m_Profile->setting("custom_overwrites", selectedExecutable.m_Title).toString();
 
-        return selectedExecutable.m_Arguments != ui->argumentsEdit->text() || ||
+        return selectedExecutable.m_Arguments != ui->argumentsEdit->text() ||
+               selectedExecutable.m_SteamAppID != ui->appIDOverwriteEdit->text() ||
                !storedCustomOverwrite.isEmpty() != ui->newFilesModCheckBox->isChecked() ||
-               !storedCustomOverwrite.isEmpty() &&
-                   (storedCustomOverwrite != ui->newFilesModBox->currentText())
-                           selectedExecutable.m_SteamAppID != ui->appIDOverwriteEdit->text() ||
+               !storedCustomOverwrite.isEmpty() && (storedCustomOverwrite != ui->newFilesModBox->currentText()) ||
                selectedExecutable.m_WorkingDirectory != QDir::fromNativeSeparators(ui->workingDirEdit->text()) ||
                selectedExecutable.m_BinaryInfo.absoluteFilePath() !=
                    QDir::fromNativeSeparators(ui->binaryEdit->text()) ||
