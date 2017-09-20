@@ -42,7 +42,7 @@ source_group(QT FILES ${QT})
 find_package(Qt5Widgets REQUIRED)
 
 ## Library ##
-add_library(${library_name} SHARED ${HDRS} ${SRCS})
+add_library(${library_name} STATIC ${HDRS} ${SRCS})
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 # Headers
 target_include_directories(${library_name} PUBLIC
