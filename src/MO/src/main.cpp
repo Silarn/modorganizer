@@ -58,7 +58,6 @@ static thread_local std::stringstream errorLog;
 
 // Create directory and make sure it's writeable.
 static bool createAndMakeWritable(const fs::path& fullPath) {
-    QString const dataPath = qApp->property("dataPath").toString();
     if (!fs::exists(fullPath)) {
         try {
             fs::create_directories(fullPath);
@@ -83,7 +82,7 @@ static bool bootstrap() {
     fs::path logPath = dataPath / AppConfig::logPath();
     removeOldFiles(QString::fromStdString(logPath.string()), "usvfs*.log", 5, QDir::Name);
 
-    if (!createAndMakeWritable(AppConfig::logPath())) {
+    if (!createAndMakeWritable(logPath)) {
         return false;
     }
 
@@ -220,12 +219,6 @@ static LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* except
         }
     }
     return result;
-}
-
-// Test whether we have write access for path `path`
-static bool HaveWriteAccess(const fs::path& path) {
-    auto perms = fs::status(path).permissions();
-    return (perms & fs::perms::owner_write) != fs::perms::none;
 }
 
 QString determineProfile(QStringList& arguments, const QSettings& settings) {
