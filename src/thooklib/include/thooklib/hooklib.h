@@ -19,7 +19,8 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#include "usvfs_shared/windows_sane.h"
+#include <common/sane_windows.h>
+
 #include <map>
 
 namespace HookLib {

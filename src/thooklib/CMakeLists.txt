@@ -47,6 +47,7 @@ export(TARGETS ${library_name} FILE ${library_name}Config.cmake)
 add_executable(${library_name}Tests EXCLUDE_FROM_ALL
     test/main.cpp
 )
+set_target_properties(${library_name}Tests PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
 target_include_directories(${library_name}Tests PRIVATE test)
 target_link_libraries(${library_name}Tests PRIVATE ${library_name} spdlog GTest)
 add_test(${library_name}_Tests Tests)

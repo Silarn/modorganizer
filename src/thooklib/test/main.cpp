@@ -3,12 +3,10 @@
 #include "thooklib/hooklib.h"
 #include "thooklib/utility.h"
 #include "usvfs_shared/exceptionex.h"
-#include "usvfs_shared/windows_sane.h"
 #include <gtest/gtest.h>
 #include <iostream>
 #include <spdlog/spdlog.h>
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include <common/sane_windows.h>
 
 using namespace std;
 using namespace HookLib;

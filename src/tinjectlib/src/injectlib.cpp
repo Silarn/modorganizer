@@ -20,31 +20,33 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "tinjectlib/injectlib.h"
 #include "tinjectlib/asmjit_sane.h"
-#include "usvfs_shared/addrtools.h"
-#include "usvfs_shared/exceptionex.h"
-#include "usvfs_shared/stringcast.h"
-#include "usvfs_shared/stringutils.h"
-#include "usvfs_shared/windows_error.h"
+
+#include <common/predef.h>
+#include <fmt/format.h>
+#include <spdlog/spdlog.h>
+#include <usvfs_shared/addrtools.h>
+#include <usvfs_shared/exceptionex.h>
+#include <usvfs_shared/stringcast.h>
+#include <usvfs_shared/stringutils.h>
+#include <usvfs_shared/windows_error.h>
+
 #include <TlHelp32.h>
 #include <cstdio>
 #include <filesystem>
-#include <fmt/format.h>
-#include <spdlog/spdlog.h>
 
 using namespace asmjit;
 using namespace usvfs::shared;
 
-#if defined(_M_X64) || defined(__amd64__)
+#if COMMON_IS_64
 #pragma message("64bit build")
 using namespace x86;
-#define IS_X64 1
 #elif _M_IX86
 #pragma message("32bit build")
 using namespace asmjit::x86;
-#define IS_X64 0
 #else
 #error "Unsupported Architecture"
 #endif
+#define IS_X64 COMMON_IS_64
 
 typedef HMODULE(WINAPI* TLoadLibraryType)(LPCWSTR);
 typedef FARPROC(WINAPI* TGetProcAddressType)(HMODULE, LPCSTR);
@@ -158,7 +160,6 @@ void addStub(size_t userDataSize, X86Assembler& assembler, bool skipInit, TDataR
     // restore registers
     popAll(assembler);
 #else
-
     // save registers
     assembler.push(eax);
     assembler.pushf();

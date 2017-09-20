@@ -19,7 +19,9 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "thooklib/utility.h"
-#include "usvfs_shared/scopeguard.h"
+
+#include <usvfs_shared/scopeguard.h>
+
 #include <cstdlib>
 
 namespace HookLib {

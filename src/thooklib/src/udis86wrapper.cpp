@@ -19,18 +19,21 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "thooklib/udis86wrapper.h"
-#include "usvfs_shared/shmlogger.h"
+
+#include <common/predef.h>
+#include <usvfs_shared/shmlogger.h>
+
 #include <stdexcept>
 
-#if defined(_M_X64) || defined(__amd64__)
+#if COMMON_IS_64
 #pragma message("64bit build")
 #define IS_X64 1
-#elif _M_IX86
+#elif COMMON_IS_86
 #pragma message("32bit build")
-#define IS_X64 0
 #else
 #error "Unsupported Architecture"
 #endif
+#define IS_X64 COMMON_IS_64
 
 namespace HookLib {
 

@@ -22,7 +22,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC spdlog AsmJit usvfs_shared)
+target_link_libraries(${library_name} PUBLIC spdlog AsmJit usvfs_shared common)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.
@@ -47,9 +47,16 @@ add_library(${library_name}TestDll SHARED EXCLUDE_FROM_ALL
 add_executable(${library_name}Tests EXCLUDE_FROM_ALL
     test/main.cpp
 )
+set_target_properties(${library_name}Tests PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
+set_target_properties(${library_name}TestExe PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
+set_target_properties(${library_name}TestDll PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
 target_include_directories(${library_name}Tests PRIVATE test)
-target_link_libraries(${library_name}Tests PRIVATE ${library_name} spdlog GTest)
-add_test(${library_name}_Tests Tests)
+target_link_libraries(${library_name}Tests PRIVATE ${library_name} spdlog GTest common)
+target_link_libraries(${library_name}TestExe PRIVATE ${library_name} spdlog GTest common)
+target_link_libraries(${library_name}TestDll PRIVATE ${library_name} spdlog GTest common)
+add_test(${library_name}_Tests ${library_name}Tests)
+add_test(${library_name}_Tests ${library_name}TestExe)
+add_test(${library_name}_Tests ${library_name}TestDll)
 
 
 
