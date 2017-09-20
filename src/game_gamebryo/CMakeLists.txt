@@ -5,7 +5,7 @@ set(library_name "game_gamebryo")
 ## Files ##
 # Main
 SET(HDRS
-	include/${library_name}/gamegamebryo.h
+    include/${library_name}/gamegamebryo.h
     include/${library_name}/dummybsa.h
     include/${library_name}/gamebryobsainvalidation.h
     include/${library_name}/gamebryodataarchives.h
@@ -29,7 +29,7 @@ SET(SRCS
 )
 
 SET(QT
-	src/gamebryosavegameinfowidget.ui
+    src/gamebryosavegameinfowidget.ui
 )
 
 source_group(QT FILES ${QT})
@@ -47,8 +47,8 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC common uibase gamefeatures Qt5::Widgets
-	# liblz4
+target_link_libraries(${library_name} PUBLIC common uibase gamefeatures Qt5::Widgets Version
+    # liblz4
 )
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
