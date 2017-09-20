@@ -616,7 +616,7 @@ BOOL WINAPI CreateVFSDump(LPSTR buffer, size_t* size) {
     return success ? TRUE : FALSE;
 }
 
-VOID WINAPI BlacklistExecutable(LPWSTR executableName) { context->blacklistExecutable(executableName); }
+VOID WINAPI BlacklistExecutable(LPCWSTR executableName) { context->blacklistExecutable(executableName); }
 
 VOID WINAPI PrintDebugInfo() {
     spdlog::get("usvfs")->warn("===== debug {} =====", context->redirectionTable().shmName());

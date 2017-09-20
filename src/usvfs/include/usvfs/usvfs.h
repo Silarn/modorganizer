@@ -21,9 +21,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 #include "usvfs/dllimport.h"
 #include "usvfs/usvfsparameters.h"
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include <common/sane_windows.h>
 
 /*
  * Virtual operations:
@@ -138,7 +136,7 @@ DLLEXPORT BOOL WINAPI CreateVFSDump(LPSTR buffer, size_t* size);
  * file system
  * @param executableName  name of the executable
  */
-DLLEXPORT VOID WINAPI BlacklistExecutable(LPWSTR executableName);
+DLLEXPORT VOID WINAPI BlacklistExecutable(LPCWSTR executableName);
 
 /**
  * print debugging info about the vfs. The format is currently not fixed and may
