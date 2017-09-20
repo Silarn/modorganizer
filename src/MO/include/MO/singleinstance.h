@@ -30,9 +30,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
  * secondary instances can start a download in the primary one
  **/
 class SingleInstance : public QObject {
-
     Q_OBJECT
-
   public:
     /**
      * @brief constructor
