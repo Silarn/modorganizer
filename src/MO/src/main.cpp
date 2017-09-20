@@ -390,7 +390,8 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QS
 //  propagate to child processes)
 void setupPath() {
     static const int BUFSIZE = 4096;
-    qDebug("MO at: %s", qUtf8Printable(QDir::toNativeSeparators(QCoreApplication::applicationDirPath())));
+    fs::path appDirPath = QCoreApplication::applicationDirPath().toStdWString();
+    qDebug("MO at: %s", qUtf8Printable(QString::fromStdWString(appDirPath.native())));
 
     std::vector<TCHAR> oldPath(BUFSIZE);
     DWORD offset = ::GetEnvironmentVariableW(L"PATH", oldPath.data(), BUFSIZE);
@@ -402,8 +403,7 @@ void setupPath() {
 
     std::wstring newPath(oldPath.data());
     newPath += L";";
-    newPath += ToWString(QDir::toNativeSeparators(QCoreApplication::applicationDirPath())).c_str();
-    newPath += L"\\dlls";
+    newPath += (appDirPath / "dlls");
 
     ::SetEnvironmentVariableW(L"PATH", newPath.c_str());
 }
@@ -531,14 +531,15 @@ int runApplication(MOApplication& application, SingleInstance& instance, const Q
 }
 
 int main(int argc, char* argv[]) {
-    // Install message handler for logging.
+    // Install some semebelance of logging and error handling.
+    // This will be overwritten by LogBuffer, and until then logs nothing to stdout.
     qInstallMessageHandler(&myMessageOutput);
-    // Unhandled Exception Error Handling.
     SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
 
     MOApplication application(argc, argv);
     QStringList arguments = application.arguments();
 
+    // Handle arguments
     if ((arguments.length() >= 4) && (arguments.at(1) == "launch")) {
         // all we're supposed to do is launch another process
         QProcess process;
@@ -550,6 +551,13 @@ int main(int argc, char* argv[]) {
         return process.exitCode();
     }
 
+    bool forcePrimary = false;
+    if (arguments.contains("update")) {
+        arguments.removeAll("update");
+        forcePrimary = true;
+    }
+
+    // Setup Paths for Plugins.
     setupPath();
 
 #if !defined(QT_NO_SSL)
@@ -558,12 +566,7 @@ int main(int argc, char* argv[]) {
     qDebug("non-ssl build");
 #endif
 
-    bool forcePrimary = false;
-    if (arguments.contains("update")) {
-        arguments.removeAll("update");
-        forcePrimary = true;
-    }
-
+    // Enforce single instance, and handle nxm downloads.
     SingleInstance instance(forcePrimary);
     if (!instance.primaryInstance()) {
         if ((arguments.size() == 2) && isNxmLink(arguments.at(1))) {
@@ -579,7 +582,6 @@ int main(int argc, char* argv[]) {
 
     do {
         QString dataPath;
-
         try {
             dataPath = InstanceManager::instance().determineDataPath();
         } catch (const std::exception& e) {
