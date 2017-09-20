@@ -30,10 +30,10 @@ class QDir;
 #include <QString>
 #include <QStringList>
 
+#include <functional>
 #include <map>
 #include <set>
 #include <vector>
-#include <functional>
 
 namespace MOBase {
 class IPluginGame;
@@ -77,15 +77,13 @@ class ModInfo : public QObject, public MOBase::IModInterface {
         CONTENT_MESH,
         CONTENT_BSA,
         CONTENT_INTERFACE,
-        CONTENT_MUSIC,
         CONTENT_SOUND,
         CONTENT_SCRIPT,
         CONTENT_SKSE,
         CONTENT_SKYPROC,
-        CONTENT_STRING
     };
 
-    static const int NUM_CONTENT_TYPES = CONTENT_STRING + 1;
+    static const int NUM_CONTENT_TYPES = CONTENT_SKYPROC + 1;
 
     enum EHighlight { HIGHLIGHT_NONE = 0, HIGHLIGHT_INVALID = 1, HIGHLIGHT_CENTER = 2, HIGHLIGHT_IMPORTANT = 4 };
 
@@ -181,7 +179,7 @@ class ModInfo : public QObject, public MOBase::IModInterface {
      * @param bsaNames names of archives
      * @return a new mod
      */
-    static ModInfo::Ptr createFromPlugin(const QString& espName, const QStringList& bsaNames,
+    static ModInfo::Ptr createFromPlugin(const QString& modName, const QString& espName, const QStringList& bsaNames,
                                          MOShared::DirectoryEntry** directoryStructure);
 
     /**

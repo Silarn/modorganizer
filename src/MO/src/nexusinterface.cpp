@@ -23,6 +23,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <MO/Shared/util.h>
 #include <QApplication>
+#include <QNetworkCookieJar>
 #include <uibase/iplugingame.h>
 
 #include <regex>
@@ -70,7 +71,7 @@ void NexusBridge::nxmFilesAvailable(int modID, QVariant userData, QVariant resul
 
         QVariantList resultList = resultData.toList();
 
-        foreach (QVariant file, resultList) {
+        for (const QVariant& file : resultList) {
             ModRepositoryFileInfo temp;
             QVariantMap fileInfo = file.toMap();
             temp.uri = fileInfo["uri"].toString();
@@ -157,7 +158,7 @@ void NexusInterface::loginCompleted() { nextRequest(); }
 
 void NexusInterface::interpretNexusFileName(const QString& fileName, QString& modName, int& modID, bool query) {
     // Look for something along the lines of modulename-Vn-m + any old rubbish.
-    static std::regex exp("^([a-zA-Z0-9_'\"\\- ]*?)([-_ ][VvRr]?[0-9_]+)?-([1-9][0-9]+).*");
+    static std::regex exp(R"exp(^([a-zA-Z0-9_'"\-.() ]*?)([-_ ][VvRr]?[0-9_]+)?-([1-9][0-9]*).*\.(zip|rar|7z))exp");
     static std::regex simpleexp("^([a-zA-Z0-9_]+)");
 
     QByteArray fileNameUTF8 = fileName.toUtf8();
@@ -170,13 +171,13 @@ void NexusInterface::interpretNexusFileName(const QString& fileName, QString& mo
         std::string candidate2 = result[2].str();
         if (candidate2.length() != 0 && (candidate2.find_last_of("VvRr") == std::string::npos)) {
             // well, that second match might be an id too...
-            unsigned offset = strspn(candidate2.c_str(), "-_ ");
+            size_t offset = strspn(candidate2.c_str(), "-_ ");
             if (offset < candidate2.length() && query) {
                 SelectionDialog selection(
                     tr("Failed to guess mod id for \"%1\", please pick the correct one").arg(fileName));
                 QString r2Highlight(fileName);
                 r2Highlight.insert(result.position(2) + result.length(2), "* ")
-                    .insert(result.position(2) + offset, " *");
+                    .insert(result.position(2) + static_cast<int>(offset), " *");
                 QString r3Highlight(fileName);
                 r3Highlight.insert(result.position(3) + result.length(3), "* ").insert(result.position(3), " *");
 
@@ -214,21 +215,21 @@ bool NexusInterface::isURLGameRelated(const QUrl& url) const {
     return name.startsWith(getGameURL() + "/") || name.startsWith(getOldModsURL() + "/");
 }
 
-QString NexusInterface::getGameURL() const { return "http://www.nexusmods.com/" + m_Game->gameShortName().toLower(); }
+QString NexusInterface::getGameURL() const { return "http://www.nexusmods.com/" + m_Game->gameNexusName().toLower(); }
 
 QString NexusInterface::getOldModsURL() const {
-    return "http://" + m_Game->gameShortName().toLower() + ".nexusmods.com/mods";
+    return "http://" + m_Game->gameNexusName().toLower() + ".nexusmods.com/mods";
 }
 
 QString NexusInterface::getModURL(int modID) const { return QString("%1/mods/%2").arg(getGameURL()).arg(modID); }
 
-bool NexusInterface::isModURL(int modID, QString const& url) const {
-    if (url == getModURL(modID)) {
+bool NexusInterface::isModURL(int modID, const QString& url) const {
+    if (QUrl(url) == QUrl(getModURL(modID))) {
         return true;
     }
     // Try the alternate (old style) mod name
     QString alt = QString("%1/%2").arg(getOldModsURL()).arg(modID);
-    return alt == url;
+    return QUrl(alt) == QUrl(url);
 }
 
 int NexusInterface::requestDescription(int modID, QObject* receiver, QVariant userData, const QString& subModule,
@@ -287,10 +288,6 @@ int NexusInterface::requestFiles(int modID, QObject* receiver, QVariant userData
 
     connect(this, SIGNAL(nxmRequestFailed(int, int, QVariant, int, QString)), receiver,
             SLOT(nxmRequestFailed(int, int, QVariant, int, QString)), Qt::UniqueConnection);
-
-    //  QTimer::singleShot(1000, this, SLOT(fakeFiles()));
-    //  static int fID = 42;
-    //  return fID++;
 
     nextRequest();
     return requestInfo.m_ID;
@@ -351,6 +348,11 @@ void NexusInterface::cleanup() {
     //  delete m_DiskCache;
     m_AccessManager = nullptr;
     m_DiskCache = nullptr;
+}
+
+void NexusInterface::clearCache() {
+    m_DiskCache->clear();
+    m_AccessManager->clearCookies();
 }
 
 void NexusInterface::nextRequest() {
@@ -497,7 +499,8 @@ void NexusInterface::requestError(QNetworkReply::NetworkError) {
         return;
     }
 
-    qCritical("request (%s) error: %s", qPrintable(reply->url().toString()), qPrintable(reply->errorString()));
+    qCritical("request (%s) error: %s (%d)", qUtf8Printable(reply->url().toString()),
+              qUtf8Printable(reply->errorString()), reply->error());
 }
 
 void NexusInterface::requestTimeout() {
@@ -519,7 +522,7 @@ void NexusInterface::managedGameChanged(IPluginGame const* game) { m_Game = game
 
 namespace {
 QString get_management_url(MOBase::IPluginGame const* game) {
-    return "http://nmm.nexusmods.com/" + game->gameShortName().toLower();
+    return "http://nmm.nexusmods.com/" + game->gameNexusName().toLower();
 }
 } // namespace
 

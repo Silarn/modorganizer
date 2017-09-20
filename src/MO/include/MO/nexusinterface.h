@@ -136,6 +136,11 @@ class NexusInterface : public QObject {
     void cleanup();
 
     /**
+     * @brief clear webcache and cookies associated with this access manager
+     */
+    void clearCache();
+
+    /**
      * @brief request description for a mod
      *
      * @param modID id of the mod caller is interested in (assumed to be for the current game)

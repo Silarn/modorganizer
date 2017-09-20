@@ -21,13 +21,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #define EDITEXECUTABLESDIALOG_H
 
 #include "MO/executableslist.h"
-#include "uibase/tutorabledialog.h"
+#include <MO/profile.h>
 #include <QListWidgetItem>
 #include <QTimer>
+#include <uibase/tutorabledialog.h>
 
 namespace Ui {
 class EditExecutablesDialog;
 }
+class ModList;
 
 /**
  * @brief Dialog to manage the list of executables
@@ -42,7 +44,8 @@ class EditExecutablesDialog : public MOBase::TutorableDialog {
      * @param executablesList current list of executables
      * @param parent parent widget
      **/
-    explicit EditExecutablesDialog(const ExecutablesList& executablesList, QWidget* parent = 0);
+    explicit EditExecutablesDialog(const ExecutablesList& executablesList, const ModList& modList, Profile* profile,
+                                   QWidget* parent = 0);
 
     ~EditExecutablesDialog();
 
@@ -54,6 +57,10 @@ class EditExecutablesDialog : public MOBase::TutorableDialog {
     ExecutablesList getExecutablesList() const;
 
     void saveExecutable();
+
+  private slots:
+    void on_newFilesModCheckBox_toggled(bool checked);
+
   private slots:
 
     void on_binaryEdit_textChanged(const QString& arg1);
@@ -91,6 +98,7 @@ class EditExecutablesDialog : public MOBase::TutorableDialog {
     QListWidgetItem* m_CurrentItem;
 
     ExecutablesList m_ExecutablesList;
+    Profile* m_Profile;
 };
 
 #endif // EDITEXECUTABLESDIALOG_H

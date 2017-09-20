@@ -9,6 +9,7 @@
 #include <map>
 #include <tuple>
 #include <uibase/iplugindiagnose.h>
+#include <uibase/ipluginfilemapper.h>
 #include <uibase/iplugingame.h>
 #include <uibase/iplugininstaller.h>
 #include <uibase/ipluginmodpage.h>
@@ -25,7 +26,8 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
     using PluginMap = std::tuple<std::vector<MOBase::IPlugin*>, std::vector<MOBase::IPluginDiagnose*>,
                                  std::vector<MOBase::IPluginGame*>, std::vector<MOBase::IPluginInstaller*>,
                                  std::vector<MOBase::IPluginModPage*>, std::vector<MOBase::IPluginPreview*>,
-                                 std::vector<MOBase::IPluginTool*>, std::vector<MOBase::IPluginProxy*>>;
+                                 std::vector<MOBase::IPluginTool*>, std::vector<MOBase::IPluginProxy*>,
+                                 std::vector<MOBase::IPluginFileMapper*>>;
 
     static const unsigned int PROBLEM_PLUGINSNOTLOADED = 1;
 

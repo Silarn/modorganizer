@@ -9,6 +9,8 @@
 #include "MO/pluginlist.h"
 #include "MO/selfupdater.h"
 #include "MO/settings.h"
+#include "MO/usvfsconnector.h"
+#include <MO/Shared/directoryentry.h>
 #include <uibase/delayedfilewriter.h>
 #include <uibase/imoinfo.h>
 #include <uibase/iplugindiagnose.h>
@@ -89,7 +91,7 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     void connectPlugins(PluginContainer* container);
     void disconnectPlugins();
 
-    void setManagedGame(const MOBase::IPluginGame* game);
+    void setManagedGame(MOBase::IPluginGame* game);
 
     void updateExecutablesList(QSettings& settings);
 
@@ -130,16 +132,23 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     void doAfterLogin(const std::function<void()>& function) { m_PostLoginTasks.append(function); }
 
     void spawnBinary(const QFileInfo& binary, const QString& arguments = "", const QDir& currentDirectory = QDir(),
-                     bool closeAfterStart = true, const QString& steamAppID = "");
+                     const QString& steamAppID = "", const QString& customOverwrite = "");
+
     HANDLE spawnBinaryDirect(const QFileInfo& binary, const QString& arguments, const QString& profileName,
-                             const QDir& currentDirectory, const QString& steamAppID);
+                             const QDir& currentDirectory, const QString& steamAppID, const QString& customOverwrite);
 
     void loginSuccessfulUpdate(bool necessary);
     void loginFailedUpdate(const QString& message);
 
+    static bool createAndMakeWritable(const QString& path);
+    bool bootstrap();
     void createDefaultProfile();
 
     MOBase::DelayedFileWriter& pluginsWriter() { return m_PluginListsWriter; }
+
+    void prepareVFS();
+
+    void setLogLevel(int logLevel);
 
   public:
     MOBase::IModRepositoryBridge* createNexusBridge() const;
@@ -174,8 +183,6 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     bool onFinishedRun(const std::function<void(const QString&, unsigned int)>& func);
     void refreshModList(bool saveChanges = true);
     QStringList modsSortedByProfilePriority() const;
-
-    // std::vector<std::pair<QString, QString> > fileMapping();
 
   public: // IPluginDiagnose interface
     virtual std::vector<unsigned int> activeProblems() const;
@@ -213,6 +220,8 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
 
     void managedGameChanged(MOBase::IPluginGame const* gamePlugin);
 
+    void close();
+
   private:
     void storeSettings();
 
@@ -226,11 +235,16 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
 
     bool testForSteam();
 
-    /*
-     * std::vector<std::pair<QString, QString>> fileMapping(const QString &dataPath,
-                                                         const MOShared::DirectoryEntry *base,
-                                                         const MOShared::DirectoryEntry *directoryEntry);
-  */
+    bool createDirectory(const QString& path);
+
+    /**
+     * @brief return a descriptor of the mappings real file->virtual file
+     */
+    std::vector<Mapping> fileMapping(const QString& profile, const QString& customOverwrite);
+
+    std::vector<Mapping> fileMapping(const QString& dataPath, const QString& relPath,
+                                     const MOShared::DirectoryEntry* base,
+                                     const MOShared::DirectoryEntry* directoryEntry, int createDestination);
 
     bool waitForProcessCompletion(HANDLE handle, LPDWORD exitCode);
 
@@ -250,7 +264,7 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     IUserInterface* m_UserInterface = nullptr;
     PluginContainer* m_PluginContainer = nullptr;
     QString m_GameName;
-    MOBase::IPluginGame const* m_GamePlugin;
+    MOBase::IPluginGame* m_GamePlugin;
 
     Profile* m_CurrentProfile = nullptr;
 
@@ -286,4 +300,5 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     bool m_ArchivesInit = false;
 
     MOBase::DelayedFileWriter m_PluginListsWriter;
+    UsvfsConnector m_USVFS;
 };

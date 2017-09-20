@@ -32,7 +32,7 @@ void ExecutablesList::init(IPluginGame const* game) {
     for (const ExecutableInfo& info : game->executables()) {
         if (info.isValid()) {
             addExecutableInternal(info.title(), info.binary().absoluteFilePath(), info.arguments().join(" "),
-                                  info.workingDirectory().absolutePath(), info.closeMO(), info.steamAppID());
+                                  info.workingDirectory().absolutePath(), info.steamAppID());
         }
     }
 }
@@ -99,15 +99,14 @@ void ExecutablesList::addExecutable(const Executable& executable) {
 }
 
 void ExecutablesList::updateExecutable(const QString& title, const QString& executableName, const QString& arguments,
-                                       const QString& workingDirectory, ExecutableInfo::CloseMOStyle closeMO,
-                                       const QString& steamAppID, Executable::Flags mask, Executable::Flags flags) {
+                                       const QString& workingDirectory, const QString& steamAppID,
+                                       Executable::Flags mask, Executable::Flags flags) {
     QFileInfo file(executableName);
     auto existingExe = findExe(title);
     flags &= mask;
 
     if (existingExe != m_Executables.end()) {
         existingExe->m_Title = title;
-        existingExe->m_CloseMO = closeMO;
         existingExe->m_Flags &= ~mask;
         existingExe->m_Flags |= flags;
         // for pre-configured executables don't overwrite settings we didn't store
@@ -123,7 +122,6 @@ void ExecutablesList::updateExecutable(const QString& title, const QString& exec
     } else {
         Executable newExe;
         newExe.m_Title = title;
-        newExe.m_CloseMO = closeMO;
         newExe.m_BinaryInfo = file;
         newExe.m_Arguments = arguments;
         newExe.m_WorkingDirectory = workingDirectory;
@@ -144,11 +142,10 @@ void ExecutablesList::remove(const QString& title) {
 
 void ExecutablesList::addExecutableInternal(const QString& title, const QString& executableName,
                                             const QString& arguments, const QString& workingDirectory,
-                                            ExecutableInfo::CloseMOStyle closeMO, const QString& steamAppID) {
+                                            const QString& steamAppID) {
     QFileInfo file(executableName);
     if (file.exists()) {
         Executable newExe;
-        newExe.m_CloseMO = closeMO;
         newExe.m_BinaryInfo = file;
         newExe.m_Title = title;
         newExe.m_Arguments = arguments;

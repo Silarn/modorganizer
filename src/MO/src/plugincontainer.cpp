@@ -64,12 +64,18 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
         m_Organizer->settings().registerPlugin(pluginObj);
     }
 
-    { // diagnosis plugins
+    { // diagnosis plugin
         IPluginDiagnose* diagnose = qobject_cast<IPluginDiagnose*>(plugin);
         if (diagnose) {
             this->plugins<IPluginDiagnose>().push_back(diagnose);
             // FIXME: signals
             // m_DiagnosisConnections.push_back(diagnose->onInvalidated([&]() { emit diagnosisUpdate(); }));
+        }
+    }
+    { // file mapper plugin
+        IPluginFileMapper* mapper = qobject_cast<IPluginFileMapper*>(plugin);
+        if (mapper != nullptr) {
+            this->plugins<IPluginDiagnose>().push_back(mapper);
         }
     }
     { // mod page plugin
@@ -253,7 +259,7 @@ void PluginContainer::loadPlugins() {
                     m_PluginLoaders.push_back(pluginLoader.release());
                 } else {
                     m_FailedPlugins.push_back(pluginName);
-                    qWarning("plugin \"%s\" failed to load", qUtf8Printable(pluginName));
+                    qWarning("plugin \"%s\" failed to load (may be outdated)", qUtf8Printable(pluginName));
                 }
             }
         }

@@ -16,15 +16,16 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/shared/directoryentry.h"
 #include "MO/shared/error_report.h"
 #include "MO/shared/leaktrace.h"
 #include "MO/shared/windows_error.h"
-#include <algorithm>
-#include <atomic>
+
 #include <bsatk/bsatk.h>
 #include <common/sane_windows.h>
+
+#include <algorithm>
+#include <atomic>
 #include <ctime>
 #include <map>
 #include <memory>
@@ -594,7 +595,7 @@ FilesOrigin& DirectoryEntry::getOriginByID(int ID) const { return m_OriginConnec
 FilesOrigin& DirectoryEntry::getOriginByName(const std::wstring& name) const {
     return m_OriginConnection->getByName(name);
 }
-
+/*
 int DirectoryEntry::getOrigin(const std::wstring& path, bool& archive) {
     const DirectoryEntry* directory = nullptr;
     const FileEntry::Ptr file = searchFile(path, &directory);
@@ -607,7 +608,7 @@ int DirectoryEntry::getOrigin(const std::wstring& path, bool& archive) {
             return -1;
         }
     }
-}
+}*/
 
 std::vector<FileEntry::Ptr> DirectoryEntry::getFiles() const {
     std::vector<FileEntry::Ptr> result;
@@ -815,13 +816,6 @@ void FileRegister::removeOriginMulti(std::set<FileEntry::Index> indices, int ori
     for (DirectoryEntry* parent : parents) {
         parent->removeFiles(indices);
     }
-
-    // BOOST_FOREACH (const FileEntry::Ptr& file, removedFiles) {
-    //    if (file->getParent() != nullptr) {
-    //        parents.insert(file->getParent());
-    //    }
-    //}
-    // BOOST_FOREACH (DirectoryEntry* parent, parents) { parent->removeFiles(indices); }
 }
 
 void FileRegister::sortOrigins() {

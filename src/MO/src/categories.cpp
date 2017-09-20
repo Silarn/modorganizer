@@ -28,8 +28,9 @@ CategoryFactory* CategoryFactory::s_Instance = nullptr;
 
 QString CategoryFactory::categoriesFilePath() { return qApp->property("dataPath").toString() + "/categories.dat"; }
 
-CategoryFactory::CategoryFactory() {
-    atexit(&cleanup);
+CategoryFactory::CategoryFactory() { atexit(&cleanup); }
+
+void CategoryFactory::loadCategories() {
     reset();
 
     QFile categoryFile(categoriesFilePath());
@@ -161,7 +162,7 @@ int CategoryFactory::addCategory(const QString& name, const std::vector<int>& ne
 }
 
 void CategoryFactory::addCategory(int id, const QString& name, const std::vector<int>& nexusIDs, int parentID) {
-    int index = m_Categories.size();
+    int index = static_cast<int>(m_Categories.size());
     m_Categories.push_back(Category(index, id, name, nexusIDs, parentID));
     for (int nexusID : nexusIDs) {
         m_NexusMap[nexusID] = index;

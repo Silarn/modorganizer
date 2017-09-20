@@ -391,7 +391,9 @@ std::vector<ModInfo::EContent> ModInfoRegular::getContents() const {
                 .size() > 0) {
             m_CachedContent.push_back(CONTENT_PLUGIN);
         }
-        if (dir.entryList(QStringList() << "*.bsa").size() > 0) {
+        if (dir.entryList(QStringList() << "*.bsa"
+                                        << "*.ba2")
+                .size() > 0) {
             m_CachedContent.push_back(CONTENT_BSA);
         }
 
@@ -399,25 +401,28 @@ std::vector<ModInfo::EContent> ModInfoRegular::getContents() const {
 
         if (extender != nullptr) {
             QString sePluginPath = extender->name() + "/plugins";
-            if (dir.exists(sePluginPath))
+            if (dir.exists(sePluginPath)) {
                 m_CachedContent.push_back(CONTENT_SKSE);
+            }
         }
-        if (dir.exists("textures"))
+        if (dir.exists("textures")) {
             m_CachedContent.push_back(CONTENT_TEXTURE);
-        if (dir.exists("meshes"))
+        }
+        if (dir.exists("meshes")) {
             m_CachedContent.push_back(CONTENT_MESH);
-        if (dir.exists("interface") || dir.exists("menus"))
+        }
+        if (dir.exists("interface") || dir.exists("menus")) {
             m_CachedContent.push_back(CONTENT_INTERFACE);
-        if (dir.exists("music"))
-            m_CachedContent.push_back(CONTENT_MUSIC);
-        if (dir.exists("sound"))
+        }
+        if (dir.exists("music") || dir.exists("sound")) {
             m_CachedContent.push_back(CONTENT_SOUND);
-        if (dir.exists("scripts"))
+        }
+        if (dir.exists("scripts")) {
             m_CachedContent.push_back(CONTENT_SCRIPT);
-        if (dir.exists("strings"))
-            m_CachedContent.push_back(CONTENT_STRING);
-        if (dir.exists("SkyProc Patchers"))
+        }
+        if (dir.exists("SkyProc Patchers")) {
             m_CachedContent.push_back(CONTENT_SKYPROC);
+        }
 
         m_LastContentCheck = QTime::currentTime();
     }

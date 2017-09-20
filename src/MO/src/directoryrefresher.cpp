@@ -122,7 +122,7 @@ void DirectoryRefresher::refresh() {
 
     m_DirectoryStructure = new DirectoryEntry(L"data", nullptr, 0);
 
-    IPluginGame const* game = qApp->property("managed_game").value<IPluginGame const*>();
+    IPluginGame* game = qApp->property("managed_game").value<IPluginGame*>();
 
     std::wstring dataDirectory = QDir::toNativeSeparators(game->dataDirectory().absolutePath()).toStdWString();
     m_DirectoryStructure->addFromOrigin(L"data", dataDirectory, 0);
@@ -139,7 +139,7 @@ void DirectoryRefresher::refresh() {
         } catch (const std::exception& e) {
             emit error(tr("failed to read mod (%1): %2").arg(iter->modName, e.what()));
         }
-        emit progress((i * 100) / m_Mods.size() + 1);
+        emit progress((i * 100) / static_cast<int>(m_Mods.size()) + 1);
     }
 
     emit progress(100);

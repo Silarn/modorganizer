@@ -75,6 +75,14 @@ class SettingsDialog : public MOBase::TutorableDialog {
 
     void on_associateButton_clicked();
 
+    void on_clearCacheButton_clicked();
+
+    void on_browseBaseDirBtn_clicked();
+
+    void on_browseOverwriteDirBtn_clicked();
+
+    void on_browseProfilesDirBtn_clicked();
+
   private:
     Ui::SettingsDialog* ui;
 };

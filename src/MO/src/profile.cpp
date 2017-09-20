@@ -19,6 +19,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/profile.h"
 
 #include <MO/Shared/error_report.h>
+#include <MO/settings.h>
 #include <Mo/Shared/appconfig.h>
 #include <QApplication>
 #include <QMessageBox>
@@ -43,8 +44,10 @@ void Profile::touchFile(QString fileName) {
 
 Profile::Profile(const QString& name, IPluginGame const* gamePlugin, bool useDefaultSettings)
     : m_ModListWriter(std::bind(&Profile::writeModlistNow, this)), m_GamePlugin(gamePlugin) {
-    QString profilesDir = qApp->property("dataPath").toString() + "/" + ToQString(AppConfig::profilesPath());
+    QString profilesDir = Settings::instance().getProfileDirectory();
     QDir profileBase(profilesDir);
+
+    m_Settings = new QSettings(profileBase.absoluteFilePath("settings.ini"));
 
     QString fixedName = name;
     if (!fixDirectoryName(fixedName)) {
@@ -81,17 +84,16 @@ Profile::Profile(const QDir& directory, IPluginGame const* gamePlugin)
     : m_Directory(directory), m_GamePlugin(gamePlugin), m_ModListWriter(std::bind(&Profile::writeModlistNow, this)) {
     assert(gamePlugin != nullptr);
 
+    m_Settings = new QSettings(directory.absoluteFilePath("settings.ini"), QSettings::IniFormat);
+
     if (!QFile::exists(m_Directory.filePath("modlist.txt"))) {
         qWarning("missing modlist.txt in %s", qPrintable(directory.path()));
         touchFile(m_Directory.filePath("modlist.txt"));
     }
 
-    IPluginGame::ProfileSettings settings = IPluginGame::CONFIGURATION | IPluginGame::MODS | IPluginGame::SAVEGAMES;
+    IPluginGame::ProfileSettings settings = IPluginGame::MODS | IPluginGame::SAVEGAMES;
     gamePlugin->initializeProfile(directory, settings);
 
-    if (!QFile::exists(getIniFileName())) {
-        reportError(QObject::tr("\"%1\" is missing or inaccessible").arg(getIniFileName()));
-    }
     refreshModStatus();
 }
 
@@ -100,10 +102,14 @@ Profile::Profile(const Profile& reference)
       m_GamePlugin(reference.m_GamePlugin)
 
 {
+    m_Settings = new QSettings(m_Directory.absoluteFilePath("settings.ini"), QSettings::IniFormat);
     refreshModStatus();
 }
 
-Profile::~Profile() { m_ModListWriter.writeImmediately(true); }
+Profile::~Profile() {
+    delete m_Settings;
+    m_ModListWriter.writeImmediately(true);
+}
 
 bool Profile::exists() const { return m_Directory.exists(); }
 
@@ -120,7 +126,7 @@ void Profile::writeModlistNow() {
             return;
         }
 
-        for (int i = m_ModStatus.size() - 1; i >= 0; --i) {
+        for (int i = static_cast<int>(m_ModStatus.size()) - 1; i >= 0; --i) {
             // the priority order was inverted on load so it has to be inverted again
             unsigned int index = m_ModIndexByPriority[i];
             if (index != UINT_MAX) {
@@ -262,7 +268,7 @@ void Profile::refreshModStatus() {
     // invert priority order to match that of the pluginlist. Also
     // give priorities to mods not referenced in the profile
     for (size_t i = 0; i < m_ModStatus.size(); ++i) {
-        ModInfo::Ptr modInfo = ModInfo::getByIndex(i);
+        ModInfo::Ptr modInfo = ModInfo::getByIndex(static_cast<int>(i));
         if (modInfo->alwaysEnabled()) {
             m_ModStatus[i].m_Enabled = true;
         }
@@ -291,7 +297,7 @@ void Profile::refreshModStatus() {
     if (topInsert < 0) {
         int offset = topInsert * -1;
         for (size_t i = 0; i < m_ModStatus.size(); ++i) {
-            ModInfo::Ptr modInfo = ModInfo::getByIndex(i);
+            ModInfo::Ptr modInfo = ModInfo::getByIndex(static_cast<unsigned int>(i));
             if (modInfo->getFixedPriority() == INT_MAX) {
                 continue;
             }
@@ -407,7 +413,7 @@ void Profile::setModPriority(unsigned int index, int& newPriority) {
         return;
     }
 
-    int newPriorityTemp = (std::max)(0, (std::min<int>)(m_ModStatus.size() - 1, newPriority));
+    int newPriorityTemp = (std::max)(0, (std::min<int>)(static_cast<int>(m_ModStatus.size()) - 1, newPriority));
 
     // don't try to place below overwrite
     while ((m_ModIndexByPriority.at(newPriorityTemp) >= m_ModStatus.size()) ||
@@ -435,8 +441,7 @@ void Profile::setModPriority(unsigned int index, int& newPriority) {
 }
 
 Profile* Profile::createPtrFrom(const QString& name, const Profile& reference, MOBase::IPluginGame const* gamePlugin) {
-    QString profileDirectory =
-        qApp->property("dataPath").toString() + "/" + QString::fromStdWString(AppConfig::profilesPath()) + "/" + name;
+    QString profileDirectory = Settings::instance().getProfileDirectory() + "/" + name;
     reference.copyFilesTo(profileDirectory);
     return new Profile(QDir(profileDirectory), gamePlugin);
 }
@@ -520,7 +525,9 @@ bool Profile::invalidationActive(bool* supported) const {
         }
         return false;
     } else {
-        *supported = false;
+        if (supported) {
+            *supported = false;
+        }
     }
     return false;
 }
@@ -569,6 +576,27 @@ bool Profile::enableLocalSaves(bool enable) {
     return true;
 }
 
+bool Profile::localSettingsEnabled() const { return m_Directory.exists(getIniFileName()); }
+
+bool Profile::enableLocalSettings(bool enable) {
+    // TODO: this currently assumes game settings are stored in an ini file.
+    // This shall become very interesting when a game stores its settings in the
+    // registry
+    QString backupFile = getIniFileName() + "_";
+    if (enable) {
+        if (m_Directory.exists(backupFile)) {
+            shellRename(backupFile, getIniFileName());
+        } else {
+            IPluginGame* game = qApp->property("managed_game").value<IPluginGame*>();
+            game->initializeProfile(m_Directory, IPluginGame::CONFIGURATION);
+        }
+    } else {
+        shellRename(getIniFileName(), backupFile);
+    }
+
+    return true;
+}
+
 QString Profile::getModlistFileName() const { return QDir::cleanPath(m_Directory.absoluteFilePath("modlist.txt")); }
 
 QString Profile::getPluginsFileName() const { return QDir::cleanPath(m_Directory.absoluteFilePath("plugins.txt")); }
@@ -596,7 +624,15 @@ QString Profile::absolutePath() const { return QDir::cleanPath(m_Directory.absol
 QString Profile::savePath() const { return QDir::cleanPath(m_Directory.absoluteFilePath("saves")); }
 
 void Profile::rename(const QString& newName) {
-    QDir profileDir(qApp->property("dataPath").toString() + "/" + QString::fromStdWString(AppConfig::profilesPath()));
+    QDir profileDir(Settings::instance().getProfileDirectory());
     profileDir.rename(name(), newName);
     m_Directory = profileDir.absoluteFilePath(newName);
+}
+
+QVariant Profile::setting(const QString& section, const QString& name, const QVariant& fallback) {
+    return m_Settings->value(section + "/" + name, fallback);
+}
+
+void Profile::storeSetting(const QString& section, const QString& name, const QVariant& value) {
+    m_Settings->setValue(section + "/" + name, value);
 }

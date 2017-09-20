@@ -73,7 +73,7 @@ DownloadManager::DownloadInfo* DownloadManager::DownloadInfo::createFromMeta(con
     QString fileName = QFileInfo(filePath).fileName();
 
     if (fileName.endsWith(UNFINISHED)) {
-        info->m_FileName = fileName.mid(0, fileName.length() - strlen(UNFINISHED));
+        info->m_FileName = fileName.mid(0, fileName.length() - static_cast<int>(strlen(UNFINISHED)));
         info->m_State = STATE_PAUSED;
     } else {
         info->m_FileName = fileName;
@@ -430,7 +430,7 @@ void DownloadManager::addNXMDownload(const QString& url) {
 
 void DownloadManager::removeFile(int index, bool deleteFile) {
     if (index >= m_ActiveDownloads.size()) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("remove: invalid download index %1").arg(index));
     }
 
     DownloadInfo* download = m_ActiveDownloads.at(index);
@@ -489,7 +489,7 @@ void DownloadManager::refreshAlphabeticalTranslation() {
 
 void DownloadManager::restoreDownload(int index) {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("restore: invalid download index: %1").arg(index));
     }
 
     DownloadInfo* download = m_ActiveDownloads.at(index);
@@ -520,7 +520,7 @@ void DownloadManager::removeDownload(int index, bool deleteFile) {
             }
         } else {
             if (index >= m_ActiveDownloads.size()) {
-                reportError(tr("invalid index %1").arg(index));
+                reportError(tr("remove: invalid download index %1").arg(index));
                 return;
             }
 
@@ -536,7 +536,7 @@ void DownloadManager::removeDownload(int index, bool deleteFile) {
 
 void DownloadManager::cancelDownload(int index) {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        reportError(tr("invalid index %1").arg(index));
+        reportError(tr("cancel: invalid download index %1").arg(index));
         return;
     }
 
@@ -547,7 +547,7 @@ void DownloadManager::cancelDownload(int index) {
 
 void DownloadManager::pauseDownload(int index) {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        reportError(tr("invalid index %1").arg(index));
+        reportError(tr("pause: invalid download index %1").arg(index));
         return;
     }
 
@@ -566,7 +566,7 @@ void DownloadManager::pauseDownload(int index) {
 
 void DownloadManager::resumeDownload(int index) {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        reportError(tr("invalid index %1").arg(index));
+        reportError(tr("resume: invalid download index %1").arg(index));
         return;
     }
     DownloadInfo* info = m_ActiveDownloads[index];
@@ -576,7 +576,7 @@ void DownloadManager::resumeDownload(int index) {
 
 void DownloadManager::resumeDownloadInt(int index) {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        reportError(tr("invalid index %1").arg(index));
+        reportError(tr("resume (int): invalid download index %1").arg(index));
         return;
     }
     DownloadInfo* info = m_ActiveDownloads[index];
@@ -611,7 +611,7 @@ DownloadManager::DownloadInfo* DownloadManager::downloadInfoByID(unsigned int id
 
 void DownloadManager::queryInfo(int index) {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        reportError(tr("invalid index %1").arg(index));
+        reportError(tr("query: invalid download index %1").arg(index));
         return;
     }
     DownloadInfo* info = m_ActiveDownloads[index];
@@ -631,20 +631,13 @@ void DownloadManager::queryInfo(int index) {
         QString ignore;
         NexusInterface::interpretNexusFileName(fileName, ignore, info->m_FileInfo->modID, true);
         if (info->m_FileInfo->modID < 0) {
-            QString modIDString;
-            while (modIDString.isEmpty()) {
-                modIDString =
-                    QInputDialog::getText(nullptr, tr("Please enter the nexus mod id"), tr("Mod ID:"),
-                                          QLineEdit::Normal, QString(), nullptr, 0, Qt::ImhFormattedNumbersOnly);
-                if (modIDString.isNull()) {
-                    // canceled
-                    return;
-                } else if (modIDString.contains(QRegExp("[^0-9]"))) {
-                    qDebug("illegal character in mod-id");
-                    modIDString.clear();
-                }
-            }
-            info->m_FileInfo->modID = modIDString.toInt(nullptr, 10);
+            bool ok = false;
+            int modId = QInputDialog::getInt(nullptr, tr("Please enter the nexus mod id"), tr("Mod ID:"), 1, 1,
+                                             std::numeric_limits<int>::max(), 1, &ok);
+            // careful now: while the dialog was displayed, events were processed.
+            // the download list might have changed and our info-ptr invalidated.
+            m_ActiveDownloads[index]->m_FileInfo->modID = modId;
+            return;
         }
     }
     info->m_ReQueried = true;
@@ -657,7 +650,7 @@ int DownloadManager::numPendingDownloads() const { return m_PendingDownloads.siz
 
 std::pair<int, int> DownloadManager::getPendingDownload(int index) {
     if ((index < 0) || (index >= m_PendingDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("get pending: invalid download index %1").arg(index));
     }
 
     return m_PendingDownloads.at(index);
@@ -665,7 +658,7 @@ std::pair<int, int> DownloadManager::getPendingDownload(int index) {
 
 QString DownloadManager::getFilePath(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("get path: invalid download index %1").arg(index));
     }
 
     return m_OutputDirectory + "/" + m_ActiveDownloads.at(index)->m_FileName;
@@ -690,24 +683,27 @@ QString DownloadManager::getFileTypeString(int fileType) {
 
 QString DownloadManager::getDisplayName(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("display name: invalid download index %1").arg(index));
     }
 
     DownloadInfo* info = m_ActiveDownloads.at(index);
 
+    QTextDocument doc;
     if (!info->m_FileInfo->name.isEmpty()) {
+        doc.setHtml(info->m_FileInfo->name);
         return QString("%1 (%2, v%3)")
-            .arg(info->m_FileInfo->name)
+            .arg(doc.toPlainText())
             .arg(getFileTypeString(info->m_FileInfo->fileCategory))
             .arg(info->m_FileInfo->version.displayString());
     } else {
-        return info->m_FileName;
+        doc.setHtml(info->m_FileName);
+        return doc.toPlainText();
     }
 }
 
 QString DownloadManager::getFileName(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("file name: invalid download index %1").arg(index));
     }
 
     return m_ActiveDownloads.at(index)->m_FileName;
@@ -715,7 +711,7 @@ QString DownloadManager::getFileName(int index) const {
 
 QDateTime DownloadManager::getFileTime(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("file time: invalid download index %1").arg(index));
     }
 
     DownloadInfo* info = m_ActiveDownloads.at(index);
@@ -728,7 +724,7 @@ QDateTime DownloadManager::getFileTime(int index) const {
 
 qint64 DownloadManager::getFileSize(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("file size: invalid download index %1").arg(index));
     }
 
     return m_ActiveDownloads.at(index)->m_TotalSize;
@@ -736,7 +732,7 @@ qint64 DownloadManager::getFileSize(int index) const {
 
 int DownloadManager::getProgress(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("progress: invalid download index %1").arg(index));
     }
 
     return m_ActiveDownloads.at(index)->m_Progress;
@@ -744,7 +740,7 @@ int DownloadManager::getProgress(int index) const {
 
 DownloadManager::DownloadState DownloadManager::getState(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("state: invalid download index %1").arg(index));
     }
 
     return m_ActiveDownloads.at(index)->m_State;
@@ -752,7 +748,7 @@ DownloadManager::DownloadState DownloadManager::getState(int index) const {
 
 bool DownloadManager::isInfoIncomplete(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("infocomplete: invalid download index %1").arg(index));
     }
 
     DownloadInfo* info = m_ActiveDownloads.at(index);
@@ -765,21 +761,21 @@ bool DownloadManager::isInfoIncomplete(int index) const {
 
 int DownloadManager::getModID(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("mod id: invalid download index %1").arg(index));
     }
     return m_ActiveDownloads.at(index)->m_FileInfo->modID;
 }
 
 bool DownloadManager::isHidden(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("ishidden: invalid download index %1").arg(index));
     }
     return m_ActiveDownloads.at(index)->m_Hidden;
 }
 
 const ModRepositoryFileInfo* DownloadManager::getFileInfo(int index) const {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("file info: invalid download index %1").arg(index));
     }
 
     return m_ActiveDownloads.at(index)->m_FileInfo;
@@ -787,7 +783,7 @@ const ModRepositoryFileInfo* DownloadManager::getFileInfo(int index) const {
 
 void DownloadManager::markInstalled(int index) {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("mark installed: invalid download index %1").arg(index));
     }
 
     DownloadInfo* info = m_ActiveDownloads.at(index);
@@ -800,7 +796,7 @@ void DownloadManager::markInstalled(int index) {
 
 void DownloadManager::markUninstalled(int index) {
     if ((index < 0) || (index >= m_ActiveDownloads.size())) {
-        throw MyException(tr("invalid index"));
+        throw MyException(tr("mark uninstalled: invalid download index %1").arg(index));
     }
 
     DownloadInfo* info = m_ActiveDownloads.at(index);
@@ -964,10 +960,13 @@ void DownloadManager::nxmDescriptionAvailable(int, QVariant userData, QVariant r
     QVariantMap result = resultData.toMap();
 
     DownloadInfo* info = downloadInfoByID(userData.toInt());
-    if (info == nullptr)
+    if (!info) {
         return;
+    }
     info->m_FileInfo->categoryID = result["category_id"].toInt();
-    info->m_FileInfo->modName = result["name"].toString().trimmed();
+    QTextDocument doc;
+    doc.setHtml(result["name"].toString().trimmed());
+    info->m_FileInfo->modName = doc.toPlainText();
     info->m_FileInfo->newestVersion.parse(result["version"].toString());
     if (info->m_FileInfo->fileID != 0) {
         setState(info, STATE_READY);
@@ -1024,7 +1023,7 @@ void DownloadManager::nxmFilesAvailable(int, QVariant userData, QVariant resultD
 
     bool found = false;
 
-    foreach (QVariant file, result) {
+    for (QVariant file : result) {
         QVariantMap fileInfo = file.toMap();
         QString fileName = fileInfo["uri"].toString();
         QString fileNameVariant = fileName.mid(0).replace(' ', '_');
@@ -1035,12 +1034,10 @@ void DownloadManager::nxmFilesAvailable(int, QVariant userData, QVariant resultD
             if (!info->m_FileInfo->version.isValid()) {
                 info->m_FileInfo->version = info->m_FileInfo->newestVersion;
             }
-            // Nexus has HTMLd these so unhtml them if necessary
+            // we receive some names html-encoded. This is used to decode it
             QTextDocument doc;
-            doc.setHtml(info->m_FileInfo->modName);
+            doc.setHtml(fileInfo["modName"].toString());
             info->m_FileInfo->modName = doc.toPlainText();
-            doc.setHtml(info->m_FileInfo->name);
-            info->m_FileInfo->name = doc.toPlainText();
             info->m_FileInfo->fileCategory = convertFileCategory(fileInfo["category_id"].toInt());
             info->m_FileInfo->fileTime = matchDate(fileInfo["date"].toString());
             info->m_FileInfo->fileID = fileInfo["id"].toInt();
@@ -1058,7 +1055,7 @@ void DownloadManager::nxmFilesAvailable(int, QVariant userData, QVariant resultD
         } else {
             SelectionDialog selection(
                 tr("No file on Nexus matches the selected file by name. Please manually choose the correct one."));
-            foreach (QVariant file, result) {
+            for (QVariant file : result) {
                 QVariantMap fileInfo = file.toMap();
                 selection.addChoice(fileInfo["uri"].toString(), "", file);
             }

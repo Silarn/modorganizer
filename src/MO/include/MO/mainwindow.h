@@ -30,6 +30,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "uibase/delayedfilewriter.h"
 #include "uibase/imoinfo.h"
 #include "uibase/tutorialcontrol.h"
+#include <QHeaderView>
 
 // Note the commented headers here can be replaced with forward references,
 // when I get round to cleaning up main.cpp
@@ -107,8 +108,8 @@ class MainWindow : public QMainWindow, public IUserInterface {
     friend class OrganizerProxy;
 
   public:
-    explicit MainWindow(const QString& exeName, QSettings& initSettings, OrganizerCore& organizerCore,
-                        PluginContainer& pluginContainer, QWidget* parent = 0);
+    explicit MainWindow(QSettings& initSettings, OrganizerCore& organizerCore, PluginContainer& pluginContainer,
+                        QWidget* parent = 0);
     ~MainWindow();
 
     void storeSettings(QSettings& settings) override;
@@ -120,14 +121,11 @@ class MainWindow : public QMainWindow, public IUserInterface {
     virtual void setProcessName(QString const& name) override;
 
     bool addProfile();
-    void updateBSAList(const QStringList& defaultArchives, const QStringList& activeArchives);
     void refreshDataTree();
     void refreshSaveList();
 
     void setModListSorting(int index);
     void setESPListSorting(int index);
-
-    void saveArchiveList();
 
     void registerPluginTool(MOBase::IPluginTool* tool);
     void registerModPage(MOBase::IPluginModPage* modPage);
@@ -151,9 +149,6 @@ class MainWindow : public QMainWindow, public IUserInterface {
     virtual bool closeWindow();
     virtual void setWindowEnabled(bool enabled);
 
-    virtual MOBase::DelayedFileWriterBase& archivesWriter() override { return m_ArchiveListWriter; }
-
-    void updateWindowTitle(const QString& accountName, bool premium);
   public slots:
 
     void displayColumnSelection(const QPoint& pos);
@@ -187,7 +182,14 @@ class MainWindow : public QMainWindow, public IUserInterface {
     virtual void dragEnterEvent(QDragEnterEvent* event);
     virtual void dropEvent(QDropEvent* event);
 
+  private slots:
+    void on_actionChange_Game_triggered();
+
+  private slots:
+    void on_clickBlankButton_clicked();
+
   private:
+    void cleanup();
     void actionToToolButton(QAction*& sourceAction);
 
     void updateToolBar();
@@ -244,7 +246,7 @@ class MainWindow : public QMainWindow, public IUserInterface {
 
     bool extractProgress(QProgressDialog& extractProgress, int percentage, std::string fileName);
 
-    int checkForProblems();
+    size_t checkForProblems();
 
     int getBinaryExecuteInfo(const QFileInfo& targetInfo, QFileInfo& binaryInfo, QString& arguments);
     QTreeWidgetItem* addFilterItem(QTreeWidgetItem* root, const QString& name, int categoryID,
@@ -282,6 +284,8 @@ class MainWindow : public QMainWindow, public IUserInterface {
 
     void dropLocalFile(const QUrl& url, const QString& outputDir, bool move);
 
+    bool registerWidgetState(const QString& name, QHeaderView* view, const char* oldSettingName = nullptr);
+
   private:
     static const char* PATTERN_BACKUP_GLOB;
     static const char* PATTERN_BACKUP_REGEX;
@@ -293,8 +297,6 @@ class MainWindow : public QMainWindow, public IUserInterface {
     bool m_WasVisible;
 
     MOBase::TutorialControl m_Tutorial;
-
-    QString m_ExeName;
 
     int m_OldProfileIndex;
 
@@ -342,14 +344,12 @@ class MainWindow : public QMainWindow, public IUserInterface {
 
     std::vector<QTreeWidgetItem*> m_RemoveWidget;
 
-    QByteArray m_ArchiveListHash;
-
     bool m_DidUpdateMasterList;
 
     LockedDialog* m_LockDialog{nullptr};
     uint64_t m_LockCount{0};
 
-    MOBase::DelayedFileWriter m_ArchiveListWriter;
+    std::vector<std::pair<QString, QHeaderView*>> m_PersistedGeometry;
 
     enum class ShortcutType { Toolbar, Desktop, StartMenu };
 
@@ -359,6 +359,7 @@ class MainWindow : public QMainWindow, public IUserInterface {
     Executable& getSelectedExecutable();
 
   private slots:
+    void updateWindowTitle(const QString& accountName, bool premium);
 
     void showMessage(const QString& message);
     void showError(const QString& message);
@@ -372,6 +373,7 @@ class MainWindow : public QMainWindow, public IUserInterface {
 
     // modlist context menu
     void installMod_clicked();
+    void createEmptyMod_clicked();
     void restoreBackup_clicked();
     void renameMod_clicked();
     void removeMod_clicked();
@@ -430,7 +432,6 @@ class MainWindow : public QMainWindow, public IUserInterface {
     void addRemoveCategories_MenuHandler();
     void replaceCategories_MenuHandler();
 
-    void savePrimaryCategory();
     void addPrimaryCategoryCandidates();
 
     void modDetailsUpdated(bool success);
@@ -468,8 +469,6 @@ class MainWindow : public QMainWindow, public IUserInterface {
     void exportModListCSV();
 
     void startExeAction();
-
-    void checkBSAList();
 
     void updateProblemsButton();
 
@@ -523,8 +522,6 @@ class MainWindow : public QMainWindow, public IUserInterface {
     void on_actionUpdate_triggered();
     void on_actionEndorseMO_triggered();
 
-    void on_bsaList_customContextMenuRequested(const QPoint& pos);
-    void bsaList_itemMoved();
     void on_btnRefreshData_clicked();
     void on_categoriesList_customContextMenuRequested(const QPoint& pos);
     void on_conflictsCheckBox_toggled(bool checked);
@@ -543,7 +540,6 @@ class MainWindow : public QMainWindow, public IUserInterface {
     void on_categoriesList_itemSelectionChanged();
     void on_linkButton_pressed();
     void on_showHiddenBox_toggled(bool checked);
-    void on_bsaList_itemChanged(QTreeWidgetItem* item, int column);
     void on_bossButton_clicked();
 
     void on_saveButton_clicked();
@@ -553,8 +549,6 @@ class MainWindow : public QMainWindow, public IUserInterface {
     void on_actionCopy_Log_to_Clipboard_triggered();
     void on_categoriesAndBtn_toggled(bool checked);
     void on_categoriesOrBtn_toggled(bool checked);
-    void on_managedArchiveLabel_linkHovered(const QString& link);
-    void on_manageArchivesBox_toggled(bool checked);
 };
 
 #endif // MAINWINDOW_H

@@ -6,7 +6,7 @@ set(library_name "MO")
 # Main
 #if HDRs
 set(SHARED_HDRS
-    include/${library_name}/shared/inject.h
+    # include/${library_name}/shared/inject.h
     include/${library_name}/shared/windows_error.h
     include/${library_name}/shared/error_report.h
     include/${library_name}/shared/directoryentry.h
@@ -89,12 +89,13 @@ SET(HDRS
     include/${library_name}/plugincontainer.h
     include/${library_name}/organizercore.h
     include/${library_name}/iuserinterface.h
+    include/${library_name}/usvfsconnector.h
 )
 #endif
 
 #if SRCs
 set(SHARED_SRCS
-    src/shared/inject.cpp
+    # src/shared/inject.cpp
     src/shared/windows_error.cpp
     src/shared/error_report.cpp
     src/shared/directoryentry.cpp
@@ -176,6 +177,10 @@ SET(SRCS
     src/viewmarkingscrollbar.cpp
     src/plugincontainer.cpp
     src/organizercore.cpp
+	#
+    src/instancemanager.cpp
+	src/usvfsconnector.cpp
+    src/eventfilter.cpp
 )
 #endif
 
@@ -229,6 +234,7 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5WinExtras REQUIRED)
 find_package(Qt5WebEngine REQUIRED)
 find_package(Qt5WebEngineWidgets REQUIRED)
+FIND_PACKAGE(Qt5LinguistTools)
 
 ## Library ##
 add_library(${library_name}Shared STATIC ${SHARED_HDRS} ${SHARED_SRCS})
@@ -244,7 +250,7 @@ target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets
 )
 
 ## Executable ##
-add_executable(${library_name} ${HDRS} ${SRCS} ${QTs})
+add_executable(${library_name} ${HDRS} ${SRCS} ${QTs} ${organizer_translations_qm})
 set_target_properties(${library_name} PROPERTIES OUTPUT_NAME "ModOrganizer")
 # Headers
 target_include_directories(${library_name} PUBLIC
@@ -252,14 +258,23 @@ target_include_directories(${library_name} PUBLIC
     $<INSTALL_INTERFACE:include>
     PRIVATE src
 )
+EXECUTE_PROCESS(
+  COMMAND git log -1 --format=%h
+  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+  OUTPUT_VARIABLE GIT_COMMIT_HASH
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+ADD_DEFINITIONS(-DGITID="${GIT_COMMIT_HASH}")
+
 # Dependencies
 target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::WebEngine Qt5::WebEngineWidgets Zlib
-                      common uibase bsatk gamefeatures archive fmt::fmt-header-only
-                      ${library_name}Shared
+                      common uibase bsatk gamefeatures archive fmt::fmt-header-only github
+                      ${library_name}Shared game_gamebryo
                       # esptk
                       Dbghelp advapi32 Version Shlwapi)
-# add_definitions(-DQT_MESSAGELOGCONTEXT)
 # QT
+add_definitions(-DQT_MESSAGELOGCONTEXT)
+QT5_CREATE_TRANSLATION(organizer_translations_qm ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/organizer_en.ts)
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 if(WIN32)
     SET(windeploy_parameters --no-translations

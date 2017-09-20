@@ -51,6 +51,8 @@ class SelectionDialog : public QDialog {
     QVariant getChoiceData();
     QString getChoiceString();
 
+    void disableCancel();
+
   private slots:
 
     void on_buttonBox_clicked(QAbstractButton* button);

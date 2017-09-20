@@ -27,6 +27,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QByteArray>
 #include <QDir>
 #include <QObject>
+#include <QSettings>
 #include <QString>
 #include <memory>
 #include <string>
@@ -41,9 +42,7 @@ class IPluginGame;
  * @brief represents a profile
  **/
 class Profile : public QObject, public MOBase::IProfile {
-
     Q_OBJECT
-
   public:
     typedef std::shared_ptr<Profile> Ptr;
 
@@ -108,20 +107,32 @@ class Profile : public QObject, public MOBase::IProfile {
     /**
      * @return true if this profile uses local save games
      */
-    bool localSavesEnabled() const;
+    virtual bool localSavesEnabled() const override;
 
     /**
      * @brief enables or disables the use of local save games for this profile
-     * disabling this does not delete exising local saves but they will not be visible
-     * in the game
+     * when disabling the user will be asked if he wants to remove the save games
+     * in the profile
      * @param enable if true, local saves are enabled, otherewise they are disabled
      */
     bool enableLocalSaves(bool enable);
 
     /**
+     * @return true if this profile uses local ini files
+     */
+    virtual bool localSettingsEnabled() const override;
+
+    /**
+     * @brief enables or disables the use of local ini files for this profile
+     * disabling this does not delete existing ini files but the global ones will be used
+     * @param enable
+     */
+    bool enableLocalSettings(bool enable);
+
+    /**
      * @return name of the profile (this is identical to its directory name)
      **/
-    QString name() const { return m_Directory.dirName(); }
+    virtual QString name() const override { return m_Directory.dirName(); }
 
     /**
      * @return the path of the plugins file in this profile
@@ -170,7 +181,7 @@ class Profile : public QObject, public MOBase::IProfile {
     /**
      * @return path to this profile
      **/
-    QString absolutePath() const;
+    virtual QString absolutePath() const override;
 
     /**
      * @return path to this profile's save games
@@ -209,7 +220,7 @@ class Profile : public QObject, public MOBase::IProfile {
      *
      * @return number of mods for which the profile has status information
      **/
-    unsigned int numMods() const { return m_ModStatus.size(); }
+    size_t numMods() const { return m_ModStatus.size(); }
 
     /**
      * @return the number of mods that can be enabled and where the priority can be modified
@@ -263,6 +274,10 @@ class Profile : public QObject, public MOBase::IProfile {
 
     void dumpModStatus() const;
 
+    QVariant setting(const QString& section, const QString& name, const QVariant& fallback = QVariant());
+
+    void storeSetting(const QString& section, const QString& name, const QVariant& value);
+
   signals:
 
     /**
@@ -307,7 +322,9 @@ class Profile : public QObject, public MOBase::IProfile {
   private:
     QDir m_Directory;
 
-    MOBase::IPluginGame const* const m_GamePlugin;
+    QSettings* m_Settings;
+
+    const MOBase::IPluginGame* m_GamePlugin;
 
     mutable QByteArray m_LastModlistHash;
     std::vector<ModStatus> m_ModStatus;

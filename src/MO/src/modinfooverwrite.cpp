@@ -1,4 +1,5 @@
 #include "MO/modinfooverwrite.h"
+#include "MO/settings.h"
 
 #include <MO/Shared/appconfig.h>
 #include <QApplication>
@@ -16,10 +17,7 @@ bool ModInfoOverwrite::isEmpty() const {
     return false;
 }
 
-QString ModInfoOverwrite::absolutePath() const {
-    return QDir::fromNativeSeparators(qApp->property("dataPath").toString() + "/" +
-                                      QString::fromStdWString(AppConfig::overwritePath()));
-}
+QString ModInfoOverwrite::absolutePath() const { return Settings::instance().getOverwriteDirectory(); }
 
 std::vector<ModInfo::EFlag> ModInfoOverwrite::getFlags() const {
     std::vector<ModInfo::EFlag> result;

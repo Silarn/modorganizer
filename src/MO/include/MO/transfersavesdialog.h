@@ -45,7 +45,6 @@ class ISaveGame;
 
 class TransferSavesDialog : public MOBase::TutorableDialog {
     Q_OBJECT
-
   public:
     explicit TransferSavesDialog(const Profile& profile, MOBase::IPluginGame const* gamePlugin, QWidget* parent = 0);
     ~TransferSavesDialog();
@@ -94,7 +93,7 @@ class TransferSavesDialog : public MOBase::TutorableDialog {
                            QPushButton* move);
 
     bool transferCharacters(QString const& character, char const* message, SaveList& saves, QString const& dest,
-                            bool(method)(QString const&, QString const&), char const* errmsg);
+                            const std::function<bool(const QString&, const QString&)>& method, char const* errmsg);
 };
 
 #endif // TRANSFERSAVESDIALOG_H

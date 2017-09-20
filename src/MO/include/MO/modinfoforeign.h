@@ -49,7 +49,7 @@ class ModInfoForeign : public ModInfoWithConflictInfo {
     virtual void addInstalledFile(int, int) {}
 
   protected:
-    ModInfoForeign(const QString& referenceFile, const QStringList& archives,
+    ModInfoForeign(const QString& modName, const QString& referenceFile, const QStringList& archives,
                    MOShared::DirectoryEntry** directoryStructure);
 
   private:

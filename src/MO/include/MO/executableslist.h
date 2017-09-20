@@ -36,7 +36,6 @@ struct Executable {
     QString m_Title;
     QFileInfo m_BinaryInfo;
     QString m_Arguments;
-    MOBase::ExecutableInfo::CloseMOStyle m_CloseMO;
     QString m_SteamAppID;
     QString m_WorkingDirectory;
 
@@ -124,13 +123,10 @@ class ExecutablesList {
      * @param title name displayed in the UI
      * @param executableName the actual filename to execute
      * @param arguments arguments to pass to the executable
-     * @param closeMO if true, MO will be closed when the binary is started
      **/
     void addExecutable(const QString& title, const QString& executableName, const QString& arguments,
-                       const QString& workingDirectory, MOBase::ExecutableInfo::CloseMOStyle closeMO,
-                       const QString& steamAppID, Executable::Flags flags) {
-        updateExecutable(title, executableName, arguments, workingDirectory, closeMO, steamAppID, Executable::AllFlags,
-                         flags);
+                       const QString& workingDirectory, const QString& steamAppID, Executable::Flags flags) {
+        updateExecutable(title, executableName, arguments, workingDirectory, steamAppID, Executable::AllFlags, flags);
     }
 
     /**
@@ -142,8 +138,8 @@ class ExecutablesList {
      * @param closeMO if true, MO will be closed when the binary is started
      **/
     void updateExecutable(const QString& title, const QString& executableName, const QString& arguments,
-                          const QString& workingDirectory, MOBase::ExecutableInfo::CloseMOStyle closeMO,
-                          const QString& steamAppID, Executable::Flags mask, Executable::Flags flags);
+                          const QString& workingDirectory, const QString& steamAppID, Executable::Flags mask,
+                          Executable::Flags flags);
 
     /**
      * @brief remove the executable with the specified file name. This needs to be an absolute file path
@@ -179,8 +175,7 @@ class ExecutablesList {
     std::vector<Executable>::iterator findExe(const QString& title);
 
     void addExecutableInternal(const QString& title, const QString& executableName, const QString& arguments,
-                               const QString& workingDirectory, MOBase::ExecutableInfo::CloseMOStyle closeMO,
-                               const QString& steamAppID);
+                               const QString& workingDirectory, const QString& steamAppID);
 
   private:
     std::vector<Executable> m_Executables;

@@ -21,9 +21,11 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/settingsdialog.h"
 
 #include <MO/Shared/appconfig.h>
+#include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
 #include <QCoreApplication>
+#include <QDir>
 #include <QDirIterator>
 #include <QLineEdit>
 #include <QMessageBox>
@@ -101,11 +103,11 @@ void Settings::registerPlugin(IPlugin* plugin) {
     m_Plugins.push_back(plugin);
     m_PluginSettings.insert(plugin->name(), QMap<QString, QVariant>());
     m_PluginDescriptions.insert(plugin->name(), QMap<QString, QVariant>());
-    foreach (const PluginSetting& setting, plugin->settings()) {
+    for (const PluginSetting& setting : plugin->settings()) {
         QVariant temp = m_Settings.value("Plugins/" + plugin->name() + "/" + setting.key, setting.defaultValue);
         if (!temp.convert(setting.defaultValue.type())) {
             qWarning("failed to interpret \"%s\" as correct type for \"%s\" in plugin \"%s\", using default",
-                     qPrintable(temp.toString()), qPrintable(setting.key), qPrintable(plugin->name()));
+                     qUtf8Printable(temp.toString()), qUtf8Printable(setting.key), qUtf8Printable(plugin->name()));
             temp = setting.defaultValue;
         }
         m_PluginSettings[plugin->name()][setting.key] = temp;
@@ -148,10 +150,12 @@ QString Settings::getSteamAppID() const {
     return m_Settings.value("Settings/app_id", m_GamePlugin->steamAPPId()).toString();
 }
 
+bool Settings::usePrereleases() const { return m_Settings.value("Settings/use_prereleases", false).toBool(); }
+
 void Settings::setDownloadSpeed(const QString& serverName, int bytesPerSecond) {
     m_Settings.beginGroup("Servers");
 
-    foreach (const QString& serverKey, m_Settings.childKeys()) {
+    for (const QString& serverKey : m_Settings.childKeys()) {
         QVariantMap data = m_Settings.value(serverKey).toMap();
         if (serverKey == serverName) {
             data["downloadCount"] = data["downloadCount"].toInt() + 1;
@@ -168,7 +172,7 @@ std::map<QString, int> Settings::getPreferredServers() {
     std::map<QString, int> result;
     m_Settings.beginGroup("Servers");
 
-    foreach (const QString& serverKey, m_Settings.childKeys()) {
+    for (const QString& serverKey : m_Settings.childKeys()) {
         QVariantMap data = m_Settings.value(serverKey).toMap();
         int preference = data["preferred"].toInt();
         if (preference > 0) {
@@ -180,25 +184,42 @@ std::map<QString, int> Settings::getPreferredServers() {
     return result;
 }
 
-QString Settings::getConfigurablePath(const QString& key, const QString& def) const {
+QString Settings::getConfigurablePath(const QString& key, const QString& def, bool resolve) const {
+    QString result = QDir::fromNativeSeparators(
+        m_Settings.value(QString("settings/") + key, QString("%BASE_DIR%/") + def).toString());
+    if (resolve) {
+        result.replace("%BASE_DIR%", getBaseDirectory());
+    }
+    return result;
+}
+
+QString Settings::getBaseDirectory() const {
     return QDir::fromNativeSeparators(
-        m_Settings.value(QString("settings/") + key, qApp->property("dataPath").toString() + "/" + def).toString());
+        m_Settings.value("settings/base_directory", qApp->property("dataPath").toString()).toString());
 }
 
-QString Settings::getDownloadDirectory() const {
-    return getConfigurablePath("download_directory", ToQString(AppConfig::downloadPath()));
+QString Settings::getDownloadDirectory(bool resolve) const {
+    return getConfigurablePath("download_directory", ToQString(AppConfig::downloadPath()), resolve);
 }
 
-QString Settings::getCacheDirectory() const {
-    return getConfigurablePath("cache_directory", ToQString(AppConfig::cachePath()));
+QString Settings::getCacheDirectory(bool resolve) const {
+    return getConfigurablePath("cache_directory", ToQString(AppConfig::cachePath()), resolve);
 }
 
-QString Settings::getModDirectory() const {
-    return getConfigurablePath("mod_directory", ToQString(AppConfig::modsPath()));
+QString Settings::getModDirectory(bool resolve) const {
+    return getConfigurablePath("mod_directory", ToQString(AppConfig::modsPath()), resolve);
+}
+
+QString Settings::getProfileDirectory(bool resolve) const {
+    return getConfigurablePath("profiles_directory", ToQString(AppConfig::profilesPath()), resolve);
+}
+
+QString Settings::getOverwriteDirectory(bool resolve) const {
+    return getConfigurablePath("overwrite_directory", ToQString(AppConfig::overwritePath()), resolve);
 }
 
 QString Settings::getNMMVersion() const {
-    static const QString MIN_NMM_VERSION = "0.52.3";
+    static const QString MIN_NMM_VERSION = "0.61.13";
     QString result = m_Settings.value("Settings/nmm_version", MIN_NMM_VERSION).toString();
     if (VersionInfo(result) < VersionInfo(MIN_NMM_VERSION)) {
         result = MIN_NMM_VERSION;
@@ -335,7 +356,7 @@ void Settings::updateServers(const QList<ServerInfo>& servers) {
     m_Settings.beginGroup("Servers");
     QStringList oldServerKeys = m_Settings.childKeys();
 
-    foreach (const ServerInfo& server, servers) {
+    for (const ServerInfo& server : servers) {
         if (!oldServerKeys.contains(server.name)) {
             // not yet known server
             QVariantMap newVal;
@@ -357,7 +378,7 @@ void Settings::updateServers(const QList<ServerInfo>& servers) {
 
     // clean up unavailable servers
     QDate now = QDate::currentDate();
-    foreach (const QString& key, m_Settings.childKeys()) {
+    for (const QString& key : m_Settings.childKeys()) {
         QVariantMap val = m_Settings.value(key).toMap();
         QDate lastSeen = val["lastSeen"].toDate();
         if (lastSeen.daysTo(now) > 30) {
@@ -379,7 +400,7 @@ void Settings::addBlacklistPlugin(const QString& fileName) {
 void Settings::writePluginBlacklist() {
     m_Settings.beginWriteArray("pluginBlacklist");
     int idx = 0;
-    foreach (const QString& plugin, m_PluginBlacklist) {
+    for (const QString& plugin : m_PluginBlacklist) {
         m_Settings.setArrayIndex(idx++);
         m_Settings.setValue("name", plugin);
     }
@@ -426,12 +447,7 @@ void Settings::addLanguages(QComboBox* languageBox) {
 
 void Settings::addStyles(QComboBox* styleBox) {
     styleBox->addItem("None", "");
-#if QT_VERSION >= QT_VERSION_CHECK(5, 0, 0)
     styleBox->addItem("Fusion", "Fusion");
-#else
-    styleBox->addItem("Plastique", "Plastique");
-    styleBox->addItem("Cleanlooks", "Cleanlooks");
-#endif
 
     QDirIterator langIter(QCoreApplication::applicationDirPath() + "/" + ToQString(AppConfig::stylesheetsPath()),
                           QStringList("*.qss"), QDir::Files);
@@ -452,6 +468,7 @@ void Settings::query(QWidget* parent) {
     std::vector<std::unique_ptr<SettingsTab>> tabs;
 
     tabs.push_back(std::unique_ptr<SettingsTab>(new GeneralTab(this, dialog)));
+    tabs.push_back(std::unique_ptr<SettingsTab>(new PathsTab(this, dialog)));
     tabs.push_back(std::unique_ptr<SettingsTab>(new NexusTab(this, dialog)));
     tabs.push_back(std::unique_ptr<SettingsTab>(new SteamTab(this, dialog)));
     tabs.push_back(std::unique_ptr<SettingsTab>(new PluginsTab(this, dialog)));
@@ -474,9 +491,6 @@ Settings::GeneralTab::GeneralTab(Settings* m_parent, SettingsDialog& m_dialog)
     : Settings::SettingsTab(m_parent, m_dialog), m_languageBox(m_dialog.findChild<QComboBox*>("languageBox")),
       m_styleBox(m_dialog.findChild<QComboBox*>("styleBox")),
       m_logLevelBox(m_dialog.findChild<QComboBox*>("logLevelBox")),
-      m_downloadDirEdit(m_dialog.findChild<QLineEdit*>("downloadDirEdit")),
-      m_modDirEdit(m_dialog.findChild<QLineEdit*>("modDirEdit")),
-      m_cacheDirEdit(m_dialog.findChild<QLineEdit*>("cacheDirEdit")),
       m_compactBox(m_dialog.findChild<QCheckBox*>("compactBox")),
       m_showMetaBox(m_dialog.findChild<QCheckBox*>("showMetaBox")) {
     // FIXME I think 'addLanguages' lives in here not in parent
@@ -504,15 +518,13 @@ Settings::GeneralTab::GeneralTab(Settings* m_parent, SettingsDialog& m_dialog)
     }
 
     m_logLevelBox->setCurrentIndex(m_parent->logLevel());
-    m_downloadDirEdit->setText(m_parent->getDownloadDirectory());
-    m_modDirEdit->setText(m_parent->getModDirectory());
-    m_cacheDirEdit->setText(m_parent->getCacheDirectory());
     m_compactBox->setChecked(m_parent->compactDownloads());
     m_showMetaBox->setChecked(m_parent->metaDownloads());
+    m_usePrereleaseBox->setChecked(m_parent->usePrereleases());
 }
 
 void Settings::GeneralTab::update() {
-    QString oldLanguage = m_Settings.value("Settings/language", "en_US").toString();
+    QString oldLanguage = m_parent->language();
     QString newLanguage = m_languageBox->itemData(m_languageBox->currentIndex()).toString();
     if (newLanguage != oldLanguage) {
         m_Settings.setValue("Settings/language", newLanguage);
@@ -528,69 +540,91 @@ void Settings::GeneralTab::update() {
 
     m_Settings.setValue("Settings/log_level", m_logLevelBox->currentIndex());
 
-    { // advanced settings
-        if ((QDir::fromNativeSeparators(m_modDirEdit->text()) !=
-             QDir::fromNativeSeparators(m_parent->getModDirectory())) &&
-            (QMessageBox::question(
-                 nullptr, tr("Confirm"),
-                 tr("Changing the mod directory affects all your profiles! "
-                    "Mods not present (or named differently) in the new location will be disabled in all profiles. "
-                    "There is no way to undo this unless you backed up your profiles manually. Proceed?"),
-                 QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)) {
-            m_modDirEdit->setText(m_parent->getModDirectory());
+    m_Settings.setValue("Settings/compact_downloads", m_compactBox->isChecked());
+    m_Settings.setValue("Settings/meta_downloads", m_showMetaBox->isChecked());
+    m_Settings.setValue("Settings/use_prereleases", m_usePrereleaseBox->isChecked());
+}
+
+Settings::PathsTab::PathsTab(Settings* parent, SettingsDialog& dialog)
+    : SettingsTab(parent, dialog), m_baseDirEdit(m_dialog.findChild<QLineEdit*>("baseDirEdit")),
+      m_downloadDirEdit(m_dialog.findChild<QLineEdit*>("downloadDirEdit")),
+      m_modDirEdit(m_dialog.findChild<QLineEdit*>("modDirEdit")),
+      m_cacheDirEdit(m_dialog.findChild<QLineEdit*>("cacheDirEdit")),
+      m_profilesDirEdit(m_dialog.findChild<QLineEdit*>("profilesDirEdit")),
+      m_overwriteDirEdit(m_dialog.findChild<QLineEdit*>("overwriteDirEdit")) {
+    m_baseDirEdit->setText(m_parent->getBaseDirectory());
+
+    QString basePath = parent->getBaseDirectory();
+    QDir baseDir(basePath);
+    for (const auto& dir : {std::make_pair(m_downloadDirEdit, m_parent->getDownloadDirectory(false)),
+                            std::make_pair(m_modDirEdit, m_parent->getModDirectory(false)),
+                            std::make_pair(m_cacheDirEdit, m_parent->getCacheDirectory(false)),
+                            std::make_pair(m_profilesDirEdit, m_parent->getProfileDirectory(false)),
+                            std::make_pair(m_overwriteDirEdit, m_parent->getOverwriteDirectory(false))}) {
+        QString storePath = baseDir.relativeFilePath(dir.second);
+        storePath = dir.second;
+        dir.first->setText(storePath);
+    }
+}
+
+void Settings::PathsTab::update() {
+    typedef std::tuple<QString, QString, std::wstring> Directory;
+
+    QString basePath = m_parent->getBaseDirectory();
+
+    for (const Directory& dir :
+         {Directory{m_downloadDirEdit->text(), "download_directory", AppConfig::downloadPath()},
+          Directory{m_cacheDirEdit->text(), "cache_directory", AppConfig::cachePath()},
+          Directory{m_modDirEdit->text(), "mod_directory", AppConfig::modsPath()},
+          Directory{m_overwriteDirEdit->text(), "overwrite_directory", AppConfig::overwritePath()},
+          Directory{m_profilesDirEdit->text(), "profiles_directory", AppConfig::profilesPath()}}) {
+        QString path, settingsKey;
+        std::wstring defaultName;
+        std::tie(path, settingsKey, defaultName) = dir;
+
+        settingsKey = QString("Settings/%1").arg(settingsKey);
+
+        QString realPath = path;
+        realPath.replace("%BASE_DIR%", m_baseDirEdit->text());
+
+        if (!QDir(realPath).exists()) {
+            if (!QDir().mkpath(realPath)) {
+                QMessageBox::warning(qApp->activeWindow(), tr("Error"),
+                                     tr("Failed to create \"%1\", you may not have the "
+                                        "necessary permission. path remains unchanged.")
+                                         .arg(realPath));
+            }
         }
 
-        if (!QDir(m_downloadDirEdit->text()).exists()) {
-            QDir().mkpath(m_downloadDirEdit->text());
-        }
-        if (QFileInfo(m_downloadDirEdit->text()) != QFileInfo(qApp->property("dataPath").toString() + "/" +
-                                                              QString::fromStdWString(AppConfig::downloadPath()))) {
-            m_Settings.setValue("Settings/download_directory", QDir::toNativeSeparators(m_downloadDirEdit->text()));
+        if (QFileInfo(realPath) != QFileInfo(basePath + "/" + QString::fromStdWString(defaultName))) {
+            m_Settings.setValue(settingsKey, path);
         } else {
-            m_Settings.remove("Settings/download_directory");
-        }
-
-        if (!QDir(m_modDirEdit->text()).exists()) {
-            QDir().mkpath(m_modDirEdit->text());
-        }
-        if (QFileInfo(m_modDirEdit->text()) !=
-            QFileInfo(qApp->property("dataPath").toString() + "/" + QString::fromStdWString(AppConfig::modsPath()))) {
-            m_Settings.setValue("Settings/mod_directory", QDir::toNativeSeparators(m_modDirEdit->text()));
-        } else {
-            m_Settings.remove("Settings/mod_directory");
-        }
-
-        if (!QDir(m_cacheDirEdit->text()).exists()) {
-            QDir().mkpath(m_cacheDirEdit->text());
-        }
-        if (QFileInfo(m_cacheDirEdit->text()) !=
-            QFileInfo(qApp->property("dataPath").toString() + "/" + QString::fromStdWString(AppConfig::cachePath()))) {
-            m_Settings.setValue("Settings/cache_directory", QDir::toNativeSeparators(m_cacheDirEdit->text()));
-        } else {
-            m_Settings.remove("Settings/cache_directory");
+            m_Settings.remove(settingsKey);
         }
     }
 
-    m_Settings.setValue("Settings/compact_downloads", m_compactBox->isChecked());
-    m_Settings.setValue("Settings/meta_downloads", m_showMetaBox->isChecked());
+    if (QFileInfo(m_baseDirEdit->text()) != QFileInfo(qApp->property("dataPath").toString())) {
+        m_Settings.setValue("Settings/base_directory", m_baseDirEdit->text());
+    } else {
+        m_Settings.remove("Settings/base_directory");
+    }
 }
 
-Settings::NexusTab::NexusTab(Settings* m_parent, SettingsDialog& m_dialog)
-    : Settings::SettingsTab(m_parent, m_dialog), m_loginCheckBox(m_dialog.findChild<QCheckBox*>("loginCheckBox")),
-      m_usernameEdit(m_dialog.findChild<QLineEdit*>("usernameEdit")),
-      m_passwordEdit(m_dialog.findChild<QLineEdit*>("passwordEdit")),
-      m_offlineBox(m_dialog.findChild<QCheckBox*>("offlineBox")),
-      m_proxyBox(m_dialog.findChild<QCheckBox*>("proxyBox")),
-      m_knownServersList(m_dialog.findChild<QListWidget*>("knownServersList")),
-      m_preferredServersList(m_dialog.findChild<QListWidget*>("preferredServersList")) {
-    if (m_parent->automaticLoginEnabled()) {
+Settings::NexusTab::NexusTab(Settings* parent, SettingsDialog& dialog)
+    : Settings::SettingsTab(parent, dialog), m_loginCheckBox(dialog.findChild<QCheckBox*>("loginCheckBox")),
+      m_usernameEdit(dialog.findChild<QLineEdit*>("usernameEdit")),
+      m_passwordEdit(dialog.findChild<QLineEdit*>("passwordEdit")),
+      m_offlineBox(dialog.findChild<QCheckBox*>("offlineBox")), m_proxyBox(dialog.findChild<QCheckBox*>("proxyBox")),
+      m_knownServersList(dialog.findChild<QListWidget*>("knownServersList")),
+      m_preferredServersList(dialog.findChild<QListWidget*>("preferredServersList")) {
+    if (parent->automaticLoginEnabled()) {
         m_loginCheckBox->setChecked(true);
         m_usernameEdit->setText(m_Settings.value("Settings/nexus_username", "").toString());
         m_passwordEdit->setText(deObfuscate(m_Settings.value("Settings/nexus_password", "").toString()));
     }
 
-    m_offlineBox->setChecked(m_parent->offlineMode());
-    m_proxyBox->setChecked(m_parent->useProxy());
+    m_offlineBox->setChecked(parent->offlineMode());
+    m_proxyBox->setChecked(parent->useProxy());
 
     // display server preferences
     m_Settings.beginGroup("Servers");
@@ -699,7 +733,7 @@ void Settings::PluginsTab::update() {
 
     // store plugin blacklist
     m_parent->m_PluginBlacklist.clear();
-    foreach (QListWidgetItem* item, m_pluginBlacklistList->findItems("*", Qt::MatchWildcard)) {
+    for (QListWidgetItem* item : m_pluginBlacklistList->findItems("*", Qt::MatchWildcard)) {
         m_parent->m_PluginBlacklist.insert(item->text());
     }
     m_parent->writePluginBlacklist();

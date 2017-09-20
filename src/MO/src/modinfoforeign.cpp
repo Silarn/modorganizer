@@ -12,7 +12,7 @@ QDateTime ModInfoForeign::creationTime() const { return m_CreationTime; }
 
 QString ModInfoForeign::absolutePath() const {
     // I ought to store this, it's used elsewhere
-    IPluginGame const* game = qApp->property("managed_game").value<IPluginGame const*>();
+    IPluginGame const* game = qApp->property("managed_game").value<IPluginGame*>();
     return game->dataDirectory().absolutePath();
 }
 
@@ -29,9 +29,9 @@ QString ModInfoForeign::getDescription() const {
     return tr("This pseudo mod represents content managed outside MO. It isn't modified by MO.");
 }
 
-ModInfoForeign::ModInfoForeign(const QString& referenceFile, const QStringList& archives,
+ModInfoForeign::ModInfoForeign(const QString &modName, const QString& referenceFile, const QStringList& archives,
                                DirectoryEntry** directoryStructure)
     : ModInfoWithConflictInfo(directoryStructure), m_ReferenceFile(referenceFile), m_Archives(archives) {
     m_CreationTime = QFileInfo(referenceFile).created();
-    m_Name = "Unmanaged: " + QFileInfo(m_ReferenceFile).baseName();
+    m_Name = "Unmanaged: " + modName;
 }

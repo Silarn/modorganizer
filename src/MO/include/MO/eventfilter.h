@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2012 Sebastian Herbord. All rights reserved.
+Copyright (C) 2016 Sebastian Herbord. All rights reserved.
 
 This file is part of Mod Organizer.
 
@@ -18,11 +18,19 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #pragma once
-#include <string>
-using HANDLE = void*;
 
-namespace MOShared {
+#include <QObject>
+#include <functional>
 
-void injectDLL(HANDLE processHandle, HANDLE threadHandle, const std::string& dllname, const std::wstring& profileName,
-               int logLevel);
-}
+class EventFilter : public QObject {
+    Q_OBJECT
+    typedef std::function<bool(QObject*, QEvent*)> HandlerFunc;
+
+  public:
+    EventFilter(QObject* parent, const HandlerFunc& handler);
+
+    virtual bool eventFilter(QObject* obj, QEvent* event) override;
+
+  private:
+    HandlerFunc m_Handler;
+};

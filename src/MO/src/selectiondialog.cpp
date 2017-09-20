@@ -66,6 +66,11 @@ QString SelectionDialog::getChoiceString() {
     }
 }
 
+void SelectionDialog::disableCancel() {
+    ui->cancelButton->setEnabled(false);
+    ui->cancelButton->setHidden(true);
+}
+
 void SelectionDialog::on_buttonBox_clicked(QAbstractButton* button) {
     m_Choice = button;
     if (!m_ValidateByData || m_Choice->property("data").isValid()) {

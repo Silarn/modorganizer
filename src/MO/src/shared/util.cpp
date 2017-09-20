@@ -16,10 +16,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "MO/shared/util.h"
 #include "MO/shared/error_report.h"
 #include "MO/shared/windows_error.h"
+
 #include <algorithm>
 #include <locale>
 #include <memory>
@@ -73,12 +73,13 @@ std::wstring ToWString(const std::string& source, bool utf8) {
         if (!utf8) {
             codepage = AreFileApisANSI() ? GetACP() : GetOEMCP();
         }
-        int sizeRequired = ::MultiByteToWideChar(codepage, 0, source.c_str(), source.length(), nullptr, 0);
+        int sizeRequired =
+            ::MultiByteToWideChar(codepage, 0, source.c_str(), static_cast<int>(source.length()), nullptr, 0);
         if (sizeRequired == 0) {
             throw windows_error("failed to convert string to wide character");
         }
         result.resize(sizeRequired, L'\0');
-        ::MultiByteToWideChar(codepage, 0, source.c_str(), source.length(), &result[0], sizeRequired);
+        ::MultiByteToWideChar(codepage, 0, source.c_str(), static_cast<int>(source.length()), &result[0], sizeRequired);
     }
 
     return result;

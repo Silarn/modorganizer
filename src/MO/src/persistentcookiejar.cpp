@@ -14,6 +14,12 @@ PersistentCookieJar::~PersistentCookieJar() {
     save();
 }
 
+void PersistentCookieJar::clear() {
+    for (const QNetworkCookie& cookie : allCookies()) {
+        deleteCookie(cookie);
+    }
+}
+
 void PersistentCookieJar::save() {
     QTemporaryFile file;
     if (!file.open()) {
@@ -25,7 +31,9 @@ void PersistentCookieJar::save() {
     QList<QNetworkCookie> cookies = allCookies();
     data << static_cast<quint32>(cookies.size());
 
-    foreach (const QNetworkCookie& cookie, allCookies()) { data << cookie.toRawForm(); }
+    for (const QNetworkCookie& cookie : allCookies()) {
+        data << cookie.toRawForm();
+    }
 
     {
         QFile oldCookies(m_FileName);

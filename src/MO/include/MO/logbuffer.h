@@ -25,6 +25,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QScopedPointer>
 #include <QStringListModel>
 #include <QTime>
+
 #include <vector>
 
 class LogBuffer : public QAbstractItemModel {

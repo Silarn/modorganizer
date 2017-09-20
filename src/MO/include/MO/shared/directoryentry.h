@@ -16,14 +16,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifndef DIRECTORYENTRY_H
 #define DIRECTORYENTRY_H
 
 #include "MO/shared/util.h"
+
 #include <bsatk/bsatk.h>
-#include <cassert>
 #include <common/sane_windows.h>
+
+#include <cassert>
 #include <map>
 #include <memory>
 #include <set>
@@ -37,7 +38,6 @@ class OriginConnection;
 class FileRegister;
 
 class FileEntry {
-
   public:
     typedef unsigned int Index;
 
@@ -150,7 +150,6 @@ class FilesOrigin {
 };
 
 class FileRegister {
-
   public:
     FileRegister(std::shared_ptr<OriginConnection> originConnection);
     ~FileRegister();
@@ -210,7 +209,9 @@ class DirectoryEntry {
     FilesOrigin& getOriginByID(int ID) const;
     FilesOrigin& getOriginByName(const std::wstring& name) const;
 
-    int getOrigin(const std::wstring& path, bool& archive);
+    int anyOrigin() const;
+
+    // int getOrigin(const std::wstring& path, bool& archive);
 
     std::vector<FileEntry::Ptr> getFiles() const;
 
@@ -294,8 +295,6 @@ class DirectoryEntry {
     DirectoryEntry* getSubDirectory(const std::wstring& name, bool create, int originID = -1);
 
     DirectoryEntry* getSubDirectoryRecursive(const std::wstring& path, bool create, int originID = -1);
-
-    int anyOrigin() const;
 
     void removeDirRecursive();
 

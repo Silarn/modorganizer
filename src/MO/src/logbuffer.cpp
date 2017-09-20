@@ -38,22 +38,20 @@ LogBuffer::LogBuffer(int messageCount, QtMsgType minMsgType, const QString& outp
 
 LogBuffer::~LogBuffer() {
     qInstallMessageHandler(0);
-    //  if (!m_ShutDown) {
     write();
-    //  }
 }
 
 void LogBuffer::logMessage(QtMsgType type, const QString& message) {
     if (type >= m_MinMsgType) {
         Message msg = {type, QTime::currentTime(), message};
         if (m_NumMessages < m_Messages.size()) {
-            beginInsertRows(QModelIndex(), m_NumMessages, m_NumMessages + 1);
+            beginInsertRows(QModelIndex(), static_cast<int>(m_NumMessages), static_cast<int>(m_NumMessages) + 1);
         }
         m_Messages.at(m_NumMessages % m_Messages.size()) = msg;
         if (m_NumMessages < m_Messages.size()) {
             endInsertRows();
         } else {
-            emit dataChanged(createIndex(0, 0), createIndex(m_Messages.size(), 0));
+            emit dataChanged(createIndex(0, 0), createIndex(static_cast<int>(m_Messages.size()), 0));
         }
         ++m_NumMessages;
         if (type >= QtCriticalMsg) {
@@ -75,7 +73,8 @@ void LogBuffer::write() const {
         return;
     }
 
-    unsigned int i = (m_NumMessages > m_Messages.size()) ? m_NumMessages - m_Messages.size() : 0U;
+    unsigned int i =
+        (m_NumMessages > m_Messages.size()) ? static_cast<unsigned int>(m_NumMessages - m_Messages.size()) : 0U;
     for (; i < m_NumMessages; ++i) {
         file.write(m_Messages.at(i % m_Messages.size()).toString().toUtf8());
         file.write("\r\n");
@@ -86,9 +85,6 @@ void LogBuffer::write() const {
 void LogBuffer::init(int messageCount, QtMsgType minMsgType, const QString& outputFileName) {
     QMutexLocker guard(&s_Mutex);
 
-    if (!s_Instance.isNull()) {
-        s_Instance.reset();
-    }
     s_Instance.reset(new LogBuffer(messageCount, minMsgType, outputFileName));
     old_handler = qInstallMessageHandler(LogBuffer::log);
 }
@@ -120,7 +116,7 @@ void LogBuffer::log(QtMsgType type, const QMessageLogContext& context, const QSt
     if (!s_Instance.isNull()) {
         s_Instance->logMessage(type, message);
     }
-    //  fprintf(stdout, "(%s:%u) %s\n", context.file, context.line, qPrintable(message));
+
     if (type == QtDebugMsg) {
         fprintf(stdout, "%s [%c] %s\n", qPrintable(QTime::currentTime().toString()), msgTypeID(type),
                 qPrintable(message));
@@ -141,16 +137,18 @@ QModelIndex LogBuffer::index(int row, int column, const QModelIndex&) const { re
 QModelIndex LogBuffer::parent(const QModelIndex&) const { return QModelIndex(); }
 
 int LogBuffer::rowCount(const QModelIndex& parent) const {
-    if (parent.isValid())
+    if (parent.isValid()) {
         return 0;
-    else
-        return std::min(m_NumMessages, m_Messages.size());
+    } else {
+        return static_cast<int>(std::min(m_NumMessages, m_Messages.size()));
+    }
 }
 
 int LogBuffer::columnCount(const QModelIndex&) const { return 2; }
 
 QVariant LogBuffer::data(const QModelIndex& index, int role) const {
-    unsigned offset = m_NumMessages < m_Messages.size() ? 0 : m_NumMessages - m_Messages.size();
+    unsigned offset =
+        m_NumMessages < m_Messages.size() ? 0 : static_cast<unsigned int>(m_NumMessages - m_Messages.size());
     unsigned int msgIndex = (offset + index.row() + 1) % m_Messages.size();
     switch (role) {
     case Qt::DisplayRole: {
