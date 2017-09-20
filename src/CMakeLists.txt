@@ -173,10 +173,11 @@ endfunction()
 ## Imported Targets ##
 # Qt
 if (IS_X64)
-    list(APPEND CMAKE_PREFIX_PATH "C:/Qt/5.9.1/msvc2017_64")
+    set(QTDIR "C:/Qt/5.9.1/msvc2017_64")
 else()
-    list(APPEND CMAKE_PREFIX_PATH "C:/Qt/5.9.1/msvc2015")
+    set(QTDIR "C:/Qt/5.9.1/msvc2015")
 endif()
+list(APPEND CMAKE_PREFIX_PATH ${QTDIR})
 find_package(Qt5Core REQUIRED)
 
 # ZLIB

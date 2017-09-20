@@ -219,6 +219,7 @@ SET(QTs
     #
     src/dlls.manifest.qt5
     src/dlls.manifest.debug.qt5
+    src/qt.conf
 )
 #endif
 
@@ -264,19 +265,36 @@ target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::We
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 if(WIN32)
     SET(windeploy_parameters --no-translations
-        # --no-plugins
-        --dir dlls --plugindir dlls --libdir dlls --release-with-debug-info --pdb
+        --no-plugins
+        --release-with-debug-info --pdb
         # --no-printsupport --no-qml --no-positioning
         --no-compiler-runtime
     )
     # Run winddeployqt if it can be found
     find_program(WINDEPLOYQT_EXECUTABLE NAMES windeployqt HINTS ${QTDIR} ENV QTDIR PATH_SUFFIXES bin)
     add_custom_command(TARGET ${library_name} POST_BUILD
-        COMMAND ${WINDEPLOYQT_EXECUTABLE} ${windeploy_parameters} $<TARGET_FILE:${library_name}>
-        WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin
+        COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:${library_name}>/dlls/platforms
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${QTDIR}/plugins/platforms/qwindows$<$<CONFIG:Debug>:d>.dll
+            $<TARGET_FILE_DIR:${library_name}>/dlls/platforms
+        
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/src/dlls.manifest$<$<CONFIG:Debug>:.debug>.qt5
+            $<TARGET_FILE_DIR:${library_name}>/dlls/dlls.manifest
+        
+        COMMAND ${WINDEPLOYQT_EXECUTABLE}
+            ${windeploy_parameters} --dir $<TARGET_FILE_DIR:${library_name}>/dlls
+                --plugindir $<TARGET_FILE_DIR:${library_name}>/dlls
+                --libdir $<TARGET_FILE_DIR:${library_name}>/dlls
+                $<$<CONFIG:Debug>:--debug>
+                $<$<CONFIG:Release>:--release>
+            $<TARGET_FILE:${library_name}>
+            
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/stylesheets
+            $<TARGET_FILE_DIR:${library_name}>/stylesheets
+        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/tutorials
+            $<TARGET_FILE_DIR:${library_name}>/tutorials
     )
-    add_custom_command(TARGET ${library_name} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_INSTALL_PREFIX}/bin/dlls $<TARGET_FILE_DIR:${library_name}>/dlls
+    INSTALL(DIRECTORY $<TARGET_FILE_DIR:${library_name}>/dlls
+        DESTINATION bin
     )
 endif()
 ## WIP New Install targets
@@ -285,14 +303,6 @@ INSTALL(TARGETS ${library_name}
 )
 INSTALL(FILES $<TARGET_FILE_DIR:${library_name}>/ModOrganizer.pdb
         DESTINATION pdb
-)
-INSTALL(FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/dlls.manifest$<$<CONFIG:Debug>:.debug>.qt5
-        DESTINATION bin/dlls
-        RENAME dlls.manifest
-)
-INSTALL(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/src/stylesheets
-                  ${CMAKE_CURRENT_SOURCE_DIR}/src/tutorials
-        DESTINATION bin
 )
         
 # Install Targets
