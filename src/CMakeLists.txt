@@ -230,12 +230,11 @@ import_target(7zip "" "C:/_Diana/Dev/C++/- Libraries/sources/lzma/C" "7z.h" "INT
 import_target(lz4 "liblz4" ${PREFIX_PATH}/include "lz4.h" "SHARED")
 
 ## Targets ##
-# add_subdirectory(usvfs_shared)
-# add_subdirectory(thooklib)
-# add_subdirectory(tinjectlib)
-# add_subdirectory(usvfs)
-##
 add_subdirectory(common)
+add_subdirectory(usvfs_shared)
+add_subdirectory(thooklib)
+add_subdirectory(tinjectlib)
+add_subdirectory(usvfs)
 add_subdirectory(github)
 add_subdirectory(bsatk)
 add_subdirectory(uibase)

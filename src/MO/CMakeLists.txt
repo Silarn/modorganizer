@@ -177,9 +177,9 @@ SET(SRCS
     src/viewmarkingscrollbar.cpp
     src/plugincontainer.cpp
     src/organizercore.cpp
-	#
+    #
     src/instancemanager.cpp
-	src/usvfsconnector.cpp
+    src/usvfsconnector.cpp
     src/eventfilter.cpp
 )
 #endif
@@ -268,7 +268,7 @@ ADD_DEFINITIONS(-DGITID="${GIT_COMMIT_HASH}")
 
 # Dependencies
 target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::WebEngine Qt5::WebEngineWidgets Zlib
-                      common uibase bsatk gamefeatures archive fmt::fmt-header-only github
+                      common uibase bsatk gamefeatures archive fmt::fmt-header-only github usvfs
                       ${library_name}Shared game_gamebryo
                       # esptk
                       Dbghelp advapi32 Version Shlwapi)
