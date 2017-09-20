@@ -16,9 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef WORKAROUNDS_H
-#define WORKAROUNDS_H
+#pragma once
 
 #include "MO/loadmechanism.h"
 #include <QList>
@@ -52,7 +50,9 @@ class SettingsDialog;
  * inside the class but read/written directly from/to disc
  **/
 class Settings : public QObject {
+
     Q_OBJECT
+
   public:
     /**
      * @brief constructor
@@ -374,12 +374,11 @@ class Settings : public QObject {
 
       private:
         QLineEdit* m_baseDirEdit;
-
         QLineEdit* m_downloadDirEdit;
         QLineEdit* m_modDirEdit;
         QLineEdit* m_cacheDirEdit;
-        QCheckBox* m_profilesDirEdit;
-        QCheckBox* m_overwriteDirEdit;
+        QLineEdit* m_profilesDirEdit;
+        QLineEdit* m_overwriteDirEdit;
     };
 
     /** Display/store the configuration in the 'nexus' tab of the settings dialogue */
@@ -464,5 +463,3 @@ class Settings : public QObject {
 
     QSet<QString> m_PluginBlacklist;
 };
-
-#endif // WORKAROUNDS_H
