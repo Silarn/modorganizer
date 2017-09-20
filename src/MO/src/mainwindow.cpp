@@ -42,7 +42,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/problemsdialog.h"
 #include "MO/profilesdialog.h"
 #include "MO/qtgroupingproxy.h"
-#include "MO/safewritefile.h"
 #include "MO/savetextasdialog.h"
 #include "MO/selectiondialog.h"
 #include "MO/serverinfo.h"
@@ -72,6 +71,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <uibase/isavegame.h>
 #include <uibase/isavegameinfowidget.h>
 #include <uibase/report.h>
+#include <uibase/safewritefile.h>
 #include <uibase/scopeguard.h>
 #include <uibase/taskprogressmanager.h>
 #include <uibase/tutorialmanager.h>

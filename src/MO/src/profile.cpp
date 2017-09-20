@@ -17,7 +17,6 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/profile.h"
-#include "MO/safewritefile.h"
 
 #include <MO/Shared/error_report.h>
 #include <Mo/Shared/appconfig.h>
@@ -27,6 +26,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <gamefeatures/dataarchives.h>
 #include <uibase/iplugingame.h>
 #include <uibase/report.h>
+#include <uibase/safewritefile.h>
 
 #include <assert.h> // for assert
 

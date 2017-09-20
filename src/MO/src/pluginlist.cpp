@@ -18,10 +18,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/pluginlist.h"
 #include "MO/modinfo.h"
-#include "MO/safewritefile.h"
 #include "MO/settings.h"
 
 #include <MO/Shared/windows_error.h>
+#include <MO/safewritefile.h>
 #include <QDateTime>
 #include <QMessageBox>
 #include <QMimeData>

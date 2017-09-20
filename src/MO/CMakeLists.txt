@@ -82,7 +82,6 @@ SET(HDRS
     include/${library_name}/previewdialog.h
     include/${library_name}/aboutdialog.h
     include/${library_name}/json.h
-    include/${library_name}/safewritefile.h
     include/${library_name}/modflagicondelegate.h
     include/${library_name}/genericicondelegate.h
     include/${library_name}/organizerproxy.h
@@ -171,7 +170,6 @@ SET(SRCS
     src/previewdialog.cpp
     src/aboutdialog.cpp
     src/json.cpp
-    src/safewritefile.cpp
     src/modflagicondelegate.cpp
     src/genericicondelegate.cpp
     src/organizerproxy.cpp
