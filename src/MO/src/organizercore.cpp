@@ -16,12 +16,13 @@
 #include <QMessageBox>
 #include <QNetworkInterface>
 #include <QProcess>
+#include <common/stringutils.h>
 #include <gamefeatures/dataarchives.h>
 #include <gamefeatures/localsavegames.h>
 #include <uibase/questionboxmemory.h>
 #include <uibase/report.h>
 #include <uibase/scopeguard.h>
-// #include <usvfs/usvfs.h>
+#include <usvfs/usvfs.h>
 
 #include <Psapi.h>
 #include <tchar.h> // for _tcsicmp
@@ -567,6 +568,10 @@ QString OrganizerCore::profilePath() const {
 
 QString OrganizerCore::downloadsPath() const { return QDir::fromNativeSeparators(m_Settings.getDownloadDirectory()); }
 
+QString OrganizerCore::overwritePath() const { return QDir::fromNativeSeparators(m_Settings.getOverwriteDirectory()); }
+
+QString OrganizerCore::basePath() const { return QDir::fromNativeSeparators(m_Settings.getBaseDirectory()); }
+
 MOBase::VersionInfo OrganizerCore::appVersion() const { return m_Updater.getVersion(); }
 
 MOBase::IModInterface* OrganizerCore::getMod(const QString& name) const {
@@ -1017,7 +1022,7 @@ bool OrganizerCore::waitForProcessCompletion(HANDLE handle, LPDWORD exitCode) {
     // Wait for a an event on the handle, a key press, mouse click or timeout
     // TODO: Remove MOBase::isOneOf from this query as it was always returning true.
     while (res = ::MsgWaitForMultipleObjects(1, &handle, false, 500, QS_KEY | QS_MOUSE),
-           ((res != WAIT_FAILED) && (res != WAIT_OBJECT_0)) &&
+           ((res != WAIT_FAILED) || (res != WAIT_OBJECT_0)) &&
                ((m_UserInterface == nullptr) || !m_UserInterface->unlockClicked())) {
 
         if (!::GetVFSProcessList(&numProcesses, processes)) {
@@ -1028,10 +1033,10 @@ bool OrganizerCore::waitForProcessCompletion(HANDLE handle, LPDWORD exitCode) {
         size_t count = std::min<size_t>(static_cast<size_t>(maxCount), numProcesses);
         for (size_t i = 0; i < count; ++i) {
             std::wstring processName = getProcessName(processes[i]);
-            if (!boost::starts_with(processName, L"ModOrganizer.exe")) {
+            if (!common::starts_with(processName, std::wstring(L"ModOrganizer.exe"))) {
                 currentProcess = processes[i];
                 m_UserInterface->setProcessName(QString::fromStdWString(processName));
-                processHandle = ::OpenProcess(SYNCHRONIZE, FALSE, currentProcess);
+                processHandle = ::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, currentProcess);
                 found = true;
             }
         }

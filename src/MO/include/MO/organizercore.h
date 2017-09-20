@@ -155,6 +155,8 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     QString profileName() const;
     QString profilePath() const;
     QString downloadsPath() const;
+    QString overwritePath() const;
+    QString basePath() const;
     MOBase::VersionInfo appVersion() const;
     MOBase::IModInterface* getMod(const QString& name) const;
     MOBase::IModInterface* createMod(MOBase::GuessedValue<QString>& name);

@@ -59,4 +59,10 @@ static inline std::string trim_copy(std::string s) {
     return s;
 }
 
+// Check if basic_string<> starts with something.
+template <typename T>
+inline bool starts_with(const T& big_str, const T& small_str) {
+    return big_str.compare(0, small_str.length(), small_str) == 0;
+}
+
 } // namespace common
