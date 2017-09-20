@@ -5,13 +5,13 @@ set(library_name "game_fallout4")
 ## Files ##
 # Main
 SET(HDRS
-	include/${library_name}/fallout4dataarchives.h
-	include/${library_name}/fallout4gameplugins.h
-	include/${library_name}/fallout4savegame.h
-	include/${library_name}/fallout4savegameinfo.h
-	include/${library_name}/fallout4scriptextender.h
-	include/${library_name}/fallout4unmanagedmods.h
-	include/${library_name}/gamefallout4.h
+    include/${library_name}/fallout4dataarchives.h
+    include/${library_name}/fallout4gameplugins.h
+    include/${library_name}/fallout4savegame.h
+    include/${library_name}/fallout4savegameinfo.h
+    include/${library_name}/fallout4scriptextender.h
+    include/${library_name}/fallout4unmanagedmods.h
+    include/${library_name}/gamefallout4.h
 )
 
 SET(SRCS
@@ -25,10 +25,10 @@ SET(SRCS
 )
 
 SET(QT
-	src/fallout4.qrc
-	src/splash.png
-	src/game_fallout4_en.ts
-	src/gamefallout4.json
+    src/fallout4.qrc
+    src/splash.png
+    src/game_fallout4_en.ts
+    src/gamefallout4.json
 )
 
 source_group(QT FILES ${QT})
@@ -49,7 +49,7 @@ target_include_directories(${library_name} PUBLIC
 )
 # Dependencies
 target_link_libraries(${library_name} PUBLIC common uibase gamefeatures game_gamebryo Qt5::Widgets
-	# liblz4
+    # liblz4
 )
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
