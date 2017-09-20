@@ -47,7 +47,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC common uibase game_features Qt5::Widgets
+target_link_libraries(${library_name} PUBLIC common uibase gamefeatures Qt5::Widgets
 	# liblz4
 )
 # Install Targets
