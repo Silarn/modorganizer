@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QTime>
 #include <QTimer>
-#include <Windows.h>
+#include <common/sane_windows.h>
 #include <map>
 #include <shobjidl.h>
 
