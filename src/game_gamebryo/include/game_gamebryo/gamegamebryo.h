@@ -1,7 +1,7 @@
 #ifndef GAMEGAMEBRYO_H
 #define GAMEGAMEBRYO_H
 
-#include "iplugingame.h"
+#include <uibase/iplugingame.h>
 
 class BSAInvalidation;
 class DataArchives;
@@ -14,101 +14,91 @@ class ScriptExtender;
 class QDir;
 class QFileInfo;
 
+#include <any>
 #include <memory>
 
-class GameGamebryo : public MOBase::IPluginGame
-{
-  Q_OBJECT
-  Q_INTERFACES(MOBase::IPlugin MOBase::IPluginGame)
+class GameGamebryo : public MOBase::IPluginGame {
+    Q_OBJECT
+    Q_INTERFACES(MOBase::IPlugin MOBase::IPluginGame)
 
-  friend class GamebryoScriptExtender;
-  friend class GamebryoSaveGameInfo;
-  friend class GamebryoSaveGameInfoWidget;
+    friend class GamebryoScriptExtender;
+    friend class GamebryoSaveGameInfo;
+    friend class GamebryoSaveGameInfoWidget;
 
-public:
+  public:
+    GameGamebryo();
 
-  GameGamebryo();
+    virtual bool init(MOBase::IOrganizer* moInfo) override;
 
-  virtual bool init(MOBase::IOrganizer *moInfo) override;
+  public: // IPluginGame interface
+    // getName
+    // initializeProfile
+    // savegameExtension
+    virtual bool isInstalled() const override;
+    virtual QIcon gameIcon() const override;
+    virtual QDir gameDirectory() const override;
+    virtual QDir dataDirectory() const override;
+    virtual void setGamePath(const QString& path) override;
+    virtual QDir documentsDirectory() const override;
+    virtual QDir savesDirectory() const override;
+    // executables
+    // steamAPPId
+    // primaryPlugins
+    virtual QStringList gameVariants() const override;
+    virtual void setGameVariant(const QString& variant) override;
+    virtual QString binaryName() const override;
+    // gameShortName
+    // iniFiles
+    // DLCPlugins
+    virtual LoadOrderMechanism loadOrderMechanism() const override;
+    // nexusModOrganizerID
+    // nexusGameID
+    virtual bool looksValid(QDir const&) const override;
+    virtual QString gameVersion() const override;
 
-public: // IPluginGame interface
+  protected:
+    QString getLauncherName() const;
 
-  //getName
-  //initializeProfile
-  //savegameExtension
-  virtual bool isInstalled() const override;
-  virtual QIcon gameIcon() const override;
-  virtual QDir gameDirectory() const override;
-  virtual QDir dataDirectory() const override;
-  virtual void setGamePath(const QString &path) override;
-  virtual QDir documentsDirectory() const override;
-  virtual QDir savesDirectory() const override;
-  //executables
-  //steamAPPId
-  //primaryPlugins
-  virtual QStringList gameVariants() const override;
-  virtual void setGameVariant(const QString &variant) override;
-  virtual QString binaryName() const override;
-  //gameShortName
-  //iniFiles
-  //DLCPlugins
-  virtual LoadOrderMechanism loadOrderMechanism() const override;
-  //nexusModOrganizerID
-  //nexusGameID
-  virtual bool looksValid(QDir const &) const override;
-  virtual QString gameVersion() const override;
+    QFileInfo findInGameFolder(const QString& relativePath) const;
+    QString myGamesPath() const;
+    QString selectedVariant() const;
+    QString getVersion(QString const& program) const;
 
-protected:
+    static QString localAppFolder();
+    // Arguably this shouldn't really be here but every gamebryo program seems to
+    // use it
+    static QString getLootPath();
 
-  QString getLauncherName() const;
+    // This function is not terribly well named as it copies exactly where it's told
+    // to, irrespective of whether it's in the profile...
+    static void copyToProfile(const QString& sourcePath, const QDir& destinationDirectory,
+                              const QString& sourceFileName);
 
-  QFileInfo findInGameFolder(const QString &relativePath) const;
-  QString myGamesPath() const;
-  QString selectedVariant() const;
-  QString getVersion(QString const &program) const;
+    static void copyToProfile(const QString& sourcePath, const QDir& destinationDirectory,
+                              const QString& sourceFileName, const QString& destinationFileName);
 
-  static QString localAppFolder();
-  //Arguably this shouldn't really be here but every gamebryo program seems to
-  //use it
-  static QString getLootPath();
+  protected:
+    std::map<std::type_index, std::any> featureList() const;
 
-  //This function is not terribly well named as it copies exactly where it's told
-  //to, irrespective of whether it's in the profile...
-  static void copyToProfile(const QString &sourcePath,
-                            const QDir &destinationDirectory,
-                            const QString &sourceFileName);
+    // These should be implemented by anything that uses gamebryo (I think)
+    //(and if they don't, it'll be a null pointer and won't look implemented,
+    // so that's fine too).
+    std::shared_ptr<ScriptExtender> m_ScriptExtender{nullptr};
+    std::shared_ptr<DataArchives> m_DataArchives{nullptr};
+    std::shared_ptr<BSAInvalidation> m_BSAInvalidation{nullptr};
+    std::shared_ptr<SaveGameInfo> m_SaveGameInfo{nullptr};
+    std::shared_ptr<LocalSavegames> m_LocalSavegames{nullptr};
 
-  static void copyToProfile(const QString &sourcePath,
-                            const QDir &destinationDirectory,
-                            const QString &sourceFileName,
-                            const QString &destinationFileName);
+  private:
+    QString identifyGamePath() const;
 
-protected:
+  private:
+    QString m_GamePath;
+    QString m_MyGamesPath;
 
-  std::map<std::type_index, boost::any> featureList() const;
+    QString m_GameVariant;
 
-  //These should be implemented by anything that uses gamebryo (I think)
-  //(and if they don't, it'll be a null pointer and won't look implemented,
-  //so that's fine too).
-  std::shared_ptr<ScriptExtender> m_ScriptExtender { nullptr };
-  std::shared_ptr<DataArchives> m_DataArchives { nullptr };
-  std::shared_ptr<BSAInvalidation> m_BSAInvalidation { nullptr };
-  std::shared_ptr<SaveGameInfo> m_SaveGameInfo { nullptr };
-  std::shared_ptr<LocalSavegames> m_LocalSavegames { nullptr };
-
-private:
-
-  QString identifyGamePath() const;
-
-private:
-
-  QString m_GamePath;
-  QString m_MyGamesPath;
-
-  QString m_GameVariant;
-
-  MOBase::IOrganizer *m_Organizer;
-
+    MOBase::IOrganizer* m_Organizer;
 };
 
 #endif // GAMEGAMEBRYO_H
