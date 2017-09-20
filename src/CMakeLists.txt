@@ -210,6 +210,8 @@ add_subdirectory(archive)
 add_subdirectory(gamefeatures)
 add_subdirectory(MO)
 add_subdirectory(hookdll)
+add_subdirectory(game_gamebryo)
+add_subdirectory(game_fallout4)
 
 
 
