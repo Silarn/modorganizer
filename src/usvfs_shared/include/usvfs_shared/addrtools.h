@@ -20,7 +20,8 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 
-#include "usvfs_shared/windows_sane.h"
+#include <common/predef.h>
+#include <common/sane_windows.h>
 #include <cstddef>
 #include <cstdint>
 
@@ -28,9 +29,9 @@ namespace usvfs {
 
 namespace shared {
 
-#ifdef _M_AMD64
+#ifdef COMMON_IS_64
 typedef DWORD64 REGWORD;
-#elif _M_IX86
+#elif COMMON_IS_86
 typedef DWORD REGWORD;
 #endif
 

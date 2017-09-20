@@ -36,7 +36,7 @@ class string_cast_impl {
 
 template <typename ToT, typename FromT>
 ToT string_cast(FromT source, CodePage codePage = CodePage::LOCAL,
-                size_t sourceLength = std::numeric_limits<size_t>::max()) {
+                size_t sourceLength = (std::numeric_limits<size_t>::max)()) {
     return string_cast_impl<ToT, FromT>::cast(source, codePage, sourceLength);
 }
 

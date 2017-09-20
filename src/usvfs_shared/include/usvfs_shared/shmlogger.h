@@ -21,10 +21,12 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 #include "usvfs_shared/logging.h"
 #include "usvfs_shared/shared_memory.h"
-#include "usvfs_shared/windows_sane.h"
+
+#include <common/sane_windows.h>
+#include <spdlog/spdlog.h>
+
 #include <atomic>
 #include <cstdint>
-#include <spdlog/spdlog.h>
 
 namespace spdlog {
 namespace sinks {

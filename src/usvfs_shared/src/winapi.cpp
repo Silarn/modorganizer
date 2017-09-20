@@ -25,10 +25,12 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/stringcast.h"
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/unicodestring.h"
-#include <Psapi.h>
-#include <algorithm>
+
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
+
+#include <Psapi.h>
+#include <algorithm>
 
 namespace ush = usvfs::shared;
 

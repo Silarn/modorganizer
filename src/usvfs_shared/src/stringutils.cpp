@@ -20,11 +20,13 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/windows_error.h"
-#include "usvfs_shared/windows_sane.h"
+
+#include <common/sane_windows.h>
+#include <fmt/format.h>
+
 #include <algorithm>
 #include <cctype>
 #include <cstring>
-#include <fmt/format.h>
 #include <iomanip>
 #include <sstream>
 

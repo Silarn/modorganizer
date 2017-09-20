@@ -10,7 +10,6 @@ SET(shared_HDRS
     include/${library_name}/windows_error.h
     include/${library_name}/debug_monitor.h
     include/${library_name}/shmlogger.h
-    include/${library_name}/windows_sane.h
     include/${library_name}/directory_tree.h
     include/${library_name}/wildcard.h
     include/${library_name}/winapi.h
@@ -51,7 +50,7 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC fmt::fmt-header-only spdlog)
+target_link_libraries(${library_name} PUBLIC fmt::fmt-header-only spdlog common)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.
@@ -70,6 +69,7 @@ export(TARGETS ${library_name} FILE ${library_name}Config.cmake)
 add_executable(${library_name}Tests EXCLUDE_FROM_ALL
     test/main.cpp
 )
+set_target_properties(${library_name}Tests PROPERTIES EXCLUDE_FROM_DEFAULT_BUILD ON)
 target_include_directories(${library_name}Tests PRIVATE test)
 target_link_libraries(${library_name}Tests PRIVATE ${library_name} spdlog GTest fmt::fmt-header-only)
 add_test(${library_name}_Tests Tests)

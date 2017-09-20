@@ -20,6 +20,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 #include "usvfs_shared/logging.h"
+
 #include <stdexcept>
 
 namespace MyBoostFake {

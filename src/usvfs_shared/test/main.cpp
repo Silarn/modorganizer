@@ -1,10 +1,10 @@
 // FIXME: Fucking gtest using old depreceated shit. #1111 on github.
 #define GTEST_ENV_HAS_STD_TUPLE_ 1
 #define GTEST_LANG_CXX11 1
+#include <common/sane_windows.h>
 #include <gtest/gtest.h>
 #include <usvfs_shared/shared_memory.h>
 #include <usvfs_shared/wildcard.h>
-#include <usvfs_shared/windows_sane.h>
 
 #define PRIVATE public
 #include <usvfs_shared/directory_tree.h>

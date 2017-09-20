@@ -20,7 +20,9 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs_shared/wildcard.h"
 #include "usvfs_shared/logging.h"
-#include "usvfs_shared/windows_sane.h"
+
+#include <common/sane_windows.h>
+
 #include <cstring>
 #include <string>
 

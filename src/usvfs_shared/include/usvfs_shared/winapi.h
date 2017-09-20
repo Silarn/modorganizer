@@ -22,7 +22,9 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/logging.h"
 #include "usvfs_shared/stringcast_win.h"
 #include "usvfs_shared/windows_error.h"
-#include "usvfs_shared/windows_sane.h"
+
+#include <common/sane_windows.h>
+
 #include <exception>
 #include <limits>
 #include <memory>
@@ -363,7 +365,7 @@ namespace ansi {
  * @param errorCode the error code to look up. If this is left at the default, ::GetLastError is used
  * @return string representation of the error. Currently this is localized
  */
-std::string errorString(DWORD errorCode = std::numeric_limits<DWORD>::max());
+std::string errorString(DWORD errorCode = (std::numeric_limits<DWORD>::max)());
 
 /**
  * @brief convert filetime to string
@@ -411,7 +413,7 @@ bool fileExists(LPCWSTR fileName, bool* isDirectory = nullptr);
  * @param errorCode the error code to look up. If this is left at the default, ::GetLastError is used
  * @return string representation of the error. Currently this is localized
  */
-std::wstring errorString(DWORD errorCode = std::numeric_limits<DWORD>::max());
+std::wstring errorString(DWORD errorCode = (std::numeric_limits<DWORD>::max)());
 
 /**
  * @brief convert filetime to string

@@ -19,11 +19,11 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
 #include "usvfs_shared/logging.h"
 #include "usvfs_shared/stringcast.h"
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/windows_error.h"
+
 #include <type_traits>
 
 namespace usvfs {
@@ -37,7 +37,7 @@ class string_cast_impl<std::string, const wchar_t*> {
     static std::string cast(const wchar_t* const& source, CodePage codePage, size_t sourceLength) {
         std::string result;
 
-        if (sourceLength == std::numeric_limits<size_t>::max()) {
+        if (sourceLength == (std::numeric_limits<size_t>::max)()) {
             sourceLength = wcslen(source);
         }
 
@@ -72,7 +72,7 @@ class string_cast_impl<std::wstring, const char*> {
     static std::wstring cast(const char* const& source, CodePage codePage, size_t sourceLength) {
         std::wstring result;
 
-        if (sourceLength == std::numeric_limits<size_t>::max()) {
+        if (sourceLength == (std::numeric_limits<size_t>::max)()) {
             sourceLength = strlen(source);
         }
         if (sourceLength > 0) {

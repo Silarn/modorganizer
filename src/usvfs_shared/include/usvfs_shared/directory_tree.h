@@ -25,6 +25,9 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/shared_memory.h"
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/wildcard.h"
+
+#include <spdlog/spdlog.h>
+
 #include <codecvt>
 #include <cstdint>
 #include <filesystem>
@@ -33,7 +36,6 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <map>
 #include <memory>
 #include <regex>
-#include <spdlog/spdlog.h>
 #include <utility>
 namespace fs = std::experimental::filesystem;
 

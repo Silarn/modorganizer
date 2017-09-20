@@ -22,7 +22,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 /// by Martin Richter
 /// licensed under The Code Project Open License (CPOL)
 #pragma once
-#include "usvfs_shared/windows_sane.h"
+#include <common/sane_windows.h>
 
 namespace usvfs {
 namespace shared {

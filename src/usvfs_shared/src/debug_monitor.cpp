@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs_shared/debug_monitor.h"
+
 #include <stdexcept>
 
 DebugMonitor::DebugMonitor(const DebugCallback& callback)

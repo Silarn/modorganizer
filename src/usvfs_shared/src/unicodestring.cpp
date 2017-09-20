@@ -23,6 +23,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/stringcast.h"
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/windows_error.h"
+
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 

@@ -20,6 +20,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs_shared/exceptionex.h"
 #include "usvfs_shared/winapi.h"
+
 #include <spdlog/spdlog.h>
 
 void logExtInfo(const std::exception& e, LogLevel logLevel) {

@@ -20,7 +20,9 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 #include "usvfs_shared/ntdll_declarations.h"
-#include "usvfs_shared/windows_sane.h"
+
+#include <common/sane_windows.h>
+
 #include <cassert>
 #include <sstream>
 #include <vector>
