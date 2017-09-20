@@ -14,6 +14,8 @@ SET(HDRS
     include/${library_name}/gamebryolocalsavegames.h
     include/${library_name}/gamebryosavegameinfo.h
     include/${library_name}/gamebryosavegameinfowidget.h
+    include/${library_name}/gamebryogameplugins.h
+    include/${library_name}/gamebryounmanagedmods.h
 )
 
 SET(SRCS
@@ -26,6 +28,8 @@ SET(SRCS
     src/gamebryolocalsavegames.cpp
     src/gamebryosavegameinfo.cpp
     src/gamebryosavegameinfowidget.cpp
+    src/gamebryogameplugins.cpp
+    src/gamebryounmanagedmods.cpp
 )
 
 SET(QT

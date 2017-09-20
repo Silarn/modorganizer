@@ -192,16 +192,9 @@ QString GameGamebryo::myGamesPath() const { return m_MyGamesPath; }
     return findInRegistry(HKEY_LOCAL_MACHINE, L"Software\\LOOT", L"Installed Path") + "/Loot.exe";
 }
 
-std::map<std::type_index, std::any> GameGamebryo::featureList() const {
-    static std::map<std::type_index, std::any> result{{typeid(BSAInvalidation), m_BSAInvalidation.get()},
-                                                      {typeid(ScriptExtender), m_ScriptExtender.get()},
-                                                      {typeid(DataArchives), m_DataArchives.get()},
-                                                      {typeid(SaveGameInfo), m_SaveGameInfo.get()}};
+std::map<std::type_index, std::any> GameGamebryo::featureList() const { return m_FeatureList; }
 
-    return result;
-}
-
-/*static*/ QString GameGamebryo::localAppFolder() {
+QString GameGamebryo::localAppFolder() {
     QString result = getKnownFolderPath(FOLDERID_LocalAppData, false);
     if (result.isEmpty()) {
         // fallback: try the registry
@@ -210,13 +203,13 @@ std::map<std::type_index, std::any> GameGamebryo::featureList() const {
     return result;
 }
 
-/*static*/ void GameGamebryo::copyToProfile(QString const& sourcePath, QDir const& destinationDirectory,
-                                            QString const& sourceFileName) {
+void GameGamebryo::copyToProfile(QString const& sourcePath, QDir const& destinationDirectory,
+                                 QString const& sourceFileName) {
     copyToProfile(sourcePath, destinationDirectory, sourceFileName, sourceFileName);
 }
 
-/*static*/ void GameGamebryo::copyToProfile(QString const& sourcePath, QDir const& destinationDirectory,
-                                            QString const& sourceFileName, QString const& destinationFileName) {
+void GameGamebryo::copyToProfile(QString const& sourcePath, QDir const& destinationDirectory,
+                                 QString const& sourceFileName, QString const& destinationFileName) {
     QString filePath = destinationDirectory.absoluteFilePath(destinationFileName);
     if (!QFileInfo(filePath).exists()) {
         if (!MOBase::shellCopy(sourcePath + "/" + sourceFileName, filePath)) {
@@ -224,4 +217,15 @@ std::map<std::type_index, std::any> GameGamebryo::featureList() const {
             QFile(filePath).open(QIODevice::WriteOnly);
         }
     }
+}
+
+MappingType GameGamebryo::mappings() const {
+    MappingType result;
+
+    for (const QString& profileFile : {"plugins.txt", "loadorder.txt"}) {
+        result.push_back({m_Organizer->profilePath() + "/" + profileFile,
+                          localAppFolder() + "/" + gameName().replace(" ", "") + "/" + profileFile, false});
+    }
+
+    return result;
 }

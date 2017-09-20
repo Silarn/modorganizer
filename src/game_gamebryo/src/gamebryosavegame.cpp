@@ -101,21 +101,20 @@ void GamebryoSaveGame::FileWrapper::read(void* buff, std::size_t length) {
     }
 }
 
-void GamebryoSaveGame::FileWrapper::readImage(int scale) {
+void GamebryoSaveGame::FileWrapper::readImage(int scale, bool alpha) {
     unsigned long width;
     read(width);
     unsigned long height;
     read(height);
-    readImage(width, height, scale);
+    readImage(width, height, scale, alpha);
 }
 
-void GamebryoSaveGame::FileWrapper::readImage(unsigned long width, unsigned long height, int scale) {
-    QScopedArrayPointer<unsigned char> buffer(new unsigned char[width * height * 3]);
-    read(buffer.data(), width * height * 3);
-    QImage image(buffer.data(), width, height, QImage::Format_RGB888);
-    if (scale) {
-        // NB Note that scaling rather messes up oblivion so we can't use this as
-        // the default
+void GamebryoSaveGame::FileWrapper::readImage(unsigned long width, unsigned long height, int scale, bool alpha) {
+    int bpp = alpha ? 4 : 3;
+    QScopedArrayPointer<unsigned char> buffer(new unsigned char[width * height * bpp]);
+    read(buffer.data(), width * height * bpp);
+    QImage image(buffer.data(), width, height, alpha ? QImage::Format_RGBA8888 : QImage::Format_RGB888);
+    if (scale != 0) {
         m_Game->m_Screenshot = image.scaledToWidth(scale);
     } else {
         // why do I have to copy here? without the copy, the buffer seems to get

@@ -42,5 +42,5 @@ void GamebryoLocalSavegames::prepareProfile(MOBase::IProfile* profile) {
 }
 
 MappingType GamebryoLocalSavegames::mappings(const QDir& profileSaveDir) const {
-    return {{profileSaveDir.absolutePath(), m_LocalSavesDir.absolutePath(), true}};
+    return {{profileSaveDir.absolutePath(), m_LocalSavesDir.absolutePath(), true, true}};
 }
