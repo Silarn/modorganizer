@@ -7,6 +7,7 @@
 #include <QPluginLoader>
 #include <QtPlugin>
 #include <map>
+#include <tuple>
 #include <uibase/iplugindiagnose.h>
 #include <uibase/iplugingame.h>
 #include <uibase/iplugininstaller.h>
@@ -21,16 +22,10 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
   private:
-    // FIXME: BF
-    // typedef boost::fusion::map<boost::fusion::pair<MOBase::IPlugin, std::vector<MOBase::IPlugin*>>,
-    //                           boost::fusion::pair<MOBase::IPluginDiagnose, std::vector<MOBase::IPluginDiagnose*>>,
-    //                           boost::fusion::pair<MOBase::IPluginGame, std::vector<MOBase::IPluginGame*>>,
-    //                           boost::fusion::pair<MOBase::IPluginInstaller, std::vector<MOBase::IPluginInstaller*>>,
-    //                           boost::fusion::pair<MOBase::IPluginModPage, std::vector<MOBase::IPluginModPage*>>,
-    //                           boost::fusion::pair<MOBase::IPluginPreview, std::vector<MOBase::IPluginPreview*>>,
-    //                           boost::fusion::pair<MOBase::IPluginTool, std::vector<MOBase::IPluginTool*>>,
-    //                           boost::fusion::pair<MOBase::IPluginProxy, std::vector<MOBase::IPluginProxy*>>>
-    //    PluginMap;
+    using PluginMap = std::tuple<std::vector<MOBase::IPlugin*>, std::vector<MOBase::IPluginDiagnose*>,
+                                 std::vector<MOBase::IPluginGame*>, std::vector<MOBase::IPluginInstaller*>,
+                                 std::vector<MOBase::IPluginModPage*>, std::vector<MOBase::IPluginPreview*>,
+                                 std::vector<MOBase::IPluginTool*>, std::vector<MOBase::IPluginProxy*>>;
 
     static const unsigned int PROBLEM_PLUGINSNOTLOADED = 1;
 
@@ -46,12 +41,14 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
 
     MOBase::IPluginGame* managedGame(const QString& name) const;
 
+    // Return loaded plugins of type T.
     template <typename T>
-    std::vector<T*> plugins() const {
-        // FIXME: This.
-        return {};
-        // typename boost::fusion::result_of::at_key<const PluginMap, T>::type temp =
-        // boost::fusion::at_key<T>(m_Plugins);  return temp;
+    std::vector<T*>& plugins() {
+        return std::get<std::vector<T*>>(m_Plugins);
+    }
+    template <typename T>
+    const std::vector<T*>& plugins() const {
+        return std::get<std::vector<T*>>(m_Plugins);
     }
 
     const PreviewGenerator& previewGenerator() const;
@@ -66,7 +63,6 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
     virtual void startGuidedFix(unsigned int key) const;
 
   signals:
-
     void diagnosisUpdate();
 
   private:
@@ -80,7 +76,7 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
 
     IUserInterface* m_UserInterface = nullptr;
 
-    // PluginMap m_Plugins;
+    PluginMap m_Plugins;
 
     std::map<QString, MOBase::IPluginGame*> m_SupportedGames;
     // std::vector<boost::signals2::connection> m_DiagnosisConnections;

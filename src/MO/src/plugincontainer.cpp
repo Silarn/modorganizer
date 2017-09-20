@@ -16,19 +16,19 @@ PluginContainer::PluginContainer(OrganizerCore* organizer) : m_Organizer(organiz
 
 void PluginContainer::setUserInterface(IUserInterface* userInterface, QWidget* widget) {
     // FIXME: This.
-    // for (IPluginProxy* proxy : bf::at_key<IPluginProxy>(m_Plugins)) {
-    //    proxy->setParentWidget(widget);
-    //}
+    for (IPluginProxy* proxy : this->plugins<IPluginProxy>()) {
+        proxy->setParentWidget(widget);
+    }
 
-    // if (userInterface != nullptr) {
-    //    for (IPluginModPage* modPage : bf::at_key<IPluginModPage>(m_Plugins)) {
-    //        userInterface->registerModPage(modPage);
-    //    }
+    if (userInterface != nullptr) {
+        for (IPluginModPage* modPage : this->plugins<IPluginModPage>()) {
+            userInterface->registerModPage(modPage);
+        }
 
-    //    for (IPluginTool* tool : bf::at_key<IPluginTool>(m_Plugins)) {
-    //        userInterface->registerPluginTool(tool);
-    //    }
-    //}
+        for (IPluginTool* tool : this->plugins<IPluginTool>()) {
+            userInterface->registerPluginTool(tool);
+        }
+    }
 
     m_UserInterface = userInterface;
 }
@@ -56,7 +56,7 @@ void PluginContainer::registerGame(IPluginGame* game) { m_SupportedGames.insert(
 bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
     { // generic treatment for all plugins
         IPlugin* pluginObj = qobject_cast<IPlugin*>(plugin);
-        if (pluginObj == nullptr) {
+        if (!pluginObj) {
             qDebug("not an IPlugin");
             return false;
         }
@@ -66,25 +66,23 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
 
     { // diagnosis plugins
         IPluginDiagnose* diagnose = qobject_cast<IPluginDiagnose*>(plugin);
-        if (diagnose != nullptr) {
-            // FIXME: BF
-            // bf::at_key<IPluginDiagnose>(m_Plugins).push_back(diagnose);
+        if (diagnose) {
+            this->plugins<IPluginDiagnose>().push_back(diagnose);
+            // FIXME: signals
             // m_DiagnosisConnections.push_back(diagnose->onInvalidated([&]() { emit diagnosisUpdate(); }));
         }
     }
     { // mod page plugin
         IPluginModPage* modPage = qobject_cast<IPluginModPage*>(plugin);
         if (verifyPlugin(modPage)) {
-            // FIXME: BF
-            // bf::at_key<IPluginModPage>(m_Plugins).push_back(modPage);
+            this->plugins<IPluginModPage>().push_back(modPage);
             return true;
         }
     }
     { // game plugin
         IPluginGame* game = qobject_cast<IPluginGame*>(plugin);
         if (verifyPlugin(game)) {
-            // FIXME: BF
-            // bf::at_key<IPluginGame>(m_Plugins).push_back(game);
+            this->plugins<IPluginGame>().push_back(game);
             registerGame(game);
             return true;
         }
@@ -92,16 +90,14 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
     { // tool plugins
         IPluginTool* tool = qobject_cast<IPluginTool*>(plugin);
         if (verifyPlugin(tool)) {
-            // FIXME: BF
-            // bf::at_key<IPluginTool>(m_Plugins).push_back(tool);
+            this->plugins<IPluginTool>().push_back(tool);
             return true;
         }
     }
     { // installer plugins
         IPluginInstaller* installer = qobject_cast<IPluginInstaller*>(plugin);
         if (verifyPlugin(installer)) {
-            // FIXME: BF
-            // bf::at_key<IPluginInstaller>(m_Plugins).push_back(installer);
+            this->plugins<IPluginInstaller>().push_back(installer);
             m_Organizer->installationManager()->registerInstaller(installer);
             return true;
         }
@@ -109,8 +105,7 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
     { // preview plugins
         IPluginPreview* preview = qobject_cast<IPluginPreview*>(plugin);
         if (verifyPlugin(preview)) {
-            // FIXME: BF
-            // bf::at_key<IPluginPreview>(m_Plugins).push_back(preview);
+            this->plugins<IPluginPreview>().push_back(preview);
             m_PreviewGenerator.registerPlugin(preview);
             return true;
         }
@@ -118,20 +113,19 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
     { // proxy plugins
         IPluginProxy* proxy = qobject_cast<IPluginProxy*>(plugin);
         if (verifyPlugin(proxy)) {
-            // FIXME: BF
-            // bf::at_key<IPluginProxy>(m_Plugins).push_back(proxy);
+            this->plugins<IPluginProxy>().push_back(proxy);
             QStringList pluginNames =
                 proxy->pluginList(QCoreApplication::applicationDirPath() + "/" + ToQString(AppConfig::pluginPath()));
             for (const QString& pluginName : pluginNames) {
                 try {
                     QObject* proxiedPlugin = proxy->instantiate(pluginName);
-                    if (proxiedPlugin != nullptr) {
+                    if (proxiedPlugin) {
                         if (registerPlugin(proxiedPlugin, pluginName)) {
-                            qDebug("loaded plugin \"%s\"", qPrintable(QFileInfo(pluginName).fileName()));
+                            qDebug("loaded plugin \"%s\"", qUtf8Printable(QFileInfo(pluginName).fileName()));
                         } else {
                             qWarning("plugin \"%s\" failed to load. If this plugin is for an older version of MO "
                                      "you have to update it or delete it if no update exists.",
-                                     qPrintable(pluginName));
+                                     qUtf8Printable(pluginName));
                         }
                     }
                 } catch (const std::exception& e) {
@@ -146,8 +140,7 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
         // only initialize these, no processing otherwise
         IPlugin* dummy = qobject_cast<IPlugin*>(plugin);
         if (verifyPlugin(dummy)) {
-            // FIXME: BF
-            // bf::at_key<IPlugin>(m_Plugins).push_back(dummy);
+            this->plugins<IPlugin>().push_back(dummy);
             return true;
         }
     }
@@ -160,7 +153,7 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
 struct clearPlugins {
     template <typename T>
     void operator()(T& t) const {
-        t.second.clear();
+        t.clear();
     }
 };
 
@@ -171,11 +164,10 @@ void PluginContainer::unloadPlugins() {
 
     // disconnect all slots before unloading plugins so plugins don't have to take care of that
     m_Organizer->disconnectPlugins();
-
-    // FIXME: this
-    // for (const auto& t : m_Plugins) {
-    //    clearPlugins()(t);
-    //}
+    // TODO: Make sure this works properly. It should be functionally
+    // Equalivant to calling clear on all the vectors, but what if the code does bad things like
+    // have a reference to the vector itself, now invalidated?
+    m_Plugins = {};
 
     // FIXME: Signals
     // for (const boost::signals2::connection& : m_DiagnosisConnections) {
@@ -242,7 +234,7 @@ void PluginContainer::loadPlugins() {
     while (iter.hasNext()) {
         iter.next();
         if (m_Organizer->settings().pluginBlacklisted(iter.fileName())) {
-            qDebug("plugin \"%s\" blacklisted", qPrintable(iter.fileName()));
+            qDebug("plugin \"%s\" blacklisted", qUtf8Printable(iter.fileName()));
             continue;
         }
         loadCheck.write(iter.fileName().toUtf8());
@@ -253,15 +245,15 @@ void PluginContainer::loadPlugins() {
             std::unique_ptr<QPluginLoader> pluginLoader(new QPluginLoader(pluginName, this));
             if (pluginLoader->instance() == nullptr) {
                 m_FailedPlugins.push_back(pluginName);
-                qCritical("failed to load plugin %s: %s", qPrintable(pluginName),
-                          qPrintable(pluginLoader->errorString()));
+                qCritical("failed to load plugin %s: %s", qUtf8Printable(pluginName),
+                          qUtf8Printable(pluginLoader->errorString()));
             } else {
                 if (registerPlugin(pluginLoader->instance(), pluginName)) {
-                    qDebug("loaded plugin \"%s\"", qPrintable(QFileInfo(pluginName).fileName()));
+                    qDebug("loaded plugin \"%s\"", qUtf8Printable(QFileInfo(pluginName).fileName()));
                     m_PluginLoaders.push_back(pluginLoader.release());
                 } else {
                     m_FailedPlugins.push_back(pluginName);
-                    qWarning("plugin \"%s\" failed to load", qPrintable(pluginName));
+                    qWarning("plugin \"%s\" failed to load", qUtf8Printable(pluginName));
                 }
             }
         }
@@ -269,8 +261,7 @@ void PluginContainer::loadPlugins() {
 
     // remove the load check file on success
     loadCheck.remove();
-    // FIXME: BF
-    // bf::at_key<IPluginDiagnose>(m_Plugins).push_back(this);
+    this->plugins<IPluginDiagnose>().push_back(this);
 
     m_Organizer->connectPlugins(this);
 }
