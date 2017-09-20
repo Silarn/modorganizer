@@ -8,8 +8,8 @@
 #include <uibase/iplugingame.h>
 #include <uibase/ipluginlist.h>
 #include <uibase/report.h>
+#include <uibase/safewritefile.h>
 #include <uibase/scopeguard.h>
-// #include <MO/safewritefile.h>
 
 using MOBase::IOrganizer;
 using MOBase::IPluginList;
