@@ -236,14 +236,15 @@ import_target(lz4 "liblz4" ${PREFIX_PATH}/include "lz4.h" "SHARED")
 # add_subdirectory(usvfs)
 ##
 add_subdirectory(common)
+add_subdirectory(github)
 add_subdirectory(bsatk)
 add_subdirectory(uibase)
 add_subdirectory(archive)
 add_subdirectory(gamefeatures)
-add_subdirectory(MO)
-add_subdirectory(hookdll)
 add_subdirectory(game_gamebryo)
 add_subdirectory(game_fallout4)
+add_subdirectory(MO)
+add_subdirectory(hookdll)
 
 
 
