@@ -28,6 +28,10 @@ VersionInfo::VersionInfo()
     : m_Scheme(SCHEME_REGULAR), m_Valid(false), m_ReleaseType(RELEASE_FINAL), m_Major(0), m_Minor(0), m_SubMinor(0),
       m_SubSubMinor(0), m_DecimalPositions(0), m_Rest() {}
 
+VersionInfo::VersionInfo(int major, int minor, int subminor, int subsubminor, ReleaseType releaseType)
+    : m_Scheme(SCHEME_REGULAR), m_Valid(true), m_ReleaseType(releaseType), m_Major(major), m_Minor(minor),
+      m_SubMinor(subminor), m_SubSubMinor(subsubminor), m_DecimalPositions(0), m_Rest() {}
+
 VersionInfo::VersionInfo(int major, int minor, int subminor, ReleaseType releaseType)
     : m_Scheme(SCHEME_REGULAR), m_Valid(true), m_ReleaseType(releaseType), m_Major(major), m_Minor(minor),
       m_SubMinor(subminor), m_SubSubMinor(0), m_DecimalPositions(0), m_Rest() {}
@@ -63,10 +67,10 @@ QString VersionInfo::canonicalString() const {
     } else if (m_Scheme == SCHEME_DECIMALMARK) {
         result = QString("f%1.%2").arg(m_Major).arg(QString("%1").arg(m_Minor).rightJustified(m_DecimalPositions, '0'));
     } else if (m_Scheme == SCHEME_NUMBERSANDLETTERS) {
-        result = QString("n%1.%2.%3").arg(m_Major).arg(m_Minor).arg(m_SubMinor);
+        result = QString("n%1.%2.%3.%4").arg(m_Major).arg(m_Minor).arg(m_SubMinor).arg(m_SubSubMinor);
     } else if (m_Scheme == SCHEME_DATE) {
         // year.month.day was stored in the version fields
-        result = QString("d%1.%2.%3").arg(m_Major).arg(m_Minor).arg(m_SubMinor);
+        result = QString("d%1.%2.%3.%4").arg(m_Major).arg(m_Minor).arg(m_SubMinor).arg(m_SubSubMinor);
     }
     switch (m_ReleaseType) {
     case RELEASE_PREALPHA: {
@@ -110,7 +114,7 @@ QString VersionInfo::displayString() const {
     } else if (m_Scheme == SCHEME_DECIMALMARK) {
         result = QString("%1.%2").arg(m_Major).arg(QString("%1").arg(m_Minor).rightJustified(m_DecimalPositions, '0'));
     } else if (m_Scheme == SCHEME_NUMBERSANDLETTERS) {
-        result = QString("%1.%2.%3").arg(m_Major).arg(m_Minor).arg(m_SubMinor);
+        result = QString("%1.%2.%3.%4").arg(m_Major).arg(m_Minor).arg(m_SubMinor).arg(m_SubSubMinor);
     } else if (m_Scheme == SCHEME_DATE) {
         // year.month.day was stored in the version fields
         result = QString("%1-%2-%3")
@@ -313,6 +317,8 @@ QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS) {
         return LHS.m_ReleaseType < RHS.m_ReleaseType;
     return LHS.m_Rest < RHS.m_Rest;
 }
+
+QDLLEXPORT bool operator>(const VersionInfo& LHS, const VersionInfo& RHS) { return !(LHS <= RHS); }
 
 QDLLEXPORT bool operator<=(const VersionInfo& LHS, const VersionInfo& RHS) {
     // TODO not exactly optimized...

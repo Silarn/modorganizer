@@ -147,6 +147,14 @@ class IPluginGame : public QObject, public IPlugin {
     virtual QString gameShortName() const = 0;
 
     /**
+     * @brief Get the 'short' name of the game
+     *
+     * the short name of the game is used for - save ames, registry entries and
+     * nexus mod pages as far as I can see.
+     */
+    virtual QString gameNexusName() const = 0;
+
+    /**
      * @brief Get the list of .ini files this game uses
      *
      * @note It is important that the 'main' .ini file comes first in this list
@@ -193,7 +201,7 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(IPluginGame::ProfileSettings)
 
 } // namespace MOBase
 
-Q_DECLARE_INTERFACE(MOBase::IPluginGame, "com.tannin.ModOrganizer.PluginGame/1.0")
+Q_DECLARE_INTERFACE(MOBase::IPluginGame, "com.tannin.ModOrganizer.PluginGame/2.0")
 Q_DECLARE_METATYPE(MOBase::IPluginGame const*)
 
 #endif // IPLUGINGAME_H

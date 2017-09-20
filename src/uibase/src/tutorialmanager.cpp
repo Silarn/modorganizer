@@ -33,11 +33,10 @@ TutorialManager::TutorialManager(const QString& tutorialPath, QObject* organizer
     : m_TutorialPath(tutorialPath), m_OrganizerCore(organizerCore) {}
 
 void TutorialManager::init(const QString& tutorialPath, QObject* organizerCore) {
-    if (s_Instance == nullptr) {
-        s_Instance = new TutorialManager(tutorialPath, organizerCore);
-    } else {
-        throw MyException(tr("tutorial manager already initialized"));
+    if (s_Instance) {
+        delete s_Instance;
     }
+    s_Instance = new TutorialManager(tutorialPath, organizerCore);
 }
 
 TutorialManager& TutorialManager::instance() {

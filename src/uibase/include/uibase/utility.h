@@ -330,6 +330,11 @@ QDLLEXPORT void removeOldFiles(const QString& path, const QString& pattern, int 
  **/
 QDLLEXPORT QIcon iconForExecutable(const QString& filePath);
 
+template <typename T>
+bool isOneOf(const T& val, const std::initializer_list<T>& list) {
+    return std::find(list.begin(), list.end(), val) != list.end();
+}
+
 } // namespace MOBase
 
 #endif // UTILITY_H

@@ -34,6 +34,7 @@ namespace MOBase {
 class QDLLEXPORT VersionInfo {
 
     friend QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS);
+    friend QDLLEXPORT bool operator>(const VersionInfo& LHS, const VersionInfo& RHS);
     friend QDLLEXPORT bool operator<=(const VersionInfo& LHS, const VersionInfo& RHS);
     friend QDLLEXPORT bool operator>=(const VersionInfo& LHS, const VersionInfo& RHS);
     friend QDLLEXPORT bool operator!=(const VersionInfo& LHS, const VersionInfo& RHS);
@@ -67,6 +68,16 @@ class QDLLEXPORT VersionInfo {
      * @param releaseType release type
      */
     VersionInfo(int major, int minor, int subminor, ReleaseType releaseType = RELEASE_FINAL);
+
+    /**
+     * @brief constructor
+     * @param major major version
+     * @param minor minor version
+     * @param subminor subminor version
+     * @param subsubminor subsubminor version
+     * @param releaseType release type
+     */
+    VersionInfo(int major, int minor, int subminor, int subsubminor, ReleaseType releaseType = RELEASE_FINAL);
 
     /**
      * @brief constructor

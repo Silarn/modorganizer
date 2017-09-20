@@ -51,6 +51,7 @@ SET(HDRS
     include/${library_name}/delayedfilewriter.h
     include/${library_name}/filenamestring.h
     include/${library_name}/filemapping.h
+    include/${library_name}/safewritefile.h
 )
 
 SET(SRCS
@@ -81,6 +82,7 @@ SET(SRCS
     src/executableinfo.cpp
     src/delayedfilewriter.cpp
     src/filenamestring.cpp
+    src/safewritefile.cpp
 )
 
 SET(QTs

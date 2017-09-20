@@ -8,6 +8,7 @@ struct Mapping {
     QString source;
     QString destination;
     bool isDirectory;
+    bool createTarget;
 };
 
 typedef std::vector<Mapping> MappingType;

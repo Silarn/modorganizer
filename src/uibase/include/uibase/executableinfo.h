@@ -10,9 +10,6 @@ namespace MOBase {
 
 class QDLLEXPORT ExecutableInfo {
   public:
-    enum class CloseMOStyle { DEFAULT_CLOSE = 1, DEFAULT_STAY = 2, NEVER_CLOSE = 3 };
-
-  public:
     ExecutableInfo(const QString& title, const QFileInfo& binary);
 
     ExecutableInfo& withArgument(const QString& argument);
@@ -20,10 +17,6 @@ class QDLLEXPORT ExecutableInfo {
     ExecutableInfo& withWorkingDirectory(const QDir& workingDirectory);
 
     ExecutableInfo& withSteamAppId(const QString& appId);
-
-    ExecutableInfo& withDefaultClose();
-
-    ExecutableInfo& withNeverClose();
 
     ExecutableInfo& asCustom();
 
@@ -33,7 +26,6 @@ class QDLLEXPORT ExecutableInfo {
     QFileInfo binary() const;
     QStringList arguments() const;
     QDir workingDirectory() const;
-    CloseMOStyle closeMO() const;
     QString steamAppID() const;
     bool isCustom() const;
 
@@ -42,7 +34,6 @@ class QDLLEXPORT ExecutableInfo {
     QFileInfo m_Binary;
     QStringList m_Arguments;
     QDir m_WorkingDirectory;
-    CloseMOStyle m_CloseMO{CloseMOStyle::DEFAULT_STAY};
     QString m_SteamAppID;
     bool m_Custom{false};
 };

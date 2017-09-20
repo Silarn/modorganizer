@@ -103,7 +103,8 @@ class MyTree {
         auto res = m_Leafs.insert(leaf);
         if (!res.second && overwrite) {
             if (overwrites != nullptr) {
-                overwrites->push_back(std::make_pair(res.first->getIndex(), leaf.getIndex()));
+                overwrites->push_back(
+                    std::make_pair(static_cast<int>(res.first->getIndex()), static_cast<int>(leaf.getIndex())));
             }
             m_Leafs.erase(res.first);
             res = m_Leafs.insert(leaf);

@@ -4,7 +4,7 @@ using namespace MOBase;
 
 MOBase::ExecutableInfo::ExecutableInfo(const QString& title, const QFileInfo& binary)
     : m_Title(title), m_Binary(binary), m_WorkingDirectory(binary.exists() ? binary.absoluteDir() : QString()),
-      m_CloseMO(CloseMOStyle::DEFAULT_STAY), m_SteamAppID() {}
+      m_SteamAppID() {}
 
 ExecutableInfo& ExecutableInfo::withArgument(const QString& argument) {
     m_Arguments.append(argument);
@@ -18,16 +18,6 @@ ExecutableInfo& ExecutableInfo::withWorkingDirectory(const QDir& workingDirector
 
 ExecutableInfo& MOBase::ExecutableInfo::withSteamAppId(const QString& appId) {
     m_SteamAppID = appId;
-    return *this;
-}
-
-ExecutableInfo& ExecutableInfo::withDefaultClose() {
-    m_CloseMO = CloseMOStyle::DEFAULT_CLOSE;
-    return *this;
-}
-
-ExecutableInfo& ExecutableInfo::withNeverClose() {
-    m_CloseMO = CloseMOStyle::NEVER_CLOSE;
     return *this;
 }
 
@@ -45,8 +35,6 @@ QFileInfo ExecutableInfo::binary() const { return m_Binary; }
 QStringList ExecutableInfo::arguments() const { return m_Arguments; }
 
 QDir ExecutableInfo::workingDirectory() const { return m_WorkingDirectory; }
-
-ExecutableInfo::CloseMOStyle ExecutableInfo::closeMO() const { return m_CloseMO; }
 
 QString ExecutableInfo::steamAppID() const { return m_SteamAppID; }
 
