@@ -581,14 +581,17 @@ int main(int argc, char* argv[]) {
     } // we continue for the primary instance OR if MO was called with parameters
 
     do {
-        QString dataPath;
+        // Find Mod Organizer data Directory.
+        // In previous versions of MO this was the same place as the executable, but
+        // Now it can be any location the User desires.
+        fs::path dataPath;
         try {
-            dataPath = InstanceManager::instance().determineDataPath();
+            dataPath = InstanceManager::instance().determineDataPath().toStdWString();
         } catch (const std::exception& e) {
             QMessageBox::critical(nullptr, QObject::tr("Failed to set up instance"), e.what());
             return 1;
         }
-        application.setProperty("dataPath", dataPath);
+        application.setProperty("dataPath", QString::fromStdWString(dataPath.native()));
 
         // Setup logging
         // INFO: Calls qInstallMessageHandler, overwriting the one here.
@@ -598,12 +601,12 @@ int main(int argc, char* argv[]) {
             qApp->property("dataPath").toString().toStdString() / fs::path("logs") / "mo_interface.log";
         LogBuffer::init(100, QtDebugMsg, QString::fromStdString(logPath.string()));
 
-        QString splash = dataPath + "/splash.png";
-        if (!QFile::exists(dataPath + "/splash.png")) {
+        fs::path splash = dataPath / "splash.png";
+        if (!fs::exists(splash)) {
             splash = ":/MO/gui/splash";
         }
 
-        int result = runApplication(application, instance, splash);
+        int result = runApplication(application, instance, QString::fromStdWString(splash.native()));
         if (result != INT_MAX) {
             return result;
         }
