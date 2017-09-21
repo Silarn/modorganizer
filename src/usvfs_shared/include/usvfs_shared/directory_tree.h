@@ -516,10 +516,6 @@ class TreeContainer {
      * @note size can't be too small. If initial allocations fail automatic growing won't work
      */
     TreeContainer(const std::string& SHMName, size_t size = 64 * 1024) : m_TreeMeta(nullptr), m_SHMName(SHMName) {
-        std::locale global_loc = std::locale();
-        std::locale loc(global_loc, new fs::detail::utf8_codecvt_facet);
-        fs::path::imbue(loc);
-
         namespace sp = std::placeholders;
         std::regex pattern(R"exp((.*_)(\d+))exp");
         std::smatch match;
