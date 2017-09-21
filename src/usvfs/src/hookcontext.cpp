@@ -87,6 +87,7 @@ HookContext::HookContext(const USVFSParameters& params, HMODULE module)
 }
 
 void HookContext::remove(const char* instanceName) {
+    // FIXME: Shared Memory.
     // bi::shared_memory_object::remove(instanceName);
 }
 
@@ -96,6 +97,7 @@ HookContext::~HookContext() {
 
     if (--m_Parameters->userCount == 0) {
         spdlog::get("usvfs")->info("removing tree {}", m_Parameters->instanceName.c_str());
+        // FIXME: Shared Memory.
         // bi::shared_memory_object::remove(m_Parameters->instanceName.c_str());
     } else {
         spdlog::get("usvfs")->info("{} users left", m_Parameters->userCount);
