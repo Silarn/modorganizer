@@ -22,15 +22,20 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/logging.h"
 #include "usvfs_shared/shared_memory.h"
 
+#include <boost/interprocess/ipc/message_queue.hpp>
 #include <common/sane_windows.h>
 #include <spdlog/spdlog.h>
 
 #include <atomic>
 #include <cstdint>
 
+using message_queue_interop = boost::interprocess::message_queue_t<usvfs::shared::VoidPointerT>;
+
 namespace spdlog {
 namespace sinks {
 class shm_sink : public sink {
+    message_queue_interop m_LogQueue;
+
     std::atomic<int> m_DroppedMessages;
 
   public:
@@ -84,6 +89,8 @@ class SHMLogger {
 
   private:
     static SHMLogger* s_Instance;
+
+    message_queue_interop m_LogQueue;
 
     std::string m_SHMName;
     std::string m_LockName;

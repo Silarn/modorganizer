@@ -26,6 +26,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/unicodestring.h"
 
+#include <common/predef.h>
 #include <fmt/format.h>
 #include <spdlog/spdlog.h>
 
@@ -88,7 +89,7 @@ std::wstring getModuleFileName(HMODULE module, HANDLE process) {
 
     if (rc == 0UL) {
         if (::GetLastError() == ERROR_PARTIAL_COPY) {
-#if BOOST_ARCH_X86_64
+#if !COMMON_IS_64
             return L"unknown (32-bit process)";
 #else
             return L"unknown (64-bit process)";

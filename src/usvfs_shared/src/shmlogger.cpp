@@ -20,6 +20,8 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs_shared/shmlogger.h"
 
+#include <boost/interprocess/ipc/message_queue.hpp>
+
 #include <algorithm>
 #include <iterator>
 #include <limits>
@@ -27,6 +29,9 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <string>
 #include <vector>
 
+using namespace boost::interprocess;
+
+// TODO: Move into common/stringutils
 template <typename Out>
 void split(const std::string& s, char delim, Out result) {
     std::stringstream ss;
@@ -48,7 +53,9 @@ SHMLogger* SHMLogger::s_Instance = nullptr;
 SHMLogger::owner_t SHMLogger::owner;
 SHMLogger::client_t SHMLogger::client;
 
-SHMLogger::SHMLogger(owner_t, const std::string& queueName) : m_QueueName(queueName), m_DroppedMessages(0) {
+SHMLogger::SHMLogger(owner_t, const std::string& queueName)
+    : m_QueueName(queueName), m_LogQueue(create_only, queueName.c_str(), MESSAGE_COUNT, MESSAGE_SIZE),
+      m_DroppedMessages(0) {
     if (s_Instance != nullptr) {
         throw std::runtime_error("duplicate shm logger instantiation");
     } else {
@@ -56,7 +63,8 @@ SHMLogger::SHMLogger(owner_t, const std::string& queueName) : m_QueueName(queueN
     }
 }
 
-SHMLogger::SHMLogger(client_t, const std::string& queueName) : m_QueueName(queueName), m_DroppedMessages(0) {
+SHMLogger::SHMLogger(client_t, const std::string& queueName)
+    : m_QueueName(queueName), m_LogQueue(open_only, queueName.c_str()), m_DroppedMessages(0) {
     if (s_Instance != nullptr) {
         throw std::runtime_error("duplicate shm logger instantiation");
     } else {
@@ -66,7 +74,7 @@ SHMLogger::SHMLogger(client_t, const std::string& queueName) : m_QueueName(queue
 
 SHMLogger::~SHMLogger() {
     s_Instance = nullptr;
-    // message_queue_interop::remove(m_QueueName.c_str());
+    message_queue_interop::remove(m_QueueName.c_str());
 }
 
 SHMLogger& SHMLogger::create(const char* instanceName) {
@@ -99,26 +107,24 @@ void SHMLogger::free() {
 }
 
 bool SHMLogger::tryGet(char* buffer, size_t bufferSize) {
-    // message_queue_interop::size_type receivedSize;
-    // unsigned int prio;
-    // bool res = m_LogQueue.try_receive(buffer, static_cast<unsigned int>(bufferSize), receivedSize, prio);
-    // if (res) {
-    //    buffer[std::min(bufferSize - 1, static_cast<size_t>(receivedSize))] = '\0';
-    //}
-    // return res;
-    // FIXME: Not implement
-    return false;
+    message_queue_interop::size_type receivedSize;
+    unsigned int prio;
+    bool res = m_LogQueue.try_receive(buffer, static_cast<unsigned int>(bufferSize), receivedSize, prio);
+    if (res) {
+        buffer[std::min(bufferSize - 1, static_cast<size_t>(receivedSize))] = '\0';
+    }
+    return res;
 }
 
 void SHMLogger::get(char* buffer, size_t bufferSize) {
-    // message_queue_interop::size_type receivedSize;
-    // unsigned int prio;
-    // m_LogQueue.receive(buffer, static_cast<unsigned int>(bufferSize), receivedSize, prio);
-    // buffer[std::min(bufferSize - 1, static_cast<size_t>(receivedSize))] = '\0';
-    // FIXME: Not implement
+    message_queue_interop::size_type receivedSize;
+    unsigned int prio;
+    m_LogQueue.receive(buffer, static_cast<unsigned int>(bufferSize), receivedSize, prio);
+    buffer[std::min(bufferSize - 1, static_cast<size_t>(receivedSize))] = '\0';
 }
 
-spdlog::sinks::shm_sink::shm_sink(const char* queueName) {}
+spdlog::sinks::shm_sink::shm_sink(const char* queueName)
+    : m_LogQueue(open_only, (std::string("__shm_sink_") + queueName).c_str()) {}
 
 void spdlog::sinks::shm_sink::flush() {}
 
@@ -154,22 +160,20 @@ void spdlog::sinks::shm_sink::output(level::level_enum lev, const std::string& m
 
     // depending on the log level, drop less important messages if the receiver
     // can't keep up
-
-    // FIXME: All this. -D
     switch (lev) {
     case level::trace:
     case level::debug:
     case level::info: {
-        // sent = m_LogQueue.try_send(message.c_str(), static_cast<unsigned int>(count), 0);
+        sent = m_LogQueue.try_send(message.c_str(), static_cast<unsigned int>(count), 0);
     } break;
     case level::warn:
     case level::critical:
     case level::err: {
-        // m_LogQueue.send(message.c_str(), static_cast<unsigned int>(count), 0);
+        m_LogQueue.send(message.c_str(), static_cast<unsigned int>(count), 0);
     } break;
     default: {
-        // boost::posix_time::ptime time = microsec_clock::universal_time() + boost::posix_time::milliseconds(200);
-        // sent = m_LogQueue.timed_send(message.c_str(), static_cast<unsigned int>(count), 0, time);
+        boost::posix_time::ptime time = microsec_clock::universal_time() + boost::posix_time::milliseconds(200);
+        sent = m_LogQueue.timed_send(message.c_str(), static_cast<unsigned int>(count), 0, time);
     } break;
     }
 

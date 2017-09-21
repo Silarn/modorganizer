@@ -59,6 +59,7 @@ bool usvfs::shared::startswith(const wchar_t* string, const wchar_t* subString) 
 static fs::path normalize(const fs::path& path) { return fs::canonical(path); }
 
 // Two string case isentive equal
+// TODO: Add to common/stringutils.h
 static bool iequals(std::string a, std::string b) {
     // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
     // This will fail on unicode.
