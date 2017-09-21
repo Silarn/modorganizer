@@ -38,7 +38,7 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5LinguistTools REQUIRED)
 
 ## Library ##
-add_library(${library_name} SHARED ${HDRS} ${SRCS})
+add_library(${library_name} SHARED ${HDRS} ${SRCS} ${QT})
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 QT5_CREATE_TRANSLATION(${library_name}_translations_qm ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/${library_name}_en.ts)
 # Headers
