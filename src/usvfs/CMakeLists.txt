@@ -51,7 +51,7 @@ SET(usvfsHelper_SRCS
 source_group(Helpers FILES ${usvfsHelper_HDRS} ${usvfsHelper_SRCS})
 
 ## Library ##
-add_library(${library_name} STATIC ${usvfs_HDRS} ${usvfs_SRCS} ${usvfs_RCS} ${usvfsHelper_SRCS} ${usvfsHelper_HDRS})
+add_library(${library_name} SHARED ${usvfs_HDRS} ${usvfs_SRCS} ${usvfs_RCS} ${usvfsHelper_SRCS} ${usvfsHelper_HDRS})
 # Headers
 target_include_directories(${library_name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
