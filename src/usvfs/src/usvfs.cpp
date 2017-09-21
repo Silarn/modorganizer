@@ -169,7 +169,7 @@ void createMiniDump(PEXCEPTION_POINTERS exceptionPtrs) {
         if (funcDump) {
             // std::wstring dmpPath = winapi::wide::getModuleFileName(dllModule) +
             // L"_" + std::to_wstring(time(nullptr)) + L".dmp";
-#if BOOST_ARCH_X86_64
+#if IS_X64
             std::wstring dmpPath = winapi::wide::getKnownFolderPath(FOLDERID_LocalAppData) + L"\\usvfs\\uvsfs_x64.dmp";
 #else
             std::wstring dmpPath = winapi::wide::getKnownFolderPath(FOLDERID_LocalAppData) + L"\\usvfs\\uvsfs_x86.dmp";
