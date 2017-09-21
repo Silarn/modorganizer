@@ -25,9 +25,11 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/stringcast.h"
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/winapi.h"
-#include <filesystem>
+
 #include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
+
+#include <filesystem>
 #include <string>
 #include <utility>
 

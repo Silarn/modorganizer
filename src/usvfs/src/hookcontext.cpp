@@ -27,6 +27,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/shared_memory.h"
 #include "usvfs_shared/winapi.h"
 
+namespace bi = boost::interprocess;
 using usvfs::shared::SharedMemoryT;
 using usvfs::shared::VoidAllocatorT;
 
@@ -67,7 +68,8 @@ void usvfs::USVFSInitParametersInt(USVFSParameters* parameters, const char* inst
 }
 
 HookContext::HookContext(const USVFSParameters& params, HMODULE module)
-    : m_Parameters(retrieveParameters(params)), m_Tree(m_Parameters->currentSHMName.c_str(), 65536),
+    : m_ConfigurationSHM(bi::open_or_create, params.instanceName, 8192), m_Parameters(retrieveParameters(params)),
+      m_Tree(m_Parameters->currentSHMName.c_str(), 65536),
       m_InverseTree(m_Parameters->currentInverseSHMName.c_str(), 65536), m_DebugMode(params.debugMode),
       m_DLLModule(module) {
     if (s_Instance != nullptr) {
@@ -86,10 +88,7 @@ HookContext::HookContext(const USVFSParameters& params, HMODULE module)
     }
 }
 
-void HookContext::remove(const char* instanceName) {
-    // FIXME: Shared Memory.
-    // bi::shared_memory_object::remove(instanceName);
-}
+void HookContext::remove(const char* instanceName) { bi::shared_memory_object::remove(instanceName); }
 
 HookContext::~HookContext() {
     spdlog::get("usvfs")->info("releasing hook context");
@@ -97,30 +96,28 @@ HookContext::~HookContext() {
 
     if (--m_Parameters->userCount == 0) {
         spdlog::get("usvfs")->info("removing tree {}", m_Parameters->instanceName.c_str());
-        // FIXME: Shared Memory.
-        // bi::shared_memory_object::remove(m_Parameters->instanceName.c_str());
+        bi::shared_memory_object::remove(m_Parameters->instanceName.c_str());
     } else {
         spdlog::get("usvfs")->info("{} users left", m_Parameters->userCount);
     }
 }
 
 SharedParameters* HookContext::retrieveParameters(const USVFSParameters& params) {
-    return nullptr;
-    // std::pair<SharedParameters*, SharedMemoryT::size_type> res =
-    //    m_ConfigurationSHM.find<SharedParameters>("parameters");
-    // if (res.first == nullptr) {
-    //    // not configured yet
-    //    spdlog::get("usvfs")->info("create config in {}", ::GetCurrentProcessId());
-    //    res.first = m_ConfigurationSHM.construct<SharedParameters>("parameters")(
-    //        params, VoidAllocatorT(m_ConfigurationSHM.get_segment_manager()));
-    //    if (res.first == nullptr) {
-    //        USVFS_THROW_EXCEPTION(std::bad_alloc());
-    //    }
-    //} else {
-    //    spdlog::get("usvfs")->info("access existing config in {}", ::GetCurrentProcessId());
-    //}
-    // spdlog::get("usvfs")->info("{} processes - {}", res.first->processList.size(), (int)res.first->logLevel);
-    // return res.first;
+    std::pair<SharedParameters*, SharedMemoryT::size_type> res =
+        m_ConfigurationSHM.find<SharedParameters>("parameters");
+    if (res.first == nullptr) {
+        // not configured yet
+        spdlog::get("usvfs")->info("create config in {}", ::GetCurrentProcessId());
+        res.first = m_ConfigurationSHM.construct<SharedParameters>("parameters")(
+            params, VoidAllocatorT(m_ConfigurationSHM.get_segment_manager()));
+        if (res.first == nullptr) {
+            USVFS_THROW_EXCEPTION(std::bad_alloc());
+        }
+    } else {
+        spdlog::get("usvfs")->info("access existing config in {}", ::GetCurrentProcessId());
+    }
+    spdlog::get("usvfs")->info("{} processes - {}", res.first->processList.size(), (int)res.first->logLevel);
+    return res.first;
 }
 
 HookContext::ConstPtr HookContext::readAccess(const char*) {

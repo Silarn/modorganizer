@@ -19,6 +19,9 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs_shared/stringcast.h"
+
+#include <boost/container/string.hpp>
+
 #include <string>
 
 namespace usvfs {

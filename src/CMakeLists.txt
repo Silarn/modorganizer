@@ -147,7 +147,7 @@ else()
 endif()
 
 ## Helper Function ##
-#if
+#if import_target
 # includeDir is where obvious.
 # libraryName will be the name of the imported target.
 # libraryFile is the name of the library on disk, IE zlib.dll

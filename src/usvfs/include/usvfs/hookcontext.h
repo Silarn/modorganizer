@@ -24,6 +24,8 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs/semaphore.h"
 #include "usvfs/usvfsparameters.h"
 
+#include <boost/interprocess/containers/flat_set.hpp>
+#include <boost/interprocess/containers/string.hpp>
 #include <common/sane_windows.h>
 #include <usvfs_shared/directory_tree.h>
 #include <usvfs_shared/exceptionex.h>

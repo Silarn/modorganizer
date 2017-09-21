@@ -429,7 +429,7 @@ bool assertPathExists(usvfs::RedirectionTreeContainer& table, LPCWSTR path) {
         if (current->exists(iter->string().c_str())) {
             // subdirectory exists virtually, all good
             usvfs::RedirectionTree::NodePtrT found = current->node(iter->string().c_str());
-            current = found.get();
+            current = found.get().get();
         } else {
             // targetPath is relative to the last rerouted "real" path. This means
             // that if virtual c:/foo maps to real c:/windows then creating virtual
@@ -440,7 +440,7 @@ bool assertPathExists(usvfs::RedirectionTreeContainer& table, LPCWSTR path) {
             if (fs::is_directory(targetPath)) {
                 usvfs::RedirectionTree::NodePtrT newNode =
                     table.addDirectory(current->path() / *iter, targetPath.string().c_str(), ush::FLAG_DUMMY, false);
-                current = newNode.get();
+                current = newNode.get().get();
             } else {
                 spdlog::get("usvfs")->info("{} doesn't exist", targetPath);
                 return false;
