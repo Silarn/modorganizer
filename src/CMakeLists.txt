@@ -228,6 +228,13 @@ import_target(bit7z "bit7z" ${PREFIX_PATH}/include "bit7z.hpp" "STATIC")
 import_target(7zip "" "C:/_Diana/Dev/C++/- Libraries/sources/lzma/C" "7z.h" "INTERFACE")
 # Lz4
 import_target(lz4 "liblz4" ${PREFIX_PATH}/include "lz4.h" "SHARED")
+# Boost
+set(BOOST_ROOT "C:/_Diana/Dev/C++/- Libraries/sources/boost_1_65_1" CACHE STRING "")
+set(Boost_USE_STATIC_LIBS        ON) # only find static libs
+set(Boost_USE_MULTITHREADED      ON)
+set(Boost_USE_STATIC_RUNTIME    OFF)
+find_package(Boost 1.65.1 REQUIRED)
+add_definitions(-DBOOST_ALL_NO_LIB)
 
 ## Targets ##
 add_subdirectory(common)
