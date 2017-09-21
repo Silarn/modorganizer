@@ -52,6 +52,10 @@ source_group(Helpers FILES ${usvfsHelper_HDRS} ${usvfsHelper_SRCS})
 
 ## Library ##
 add_library(${library_name} SHARED ${usvfs_HDRS} ${usvfs_SRCS} ${usvfs_RCS} ${usvfsHelper_SRCS} ${usvfsHelper_HDRS})
+SET_PROPERTY(
+   SOURCE logger.cpp
+   PROPERTY COMPILE_DEFINITIONS A DEFAULT_LOG_FILE=L"usvfs.log"
+)
 # Headers
 target_include_directories(${library_name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -70,6 +74,7 @@ install(TARGETS ${library_name} EXPORT ${library_name}Config
     RUNTIME  DESTINATION bin # <prefix>/bin. EXEs, DLLs and shit.
 )
 install(DIRECTORY include/ DESTINATION include)
+INSTALL(FILES $<TARGET_FILE_DIR:${library_name}>/${library_name}.pdb DESTINATION pdb)
 # This makes the project importable from the install directory
 # Put config file in per-project dir (name MUST match), can also
 # just go into 'cmake'.

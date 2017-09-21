@@ -6,13 +6,12 @@ set(library_name "MO")
 # Main
 #if HDRs
 set(SHARED_HDRS
-    # include/${library_name}/shared/inject.h
     include/${library_name}/shared/windows_error.h
     include/${library_name}/shared/error_report.h
     include/${library_name}/shared/directoryentry.h
     include/${library_name}/shared/util.h
     include/${library_name}/shared/appconfig.h
-    # include/${library_name}/shared/appconfig.inc
+    include/${library_name}/shared/appconfig.inc
     include/${library_name}/shared/leaktrace.h
     include/${library_name}/shared/stackdata.h
 )
@@ -96,7 +95,6 @@ SET(HDRS
 
 #if SRCs
 set(SHARED_SRCS
-    # src/shared/inject.cpp
     src/shared/windows_error.cpp
     src/shared/error_report.cpp
     src/shared/directoryentry.cpp

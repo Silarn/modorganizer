@@ -99,7 +99,8 @@ find_package(Qt5Script REQUIRED)
 find_package(Qt5Quick REQUIRED)
 
 ## Library ##
-add_library(${library_name} STATIC ${HDRS} ${SRCS})
+add_library(${library_name} SHARED ${HDRS} ${SRCS})
+add_definitions(-DCOMMON_DLL_BUILD)
 # Headers
 target_include_directories(${library_name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
