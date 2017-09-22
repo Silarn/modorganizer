@@ -25,7 +25,6 @@ class UnmanagedMods;
 class GameGamebryo : public MOBase::IPluginGame, public MOBase::IPluginFileMapper {
     Q_OBJECT
     Q_INTERFACES(MOBase::IPlugin MOBase::IPluginGame MOBase::IPluginFileMapper)
-
     friend class GamebryoScriptExtender;
     friend class GamebryoSaveGameInfo;
     friend class GamebryoSaveGameInfoWidget;
