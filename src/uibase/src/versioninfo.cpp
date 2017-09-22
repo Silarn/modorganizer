@@ -272,7 +272,7 @@ void VersionInfo::parse(const QString& versionString, VersionScheme scheme, bool
     m_Valid = true;
 }
 
-QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS) {
+bool operator<(const VersionInfo& LHS, const VersionInfo& RHS) {
     if (!LHS.isValid() && RHS.isValid())
         return true;
     if (!RHS.isValid() && LHS.isValid())
@@ -318,9 +318,9 @@ QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS) {
     return LHS.m_Rest < RHS.m_Rest;
 }
 
-QDLLEXPORT bool operator>(const VersionInfo& LHS, const VersionInfo& RHS) { return !(LHS <= RHS); }
+bool operator>(const VersionInfo& LHS, const VersionInfo& RHS) { return !(LHS <= RHS); }
 
-QDLLEXPORT bool operator<=(const VersionInfo& LHS, const VersionInfo& RHS) {
+bool operator<=(const VersionInfo& LHS, const VersionInfo& RHS) {
     // TODO not exactly optimized...
     if (LHS < RHS) {
         return true;
@@ -329,10 +329,10 @@ QDLLEXPORT bool operator<=(const VersionInfo& LHS, const VersionInfo& RHS) {
     }
 }
 
-QDLLEXPORT bool operator>=(const VersionInfo& LHS, const VersionInfo& RHS) { return RHS <= LHS; }
+bool operator>=(const VersionInfo& LHS, const VersionInfo& RHS) { return RHS <= LHS; }
 
-QDLLEXPORT bool operator!=(const VersionInfo& LHS, const VersionInfo& RHS) { return (LHS < RHS) || (RHS < LHS); }
+bool operator!=(const VersionInfo& LHS, const VersionInfo& RHS) { return (LHS < RHS) || (RHS < LHS); }
 
-QDLLEXPORT bool operator==(const VersionInfo& LHS, const VersionInfo& RHS) { return !(LHS < RHS) && !(RHS < LHS); }
+bool operator==(const VersionInfo& LHS, const VersionInfo& RHS) { return !(LHS < RHS) && !(RHS < LHS); }
 
 } // namespace MOBase
