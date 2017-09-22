@@ -1,6 +1,6 @@
 // Preprocessor Machinary for static and shared libraries.
 // Exports the DLLEXPORT macro which should be used.
-#pragma once
+// Intentionally no include guard.
 
 // If COMMON_DLL is defined, export/import synbols as needed.
 // if not, noop.
