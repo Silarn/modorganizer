@@ -392,23 +392,21 @@ void setupPath() {
     // FIXME: This doesnt seem to be working.
     // The FO4 plugin requires liblz4.
     // It can't find it in the dlls directory without the manifest.
-    static const int BUFSIZE = 4096;
     fs::path appDirPath = QCoreApplication::applicationDirPath().toStdWString();
     qDebug("MO at: %s", qUtf8Printable(QString::fromStdWString(appDirPath.native())));
 
-    std::vector<TCHAR> oldPath(BUFSIZE);
-    DWORD offset = ::GetEnvironmentVariableW(L"PATH", oldPath.data(), BUFSIZE);
-    if (offset > BUFSIZE) {
-        oldPath.clear();
-        oldPath.resize(offset);
-        ::GetEnvironmentVariableW(L"PATH", oldPath.data(), offset);
+    auto bufsize = ::GetEnvironmentVariableW(L"PATH", NULL, 0);
+    std::wstring path;
+    path.resize(bufsize);
+    ::GetEnvironmentVariableW(L"PATH", path.data(), path.size());
+    path[path.size() - 1] = ';';
+    path += appDirPath / "dlls";
+
+    auto err = ::SetEnvironmentVariableW(L"PATH", path.data());
+    if (!err) {
+        auto code = ::GetLastError();
+        qWarning("Could not setup PATH. Error Code %d", code);
     }
-
-    std::wstring newPath(oldPath.data());
-    newPath += L";";
-    newPath += (appDirPath / "dlls");
-
-    ::SetEnvironmentVariableW(L"PATH", newPath.c_str());
 }
 
 int runApplication(MOApplication& application, SingleInstance& instance, const QString& splashPath) {
