@@ -5,7 +5,6 @@
   <file name="icuuc59.dll"/>
   <file name="icudt59.dll"/>
   <file name="libeay32.dll"/>
-  <file name="liblz4.dll"/>
   <file name="Qt5Cored.dll"/>
   <file name="Qt5Guid.dll"/>
   <file name="Qt5Networkd.dll"/>
