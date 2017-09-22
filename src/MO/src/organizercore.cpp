@@ -380,10 +380,9 @@ void OrganizerCore::connectPlugins(PluginContainer* container) {
 }
 
 void OrganizerCore::disconnectPlugins() {
-    // FIXME: Signals?
-    // m_AboutToRun.disconnect_all_slots();
-    // m_FinishedRun.disconnect_all_slots();
-    // m_ModInstalled.disconnect_all_slots();
+    m_AboutToRun.disconnect_all_slots();
+    m_FinishedRun.disconnect_all_slots();
+    m_ModInstalled.disconnect_all_slots();
     m_ModList.disconnectSlots();
     m_PluginList.disconnectSlots();
 
@@ -660,8 +659,7 @@ MOBase::IModInterface* OrganizerCore::installMod(const QString& fileName, const 
                                        QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)) {
                 m_UserInterface->displayModInformation(modInfo, modIndex, ModInfoDialog::TAB_INIFILES);
             }
-            // FIXME: Signals?
-            // m_ModInstalled(modName);
+            m_ModInstalled(modName);
             return modInfo.data();
         } else {
             reportError(tr("mod \"%1\" not found").arg(modName));
@@ -711,8 +709,7 @@ void OrganizerCore::installDownload(int index) {
                                            QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)) {
                     m_UserInterface->displayModInformation(modInfo, modIndex, ModInfoDialog::TAB_INIFILES);
                 }
-                // FIXME: Signals?
-                // m_ModInstalled(modName);
+                m_ModInstalled(modName);
             } else {
                 reportError(tr("mod \"%1\" not found").arg(modName));
             }
@@ -852,8 +849,7 @@ void OrganizerCore::spawnBinary(const QFileInfo& binary, const QString& argument
         refreshESPList();
         savePluginList();
         // These callbacks should not fiddle with directoy structure and ESPs.
-        // FIXME: Signals?
-        // m_FinishedRun(binary.absoluteFilePath(), processExitCode);
+        m_FinishedRun(binary.absoluteFilePath(), processExitCode);
     }
 }
 
@@ -903,9 +899,7 @@ HANDLE OrganizerCore::spawnBinaryDirect(const QFileInfo& binary, const QString& 
     }
 
     // TODO: should also pass arguments
-    // FIXME: Signals?
-    // if (m_AboutToRun(binary.absoluteFilePath())) {
-    if (1) {
+    if (m_AboutToRun(binary.absoluteFilePath())) {
         try {
             m_USVFS.updateMapping(fileMapping(profileName, customOverwrite));
         } catch (const std::exception& e) {
@@ -1076,24 +1070,18 @@ bool OrganizerCore::waitForProcessCompletion(HANDLE handle, LPDWORD exitCode) {
 }
 
 bool OrganizerCore::onAboutToRun(const std::function<bool(const QString&)>& func) {
-    // FIXME: Signals?
-    // auto conn = m_AboutToRun.connect(func);
-    // return conn.connected();
-    return true;
+    auto conn = m_AboutToRun.connect(func);
+    return conn.connected();
 }
 
 bool OrganizerCore::onFinishedRun(const std::function<void(const QString&, unsigned int)>& func) {
-    // FIXME: Signals?
-    // auto conn = m_FinishedRun.connect(func);
-    // return conn.connected();
-    return true;
+    auto conn = m_FinishedRun.connect(func);
+    return conn.connected();
 }
 
 bool OrganizerCore::onModInstalled(const std::function<void(const QString&)>& func) {
-    // FIXME: Signals?
-    // auto conn = m_ModInstalled.connect(func);
-    // return conn.connected();
-    return true;
+    auto conn = m_ModInstalled.connect(func);
+    return conn.connected();
 }
 
 void OrganizerCore::refreshModList(bool saveChanges) {

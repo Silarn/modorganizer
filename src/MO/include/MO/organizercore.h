@@ -37,6 +37,7 @@ class DirectoryEntry;
 #include <QStringList>
 #include <QThread>
 #include <QVariant>
+#include <boost/signals2.hpp>
 
 class QNetworkReply;
 class QUrl;
@@ -78,9 +79,9 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     };
 
   private:
-    // typedef boost::signals2::signal<bool(const QString&), SignalCombinerAnd> SignalAboutToRunApplication;
-    // typedef boost::signals2::signal<void(const QString&, unsigned int)> SignalFinishedRunApplication;
-    // typedef boost::signals2::signal<void(const QString&)> SignalModInstalled;
+    using SignalAboutToRunApplication = boost::signals2::signal<bool(const QString&), SignalCombinerAnd>;
+    using SignalFinishedRunApplication = boost::signals2::signal<void(const QString&, unsigned int)>;
+    using SignalModInstalled = boost::signals2::signal<void(const QString&)>;
 
   public:
     OrganizerCore(const QSettings& initSettings);
@@ -274,9 +275,9 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
 
     SelfUpdater m_Updater;
 
-    // SignalAboutToRunApplication m_AboutToRun;
-    // SignalFinishedRunApplication m_FinishedRun;
-    // SignalModInstalled m_ModInstalled;
+    SignalAboutToRunApplication m_AboutToRun;
+    SignalFinishedRunApplication m_FinishedRun;
+    SignalModInstalled m_ModInstalled;
 
     ModList m_ModList;
     PluginList m_PluginList;

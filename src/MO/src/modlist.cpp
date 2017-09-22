@@ -50,9 +50,8 @@ ModList::ModList(QObject* parent)
 }
 
 ModList::~ModList() {
-    // FIXME: Signals.
-    // m_ModStateChanged.disconnect_all_slots();
-    // m_ModMoved.disconnect_all_slots();
+    m_ModStateChanged.disconnect_all_slots();
+    m_ModMoved.disconnect_all_slots();
 }
 
 void ModList::setProfile(Profile* profile) { m_Profile = profile; }
@@ -500,8 +499,7 @@ bool ModList::setData(const QModelIndex& index, const QVariant& value, int role)
     IModList::ModStates newState = state(modID);
     if (oldState != newState) {
         try {
-            // FIXME: Signals.
-            // m_ModStateChanged(info->name(), newState);
+            m_ModStateChanged(info->name(), newState);
         } catch (const std::exception& e) {
             qCritical("failed to invoke state changed notification: %s", e.what());
         } catch (...) {
@@ -590,8 +588,7 @@ void ModList::changeModPriority(std::vector<int> sourceIndices, int newPriority)
     for (std::vector<int>::const_iterator iter = sourceIndices.begin(); iter != sourceIndices.end(); ++iter) {
         int oldPriority = m_Profile->getModPriority(*iter);
         m_Profile->setModPriority(*iter, newPriority);
-        // FIXME: Signals.
-        // m_ModMoved(ModInfo::getByIndex(*iter)->name(), oldPriority, newPriority);
+        m_ModMoved(ModInfo::getByIndex(*iter)->name(), oldPriority, newPriority);
     }
 
     emit layoutChanged();
@@ -631,8 +628,7 @@ void ModList::modInfoChanged(ModInfo::Ptr info) {
     if (info->name() == m_ChangeInfo.name) {
         IModList::ModStates newState = state(info->name());
         if (m_ChangeInfo.state != newState) {
-            // FIXME: Signals.
-            // m_ModStateChanged(info->name(), newState);
+            m_ModStateChanged(info->name(), newState);
         }
 
         int row = ModInfo::getIndex(info->name());
@@ -645,9 +641,8 @@ void ModList::modInfoChanged(ModInfo::Ptr info) {
 }
 
 void ModList::disconnectSlots() {
-    // FIXME: Signals.
-    // m_ModMoved.disconnect_all_slots();
-    // m_ModStateChanged.disconnect_all_slots();
+    m_ModMoved.disconnect_all_slots();
+    m_ModStateChanged.disconnect_all_slots();
 }
 
 int ModList::timeElapsedSinceLastChecked() const { return m_LastCheck.elapsed(); }
@@ -709,8 +704,7 @@ bool ModList::setActive(const QString& name, bool active) {
         m_Profile->setModEnabled(modIndex, active);
 
         IModList::ModStates newState = state(modIndex);
-        // FIXME: Signals.
-        // m_ModStateChanged(name, newState);
+        m_ModStateChanged(name, newState);
         return true;
     }
 }
@@ -740,17 +734,13 @@ bool ModList::setPriority(const QString& name, int newPriority) {
 }
 
 bool ModList::onModStateChanged(const std::function<void(const QString&, IModList::ModStates)>& func) {
-    // FIXME: Signals.
-    // auto conn = m_ModStateChanged.connect(func);
-    // return conn.connected();
-    return true;
+    auto conn = m_ModStateChanged.connect(func);
+    return conn.connected();
 }
 
 bool ModList::onModMoved(const std::function<void(const QString&, int, int)>& func) {
-    // FIXME: Signals.
-    // auto conn = m_ModMoved.connect(func);
-    // return conn.connected();
-    return true;
+    auto conn = m_ModMoved.connect(func);
+    return conn.connected();
 }
 
 bool ModList::dropURLs(const QMimeData* mimeData, int row, const QModelIndex& parent) {

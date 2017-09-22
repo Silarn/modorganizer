@@ -110,7 +110,7 @@ target_include_directories(${library_name} PUBLIC
 # Dependencies
 target_link_libraries(${library_name} PUBLIC
     common
-    Qt5::Widgets Qt5::Script Qt5::Quick Qt5::WinExtras
+    Qt5::Widgets Qt5::Script Qt5::Quick Qt5::WinExtras Boost::boost
 )
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 # Install Targets

@@ -57,10 +57,9 @@ static bool ByDate(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo& RH
 PluginList::PluginList(QObject* parent) : QAbstractItemModel(parent), m_FontMetrics(QFont()) {}
 
 PluginList::~PluginList() {
-    // FIXME: Signals.
-    // m_Refreshed.disconnect_all_slots();
-    // m_PluginMoved.disconnect_all_slots();
-    // m_PluginStateChanged.disconnect_all_slots();
+    m_Refreshed.disconnect_all_slots();
+    m_PluginMoved.disconnect_all_slots();
+    m_PluginStateChanged.disconnect_all_slots();
 }
 
 QString PluginList::getColumnName(int column) {
@@ -174,8 +173,7 @@ void PluginList::refresh(const QString& profileName, const DirectoryEntry& baseD
     refreshLoadOrder();
     emit dataChanged(this->index(0, 0), this->index(static_cast<int>(m_ESPs.size()), columnCount()));
 
-    // FIXME: Signals.
-    // m_Refreshed();
+    m_Refreshed();
 }
 
 void PluginList::fixPriorities() {
@@ -455,10 +453,9 @@ void PluginList::refreshLoadOrder() {
 }
 
 void PluginList::disconnectSlots() {
-    // FIXME: Signals.
-    // m_PluginMoved.disconnect_all_slots();
-    // m_Refreshed.disconnect_all_slots();
-    // m_PluginStateChanged.disconnect_all_slots();
+    m_PluginMoved.disconnect_all_slots();
+    m_Refreshed.disconnect_all_slots();
+    m_PluginStateChanged.disconnect_all_slots();
 }
 
 QStringList PluginList::pluginNames() const {
@@ -560,24 +557,18 @@ QString PluginList::origin(const QString& name) const {
 }
 
 bool PluginList::onPluginStateChanged(const std::function<void(const QString&, PluginStates)>& func) {
-    // FIXME: Signals.
-    // auto conn = m_PluginStateChanged.connect(func);
-    // return conn.connected();
-    return true;
+    auto conn = m_PluginStateChanged.connect(func);
+    return conn.connected();
 }
 
 bool PluginList::onRefreshed(const std::function<void()>& callback) {
-    // FIXME: Signals.
-    // auto conn = m_Refreshed.connect(callback);
-    // return conn.connected();
-    return true;
+    auto conn = m_Refreshed.connect(callback);
+    return conn.connected();
 }
 
 bool PluginList::onPluginMoved(const std::function<void(const QString&, int, int)>& func) {
-    // FIXME: Signals.
-    // auto conn = m_PluginMoved.connect(func);
-    // return conn.connected();
-    return true;
+    auto conn = m_PluginMoved.connect(func);
+    return conn.connected();
 }
 
 void PluginList::updateIndices() {
@@ -765,8 +756,7 @@ bool PluginList::setData(const QModelIndex& modIndex, const QVariant& value, int
     IPluginList::PluginStates newState = state(modName);
     if (oldState != newState) {
         try {
-            // FIXME: Signals.
-            // m_PluginStateChanged(modName, newState);
+            m_PluginStateChanged(modName, newState);
             testMasters();
             emit dataChanged(this->index(0, 0), this->index(static_cast<int>(m_ESPs.size()), columnCount()));
         } catch (const std::exception& e) {
@@ -860,8 +850,7 @@ void PluginList::setPluginPriority(int row, int& newPriority) {
 
         m_ESPs.at(row).m_Priority = newPriorityTemp;
         emit dataChanged(index(row, 0), index(row, columnCount()));
-        // FIXME: Signals.
-        // m_PluginMoved(m_ESPs[row].m_Name, oldPriority, newPriorityTemp);
+        m_PluginMoved(m_ESPs[row].m_Name, oldPriority, newPriorityTemp);
     } catch (const std::out_of_range&) {
         reportError(tr("failed to restore load order for %1").arg(m_ESPs[row].m_Name));
     }

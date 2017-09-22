@@ -3,11 +3,11 @@
 
 #include "MO/organizercore.h"
 #include "MO/previewgenerator.h"
+
 #include <QFile>
 #include <QPluginLoader>
 #include <QtPlugin>
-#include <map>
-#include <tuple>
+#include <boost/signals2.hpp>
 #include <uibase/iplugindiagnose.h>
 #include <uibase/ipluginfilemapper.h>
 #include <uibase/iplugingame.h>
@@ -15,6 +15,9 @@
 #include <uibase/ipluginmodpage.h>
 #include <uibase/ipluginproxy.h>
 #include <uibase/iplugintool.h>
+
+#include <map>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -81,7 +84,7 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
     PluginMap m_Plugins;
 
     std::map<QString, MOBase::IPluginGame*> m_SupportedGames;
-    // std::vector<boost::signals2::connection> m_DiagnosisConnections;
+    std::vector<boost::signals2::connection> m_DiagnosisConnections;
     QStringList m_FailedPlugins;
     std::vector<QPluginLoader*> m_PluginLoaders;
 

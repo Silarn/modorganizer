@@ -22,6 +22,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #define IPLUGINDIAGNOSE_H
 
 #include <QString>
+#include <boost/signals2.hpp>
+
 #include <functional>
 #include <vector>
 
@@ -37,7 +39,7 @@ namespace MOBase {
 class IPluginDiagnose {
   public:
     /// signal to be emitted when the diagnosis information of the plugin is invalidated
-    // typedef boost::signals2::signal<void(void)> SignalInvalidated;
+    using SignalInvalidated = boost::signals2::signal<void(void)>;
 
   public:
     /**
@@ -81,17 +83,15 @@ class IPluginDiagnose {
      * @brief the application will use this to register callbacks to be called when
      *        the diagnosis information needs to be re-evaluated
      */
-    // virtual boost::signals2::connection onInvalidated(std::function<void()> callback) {
-    //    return m_OnInvalidated.connect(callback);
-    //}
-
-  protected:
-    void invalidate() {
-        // m_OnInvalidated();
+    virtual boost::signals2::connection onInvalidated(std::function<void()> callback) {
+        return m_OnInvalidated.connect(callback);
     }
 
+  protected:
+    void invalidate() { m_OnInvalidated(); }
+
   private:
-    // SignalInvalidated m_OnInvalidated;
+    SignalInvalidated m_OnInvalidated;
 };
 
 } // namespace MOBase

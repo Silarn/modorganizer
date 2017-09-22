@@ -267,10 +267,11 @@ ADD_DEFINITIONS(-DGITID="${GIT_COMMIT_HASH}")
 
 # Dependencies
 target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::WebEngine Qt5::WebEngineWidgets Zlib
-                      common uibase bsatk gamefeatures archive fmt::fmt-header-only github usvfs
+                      common uibase bsatk gamefeatures archive fmt::fmt-header-only github usvfs Boost::boost
                       ${library_name}Shared game_gamebryo
                       # esptk
-                      Dbghelp advapi32 Version Shlwapi)
+                      Dbghelp advapi32 Version Shlwapi
+)
 # QT
 add_definitions(-DQT_MESSAGELOGCONTEXT)
 QT5_CREATE_TRANSLATION(organizer_translations_qm ${CMAKE_SOURCE_DIR}/src ${CMAKE_SOURCE_DIR}/src/organizer_en.ts)

@@ -68,8 +68,7 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
         IPluginDiagnose* diagnose = qobject_cast<IPluginDiagnose*>(plugin);
         if (diagnose) {
             this->plugins<IPluginDiagnose>().push_back(diagnose);
-            // FIXME: signals
-            // m_DiagnosisConnections.push_back(diagnose->onInvalidated([&]() { emit diagnosisUpdate(); }));
+            m_DiagnosisConnections.push_back(diagnose->onInvalidated([&]() { emit diagnosisUpdate(); }));
         }
     }
     { // file mapper plugin
@@ -175,11 +174,10 @@ void PluginContainer::unloadPlugins() {
     // have a reference to the vector itself, now invalidated?
     m_Plugins = {};
 
-    // FIXME: Signals
-    // for (const boost::signals2::connection& : m_DiagnosisConnections) {
-    //    connection.disconnect();
-    //}
-    // m_DiagnosisConnections.clear();
+    for (const boost::signals2::connection& connection : m_DiagnosisConnections) {
+        connection.disconnect();
+    }
+    m_DiagnosisConnections.clear();
 
     while (!m_PluginLoaders.empty()) {
         std::unique_ptr<QPluginLoader> loader(m_PluginLoaders.back());

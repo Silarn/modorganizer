@@ -30,6 +30,7 @@ class IPluginGame;
 #include <QString>
 #include <QTemporaryFile>
 #include <QTimer>
+#include <boost/signals2.hpp>
 
 #include <map>
 #include <vector>
@@ -77,9 +78,9 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
         COL_LASTCOLUMN = COL_MODINDEX
     };
 
-    // typedef boost::signals2::signal<void()> SignalRefreshed;
-    // typedef boost::signals2::signal<void(const QString&, int, int)> SignalPluginMoved;
-    // typedef boost::signals2::signal<void(const QString&, PluginStates)> SignalPluginStateChanged;
+    using SignalRefreshed = boost::signals2::signal<void()>;
+    using SignalPluginMoved = boost::signals2::signal<void(const QString&, int, int)>;
+    using SignalPluginStateChanged = boost::signals2::signal<void(const QString&, PluginStates)>;
 
   public:
     /**
@@ -300,9 +301,9 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
     QString m_CurrentProfile;
     QFontMetrics m_FontMetrics;
 
-    // SignalRefreshed m_Refreshed;
-    // SignalPluginMoved m_PluginMoved;
-    // SignalPluginStateChanged m_PluginStateChanged;
+    SignalRefreshed m_Refreshed;
+    SignalPluginMoved m_PluginMoved;
+    SignalPluginStateChanged m_PluginStateChanged;
 
     QTemporaryFile m_TempFile;
 

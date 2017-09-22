@@ -20,15 +20,16 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef MODLIST_H
 #define MODLIST_H
 
+#include "MO/categories.h"
 #include "MO/modinfo.h"
 #include "MO/nexusinterface.h"
 #include "MO/profile.h"
-#include "MO/categories.h"
 #include <QFile>
 #include <QListWidget>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QVector>
+#include <boost/signals2.hpp>
 #include <set>
 #include <uibase/imodlist.h>
 #include <vector>
@@ -57,8 +58,8 @@ class ModList : public QAbstractItemModel, public MOBase::IModList {
         COL_LASTCOLUMN = COL_PRIORITY
     };
 
-    // typedef boost::signals2::signal<void(const QString&, ModStates)> SignalModStateChanged;
-    // typedef boost::signals2::signal<void(const QString&, int, int)> SignalModMoved;
+    using SignalModStateChanged = boost::signals2::signal<void(const QString&, ModStates)>;
+    using SignalModMoved = boost::signals2::signal<void(const QString&, int, int)>;
 
   public:
     /**
@@ -304,8 +305,8 @@ class ModList : public QAbstractItemModel, public MOBase::IModList {
 
     TModInfoChange m_ChangeInfo;
 
-    // SignalModStateChanged m_ModStateChanged;
-    // SignalModMoved m_ModMoved;
+    SignalModStateChanged m_ModStateChanged;
+    SignalModMoved m_ModMoved;
 
     std::map<ModInfo::EContent, std::tuple<QString, QString>> m_ContentIcons;
 
