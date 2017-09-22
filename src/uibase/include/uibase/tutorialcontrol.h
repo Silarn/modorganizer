@@ -17,14 +17,13 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef TUTORIALCONTROL_H
-#define TUTORIALCONTROL_H
-
+#pragma once
 #include "uibase/dllimport.h"
+
 #include <QQuickView>
 #include <QScriptEngine>
 #include <QWidget>
+
 #include <utility>
 
 namespace MOBase {
@@ -74,5 +73,3 @@ class QDLLEXPORT TutorialControl : public QObject {
 };
 
 } // namespace MOBase
-
-#endif // TUTORIALCONTROL_H

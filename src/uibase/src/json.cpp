@@ -19,7 +19,6 @@
 /**
  * \file json.cpp
  */
-
 #include "uibase/json.h"
 
 namespace QtJson {

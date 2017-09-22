@@ -17,11 +17,9 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef REPORT_H
-#define REPORT_H
-
+#pragma once
 #include "uibase/dllimport.h"
+
 #include <QString>
 
 namespace MOBase {
@@ -33,5 +31,3 @@ namespace MOBase {
 QDLLEXPORT void reportError(const QString& message);
 
 } // namespace MOBase
-
-#endif // REPORT_H

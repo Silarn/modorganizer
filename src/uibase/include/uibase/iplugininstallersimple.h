@@ -17,10 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef IPLUGININSTALLERSIMPLE_H
-#define IPLUGININSTALLERSIMPLE_H
-
+#pragma once
 #include "uibase/guessedvalue.h"
 #include "uibase/iplugininstaller.h"
 
@@ -34,9 +31,7 @@ namespace MOBase {
  * Q_Interfaces(IPlugin IPluginInstaller IPluginInstallerCustom)
  */
 class IPluginInstallerSimple : public QObject, public IPluginInstaller {
-
     Q_INTERFACES(IPluginInstaller)
-
   public:
     /**
      * install call for the simple mode. The installer only needs to restructure the tree parameter,
@@ -58,5 +53,3 @@ class IPluginInstallerSimple : public QObject, public IPluginInstaller {
 } // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginInstallerSimple, "com.tannin.ModOrganizer.PluginInstallerSimple/1.0")
-
-#endif // IPLUGININSTALLERSIMPLE_H

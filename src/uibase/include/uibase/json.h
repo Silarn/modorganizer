@@ -19,10 +19,7 @@
 /**
  * \file json.h
  */
-
-#ifndef JSON_H
-#define JSON_H
-
+#pragma once
 #include <QString>
 #include <QVariant>
 
@@ -89,5 +86,3 @@ QString serializeStr(const QVariant& data);
  */
 QString serializeStr(const QVariant& data, bool& success);
 } // namespace QtJson
-
-#endif // JSON_H

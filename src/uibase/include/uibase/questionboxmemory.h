@@ -17,10 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef QUESTIONBOXMEMORY_H
-#define QUESTIONBOXMEMORY_H
-
+#pragma once
 #include "uibase/dllimport.h"
 
 #include <QDialog>
@@ -41,7 +38,6 @@ namespace MOBase {
 
 class QDLLEXPORT QuestionBoxMemory : public QDialog {
     Q_OBJECT
-
   public:
     virtual ~QuestionBoxMemory();
 
@@ -85,5 +81,3 @@ class QDLLEXPORT QuestionBoxMemory : public QDialog {
 };
 
 } // namespace MOBase
-
-#endif // QUESTIONBOXMEMORY_H

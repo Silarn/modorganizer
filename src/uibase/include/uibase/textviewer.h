@@ -17,14 +17,13 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef TEXTVIEWER_H
-#define TEXTVIEWER_H
-
+#pragma once
 #include "uibase/dllimport.h"
+
 #include <QDialog>
 #include <QTabWidget>
 #include <QTextEdit>
+
 #include <set>
 
 namespace Ui {
@@ -40,7 +39,6 @@ class FindDialog;
  **/
 class QDLLEXPORT TextViewer : public QDialog {
     Q_OBJECT
-
   public:
     /**
      * @brief constructor
@@ -89,5 +87,3 @@ class QDLLEXPORT TextViewer : public QDialog {
 };
 
 } // namespace MOBase
-
-#endif // TEXTVIEWER_H

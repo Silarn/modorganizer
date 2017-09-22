@@ -17,12 +17,12 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
 #include "uibase/textviewer.h"
 #include "ui_textviewer.h"
 #include "uibase/finddialog.h"
 #include "uibase/report.h"
 #include "uibase/utility.h"
+
 #include <QFile>
 #include <QFileInfo>
 #include <QMessageBox>

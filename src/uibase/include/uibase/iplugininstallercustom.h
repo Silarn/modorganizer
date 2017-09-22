@@ -17,10 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef IPLUGININSTALLERCUSTOM_H
-#define IPLUGININSTALLERCUSTOM_H
-
+#pragma once
 #include "uibase/guessedvalue.h"
 #include "uibase/iplugininstaller.h"
 
@@ -33,9 +30,7 @@ namespace MOBase {
  * Q_Interfaces(IPlugin IPluginInstaller IPluginInstallerCustom)
  */
 class IPluginInstallerCustom : public QObject, public IPluginInstaller {
-
     Q_INTERFACES(IPluginInstaller)
-
   public:
     /**
      * @brief test if the archive represented by the file name can be installed through this installer
@@ -69,5 +64,3 @@ class IPluginInstallerCustom : public QObject, public IPluginInstaller {
 } // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginInstallerCustom, "com.tannin.ModOrganizer.PluginInstallerCustom/1.0")
-
-#endif // IPLUGININSTALLERCUSTOM_H

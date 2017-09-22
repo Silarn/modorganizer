@@ -17,11 +17,9 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef IPLUGINTOOL_H
-#define IPLUGINTOOL_H
-
+#pragma once
 #include "uibase/iplugin.h"
+
 #include <QIcon>
 
 namespace MOBase {
@@ -75,5 +73,3 @@ class IPluginTool : public QObject, public virtual IPlugin {
 } // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginTool, "com.tannin.ModOrganizer.PluginTool/1.0")
-
-#endif // IPLUGINTOOL_H

@@ -17,12 +17,10 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef IPLUGINMODPAGE_H
-#define IPLUGINMODPAGE_H
-
+#pragma once
 #include "uibase/iplugin.h"
 #include "uibase/modrepositoryfileinfo.h"
+
 #include <QIcon>
 
 namespace MOBase {
@@ -84,5 +82,3 @@ class IPluginModPage : public QObject, public IPlugin {
 } // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginModPage, "com.tannin.ModOrganizer.PluginModPage/1.0")
-
-#endif // IPLUGINMODPAGE_H

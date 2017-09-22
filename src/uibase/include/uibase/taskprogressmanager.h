@@ -1,21 +1,19 @@
-#ifndef TASKPROGRESSMANAGER_H
-#define TASKPROGRESSMANAGER_H
-
+#pragma once
 #include "uibase/dllimport.h"
+
 #include <QMutexLocker>
 #include <QObject>
 #include <QTime>
 #include <QTimer>
 #include <common/sane_windows.h>
+
 #include <map>
 #include <shobjidl.h>
 
 namespace MOBase {
 
 class QDLLEXPORT TaskProgressManager : QObject {
-
     Q_OBJECT
-
   public:
     static TaskProgressManager& instance();
 
@@ -44,5 +42,3 @@ class QDLLEXPORT TaskProgressManager : QObject {
 };
 
 } // namespace MOBase
-
-#endif // TASKPROGRESSMANAGER_H

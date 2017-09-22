@@ -17,10 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef FINDDIALOG_H
-#define FINDDIALOG_H
-
+#pragma once
 #include <QDialog>
 
 namespace Ui {
@@ -33,9 +30,7 @@ namespace MOBase {
  * @brief Find dialog used in the TextView dialog
  **/
 class FindDialog : public QDialog {
-
     Q_OBJECT
-
   public:
     /**
      * @brief constructor
@@ -72,5 +67,3 @@ class FindDialog : public QDialog {
 };
 
 } // namespace MOBase
-
-#endif // FINDDIALOG_H

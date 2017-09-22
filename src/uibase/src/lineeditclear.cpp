@@ -6,8 +6,8 @@
 ** warranty, liability or support of any kind.
 **
 ****************************************************************************/
-
 #include "uibase/lineeditclear.h"
+
 #include <QStyle>
 #include <QToolButton>
 

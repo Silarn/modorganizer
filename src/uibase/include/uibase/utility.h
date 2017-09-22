@@ -17,17 +17,15 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef UTILITY_H
-#define UTILITY_H
-
 #include "uibase/dllimport.h"
+
 #include <QDir>
 #include <QIcon>
 #include <QString>
 #include <QTextStream>
-#include <algorithm>
 #include <common/sane_windows.h>
+
+#include <algorithm>
 #include <set>
 #include <vector>
 
@@ -336,5 +334,3 @@ bool isOneOf(const T& val, const std::initializer_list<T>& list) {
 }
 
 } // namespace MOBase
-
-#endif // UTILITY_H

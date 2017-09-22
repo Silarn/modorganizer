@@ -17,12 +17,10 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef IPLUGININSTALLER_H
-#define IPLUGININSTALLER_H
-
+#pragma once
 #include "uibase/directorytree.h"
 #include "uibase/iplugin.h"
+
 #include <set>
 
 namespace MOBase {
@@ -30,9 +28,7 @@ namespace MOBase {
 class IInstallationManager;
 
 class IPluginInstaller : public IPlugin {
-
     Q_INTERFACES(IPlugin)
-
   public:
     enum EInstallResult {
         RESULT_SUCCESS,
@@ -93,5 +89,3 @@ class IPluginInstaller : public IPlugin {
 } // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginInstaller, "com.tannin.ModOrganizer.PluginInstaller/1.0")
-
-#endif // IPLUGININSTALLER_H

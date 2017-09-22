@@ -1,7 +1,6 @@
-#ifndef INEXUSBRIDGE_H
-#define INEXUSBRIDGE_H
-
+#pragma once
 #include "uibase/modrepositoryfileinfo.h"
+
 #include <QObject>
 #include <QVariant>
 
@@ -145,5 +144,3 @@ class QDLLEXPORT IModRepositoryBridge : public QObject {
 };
 
 } // namespace MOBase
-
-#endif // INEXUSBRIDGE_H

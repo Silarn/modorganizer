@@ -17,17 +17,16 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef IMOINFO_H
-#define IMOINFO_H
-
+#pragma once
 #include "uibase/guessedvalue.h"
 #include "uibase/iprofile.h"
 #include "uibase/versioninfo.h"
+
 #include <QString>
 #include <QStringList>
 #include <QVariant>
 #include <common/sane_windows.h>
+
 #include <functional>
 
 namespace MOBase {
@@ -307,5 +306,3 @@ class IOrganizer {
 };
 
 } // namespace MOBase
-
-#endif // IMOINFO_H

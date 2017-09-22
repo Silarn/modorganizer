@@ -17,10 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef IMODLIST_H
-#define IMODLIST_H
-
+#pragma once
 #include <QString>
 
 namespace MOBase {
@@ -118,5 +115,3 @@ class IModList {
 Q_DECLARE_OPERATORS_FOR_FLAGS(IModList::ModStates)
 
 } // namespace MOBase
-
-#endif // IMODLIST_H

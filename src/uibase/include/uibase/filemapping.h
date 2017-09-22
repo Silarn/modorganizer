@@ -1,7 +1,6 @@
-#ifndef FILEMAPPING_H
-#define FILEMAPPING_H
-
+#pragma once
 #include <QString>
+
 #include <vector>
 
 struct Mapping {
@@ -11,6 +10,4 @@ struct Mapping {
     bool createTarget;
 };
 
-typedef std::vector<Mapping> MappingType;
-
-#endif // FILEMAPPING_H
+using MappingType = std::vector<Mapping>;

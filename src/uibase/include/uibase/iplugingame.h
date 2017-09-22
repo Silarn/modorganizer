@@ -1,6 +1,4 @@
-#ifndef IPLUGINGAME_H
-#define IPLUGINGAME_H
-
+#pragma once
 #include "uibase/executableinfo.h"
 #include "uibase/iplugin.h"
 
@@ -203,5 +201,3 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(IPluginGame::ProfileSettings)
 
 Q_DECLARE_INTERFACE(MOBase::IPluginGame, "com.tannin.ModOrganizer.PluginGame/2.0")
 Q_DECLARE_METATYPE(MOBase::IPluginGame const*)
-
-#endif // IPLUGINGAME_H

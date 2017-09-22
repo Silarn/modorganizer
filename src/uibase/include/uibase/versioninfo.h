@@ -17,11 +17,9 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef MODVERSION_H
-#define MODVERSION_H
-
+#pragma once
 #include "uibase/dllimport.h"
+
 #include <QString>
 
 namespace MOBase {
@@ -152,5 +150,3 @@ class QDLLEXPORT VersionInfo {
 };
 
 } // namespace MOBase
-
-#endif // MODVERSION_H

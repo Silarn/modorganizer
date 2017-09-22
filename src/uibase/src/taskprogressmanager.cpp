@@ -1,4 +1,5 @@
 #include "uibase/taskprogressmanager.h"
+
 #include <QApplication>
 #include <QMainWindow>
 #include <QWidget>

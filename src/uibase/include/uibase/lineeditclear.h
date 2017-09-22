@@ -6,10 +6,7 @@
 ** warranty, liability or support of any kind.
 **
 ****************************************************************************/
-
-#ifndef LINEEDITCLEAR_H
-#define LINEEDITCLEAR_H
-
+#pragma once
 #include "uibase/dllimport.h"
 #include <QLineEdit>
 
@@ -34,5 +31,3 @@ class QDLLEXPORT LineEditClear : public QLineEdit {
 };
 
 } // namespace MOBase
-
-#endif // LINEEDITCLEAR_H

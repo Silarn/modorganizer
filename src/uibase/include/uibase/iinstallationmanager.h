@@ -17,10 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef IINSTALLATIONMANAGER_H
-#define IINSTALLATIONMANAGER_H
-
+#pragma once
 #include <uibase/iplugininstaller.h>
 
 namespace MOBase {
@@ -75,5 +72,3 @@ class IInstallationManager {
 };
 
 } // namespace MOBase
-
-#endif // IINSTALLATIONMANAGER_H

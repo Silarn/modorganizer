@@ -17,10 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef IPLUGINDIAGNOSE_H
-#define IPLUGINDIAGNOSE_H
-
+#pragma once
 #include <QString>
 #include <boost/signals2.hpp>
 
@@ -97,5 +94,3 @@ class IPluginDiagnose {
 } // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginDiagnose, "com.tannin.ModOrganizer.PluginDiagnose/1.1")
-
-#endif // IPLUGINDIAGNOSE_H

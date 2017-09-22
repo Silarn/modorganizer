@@ -16,11 +16,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef NXMURL_H
-#define NXMURL_H
-
+#pragma once
 #include "uibase/dllimport.h"
+
 #include <QObject>
 #include <QString>
 
@@ -30,7 +28,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
  **/
 class QDLLEXPORT NXMUrl : public QObject {
     Q_OBJECT
-
   public:
     /**
      * @brief constructor
@@ -63,5 +60,3 @@ class QDLLEXPORT NXMUrl : public QObject {
     int m_ModId;
     int m_FileId;
 };
-
-#endif // NXMURL_H

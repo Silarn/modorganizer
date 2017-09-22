@@ -1,6 +1,4 @@
-#ifndef IPROFILE
-#define IPROFILE
-
+#pragma once
 #include <QString>
 
 namespace MOBase {
@@ -17,5 +15,3 @@ class IProfile {
 };
 
 } // namespace MOBase
-
-#endif // IPROFILE

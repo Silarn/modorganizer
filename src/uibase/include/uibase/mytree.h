@@ -17,10 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef MYTREE_H
-#define MYTREE_H
-
+#pragma once
 #include "uibase/dllimport.h"
 
 #include <QString>
@@ -340,5 +337,3 @@ bool MyTree<LeafT, NodeData>::addNode(Node* node, bool merge, Overwrites* overwr
 }
 
 } // namespace MOBase
-
-#endif // MYTREE_H

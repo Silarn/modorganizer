@@ -1,7 +1,6 @@
-#ifndef IDOWNLOADMANAGER_H
-#define IDOWNLOADMANAGER_H
-
+#pragma once
 #include "uibase/dllimport.h"
+
 #include <QObject>
 #include <QStringList>
 
@@ -65,5 +64,3 @@ class QDLLEXPORT IDownloadManager : public QObject {
 };
 
 } // namespace MOBase
-
-#endif // IDOWNLOADMANAGER_H

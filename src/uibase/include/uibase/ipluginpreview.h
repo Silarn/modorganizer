@@ -17,10 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef IPLUGINPREVIEW_H
-#define IPLUGINPREVIEW_H
-
+#pragma once
 #include "uibase/iplugin.h"
 
 namespace MOBase {
@@ -47,5 +44,3 @@ class IPluginPreview : public QObject, public IPlugin {
 } // namespace MOBase
 
 Q_DECLARE_INTERFACE(MOBase::IPluginPreview, "com.tannin.ModOrganizer.PluginPreview/1.0")
-
-#endif // IPLUGINPREVIEW_H

@@ -16,11 +16,11 @@ GNU Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #include "uibase/tutorialcontrol.h"
 #include "uibase/report.h"
 #include "uibase/tutorialmanager.h"
 #include "uibase/utility.h"
+
 #include <QAbstractButton>
 #include <QAction>
 #include <QBitmap>
@@ -30,16 +30,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QFile>
 #include <QGraphicsObject>
 #include <QImage>
+#include <QMetaEnum>
+#include <QMetaMethod>
+#include <QMetaObject>
 #include <QMouseEvent>
 #include <QQmlContext>
 #include <QQmlEngine>
 #include <QTableWidget>
 #include <QTimer>
 #include <QToolBar>
-
-#include <QMetaEnum>
-#include <QMetaMethod>
-#include <QMetaObject>
 #include <qmetaobject.h>
 
 namespace MOBase {

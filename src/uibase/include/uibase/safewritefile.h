@@ -16,14 +16,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef SAFEWRITEFILE_H
-#define SAFEWRITEFILE_H
+#pragma once
+#include <uibase/dllimport.h>
+#include <uibase/utility.h>
 
 #include <QString>
 #include <QTemporaryFile>
-#include <uibase/dllimport.h>
-#include <uibase/utility.h>
 
 namespace MOBase {
 /**
@@ -48,5 +46,3 @@ class QDLLEXPORT SafeWriteFile {
 };
 
 } // namespace MOBase
-
-#endif // SAFEWRITEFILE_H

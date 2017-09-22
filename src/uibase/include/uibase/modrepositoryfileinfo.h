@@ -1,7 +1,6 @@
-#ifndef MODREPOSITORYFILEINFO_H
-#define MODREPOSITORYFILEINFO_H
-
+#pragma once
 #include "uibase/versioninfo.h"
+
 #include <QDateTime>
 #include <QString>
 #include <QVariantMap>
@@ -36,5 +35,3 @@ class QDLLEXPORT ModRepositoryFileInfo : public QObject {
     QVariantMap userData;
 };
 } // namespace MOBase
-
-#endif // MODREPOSITORYFILEINFO_H

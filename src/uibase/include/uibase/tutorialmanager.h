@@ -17,12 +17,11 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef TUTORIALMANAGER_H
-#define TUTORIALMANAGER_H
-
+#pragma once
 #include "uibase/dllimport.h"
+
 #include <QObject>
+
 #include <map>
 
 namespace MOBase {
@@ -30,9 +29,7 @@ namespace MOBase {
 class TutorialControl;
 
 class QDLLEXPORT TutorialManager : public QObject {
-
     Q_OBJECT
-
   public:
     /**
      * @brief set up the tutorial manager
@@ -102,5 +99,3 @@ class QDLLEXPORT TutorialManager : public QObject {
 };
 
 } // namespace MOBase
-
-#endif // TUTORIALMANAGER_H

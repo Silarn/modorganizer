@@ -1,7 +1,6 @@
-#ifndef EXECUTABLEINFO_H
-#define EXECUTABLEINFO_H
-
+#pragma once
 #include "uibase/dllimport.h"
+
 #include <QDir>
 #include <QFileInfo>
 #include <QString>
@@ -39,5 +38,3 @@ class QDLLEXPORT ExecutableInfo {
 };
 
 } // namespace MOBase
-
-#endif // EXECUTABLEINFO_H

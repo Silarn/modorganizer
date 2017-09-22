@@ -17,10 +17,7 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
-#ifndef DIRECTORYTREE_H
-#define DIRECTORYTREE_H
-
+#pragma once
 #include "uibase/dllimport.h"
 #include "uibase/filenamestring.h"
 #include "uibase/mytree.h"
@@ -75,5 +72,3 @@ QDLLEXPORT bool operator<(const DirectoryTreeInformation& LHS, const DirectoryTr
 typedef MyTree<FileTreeInformation, DirectoryTreeInformation> DirectoryTree;
 
 } // namespace MOBase
-
-#endif // DIRECTORYTREE_H

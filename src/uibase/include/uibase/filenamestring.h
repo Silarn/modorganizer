@@ -1,6 +1,4 @@
-#ifndef FILENAMESTRING_H
-#define FILENAMESTRING_H
-
+#pragma once
 #include "uibase/dllimport.h"
 
 #include <QString>
@@ -50,5 +48,3 @@ class FileNameString {
 };
 
 } // namespace MOBase
-
-#endif // FILENAME_H

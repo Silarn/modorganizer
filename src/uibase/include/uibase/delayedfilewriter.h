@@ -1,9 +1,9 @@
-#ifndef DELAYEDFILEWRITER_H
-#define DELAYEDFILEWRITER_H
-
+#pragma once
 #include "uibase/dllimport.h"
+
 #include <QString>
 #include <QTimer>
+
 #include <functional>
 
 namespace MOBase {
@@ -67,5 +67,3 @@ class QDLLEXPORT DelayedFileWriter : public DelayedFileWriterBase {
 };
 
 } // namespace MOBase
-
-#endif // DELAYEDFILEWRITER_H
