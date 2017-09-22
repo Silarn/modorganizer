@@ -389,6 +389,9 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QS
 //  SetDllDirectory replaces other search directories and this seems to
 //  propagate to child processes)
 void setupPath() {
+    // FIXME: This doesnt seem to be working.
+    // The FO4 plugin requires liblz4.
+    // It can't find it in the dlls directory without the manifest.
     static const int BUFSIZE = 4096;
     fs::path appDirPath = QCoreApplication::applicationDirPath().toStdWString();
     qDebug("MO at: %s", qUtf8Printable(QString::fromStdWString(appDirPath.native())));
