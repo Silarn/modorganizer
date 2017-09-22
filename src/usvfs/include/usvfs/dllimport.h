@@ -19,8 +19,10 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-#define COMMON_DLL
-#define COMMON_DLL_BUILD
-#include <common/dllmain.h>
-
-// #define USVFS_STATIC
+#if defined(USVFS_STATIC)
+#define DLLEXPORT
+#elif defined(USVFS_EXPORT)
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT __declspec(dllimport)
+#endif

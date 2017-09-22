@@ -29,9 +29,13 @@ class QString;
 #include <stdint.h>
 #include <vector>
 
-#define COMMON_DLL
-#define COMMON_DLL_BUILD
-#include <common/dllmain.h>
+#if defined(ARCHIVE_STATIC)
+#define DLLEXPORT
+#elif defined(ARCHIVE_EXPORT)
+#define DLLEXPORT __declspec(dllexport)
+#else
+#define DLLEXPORT __declspec(dllimport)
+#endif
 
 class FileData {
   public:

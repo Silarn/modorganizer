@@ -40,6 +40,7 @@ find_package(Qt5Core REQUIRED)
 
 ## Library ##
 add_library(${library_name} SHARED ${HDRS} ${SRCS})
+add_definitions(-DARCHIVE_EXPORT)
 # Headers
 target_include_directories(${library_name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

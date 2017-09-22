@@ -100,7 +100,7 @@ find_package(Qt5Quick REQUIRED)
 
 ## Library ##
 add_library(${library_name} SHARED ${HDRS} ${SRCS})
-add_definitions(-DCOMMON_DLL_BUILD)
+add_definitions(-DUIBASE_EXPORT)
 # Headers
 target_include_directories(${library_name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>

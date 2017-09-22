@@ -18,7 +18,10 @@ License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #pragma once
-#define COMMON_DLL
-#include <common/dllmain.h>
-
-#define QDLLEXPORT DLLEXPORT
+#if defined(UIBASE_STATIC)
+#define QDLLEXPORT
+#elif defined(UIBASE_EXPORT)
+#define QDLLEXPORT __declspec(dllexport)
+#else
+#define QDLLEXPORT __declspec(dllimport)
+#endif
