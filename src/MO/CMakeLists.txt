@@ -266,7 +266,8 @@ EXECUTE_PROCESS(
 ADD_DEFINITIONS(-DGITID="${GIT_COMMIT_HASH}")
 
 # Dependencies
-target_link_libraries(${library_name} PUBLIC Qt5::Widgets Qt5::WinExtras Qt5::WebEngine Qt5::WebEngineWidgets Zlib
+target_link_libraries(${library_name} PUBLIC Qt5::Widgets
+                      Qt5::WebEngine Qt5::WebEngineWidgets Zlib
                       common uibase bsatk gamefeatures archive fmt::fmt-header-only github usvfs Boost::boost
                       ${library_name}Shared game_gamebryo
                       # esptk
@@ -278,8 +279,7 @@ QT5_CREATE_TRANSLATION(organizer_translations_qm ${CMAKE_SOURCE_DIR}/src ${CMAKE
 set_target_properties(${library_name} PROPERTIES AUTOMOC ON AUTOUIC ON AUTORCC ON)
 if(WIN32)
     SET(windeploy_parameters --no-translations
-        --no-plugins
-        --release-with-debug-info --pdb
+        --no-plugins --pdb
         # --no-printsupport --no-qml --no-positioning
         --no-compiler-runtime
     )
@@ -299,7 +299,7 @@ if(WIN32)
                 --libdir $<TARGET_FILE_DIR:${library_name}>/dlls
                 $<$<CONFIG:Debug>:--debug>
                 $<$<CONFIG:Release>:--release>
-            $<TARGET_FILE:${library_name}>
+            $<TARGET_FILE:${library_name}> $<TARGET_FILE:uibase>
             
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/stylesheets
             $<TARGET_FILE_DIR:${library_name}>/stylesheets
