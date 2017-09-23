@@ -102,7 +102,7 @@ void Settings::registerAsNXMHandler(bool force) {
     std::wstring parameters = mode + L" " + m_GamePlugin->gameShortName().toStdWString() + L" \"" + executable + L"\"";
     HINSTANCE res = ::ShellExecuteW(nullptr, L"open", nxmPath.c_str(), parameters.c_str(), nullptr, SW_SHOWNORMAL);
     if ((int)res <= 32) {
-        QMessageBox::critical(nullptr, tr("Failed"), tr("Sorry, failed to start the helper application"));
+        QMessageBox::critical(nullptr, tr("Failed"), tr("Sorry, failed to start the nxmhandler application"));
     }
 }
 
