@@ -14,12 +14,12 @@ uninstall them.
 * Run CMake, setting PREFIX_PATH to a directory in the structure of
 
 PREFIX_PATH  
-....x86  
+....x64  
 ........bin  
 ........include  
 ........lib  
 ........share  
-....x86  
+....x86 (ONLY IF YOU WANT TO BUILD 32BIT)  
 ........bin  
 ........include  
 ........lib  
@@ -34,7 +34,7 @@ QT 5.9 is expected to be installed at C:\Qt, and the 2017 64bit and
 
 If Qt is installed somewhere else, edit the CMake.
 
-The 32bit versions of are only required if you're building as 32bit for some reason.
+The 32bit versions of dependencies are only required if you're building as 32bit for some reason.
 
 ## Other Repositories
 
