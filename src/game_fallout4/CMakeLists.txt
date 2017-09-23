@@ -52,7 +52,7 @@ target_link_libraries(${library_name} PUBLIC common uibase gamefeatures game_gam
 )
 add_custom_command(TARGET ${library_name} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:${library_name}>/plugins
-    COMMAND ${CMAKE_COMMAND} -E rename $<TARGET_FILE_DIR:${library_name}>/${library_name}.dll
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE_DIR:${library_name}>/${library_name}.dll
         $<TARGET_FILE_DIR:${library_name}>/plugins/${library_name}.dll
 )
 # Install Targets
