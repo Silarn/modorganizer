@@ -17,22 +17,22 @@ You should have received a copy of the GNU Lesser General Public
 License along with this library; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 */
-
 #include "bsatk/bsaarchive.h"
 #include "bsatk/bsaexception.h"
 #include "bsatk/bsafile.h"
 #include "bsatk/bsafolder.h"
+
+#include <common/sane_windows.h>
+#include <zlib.h>
+
 #include <algorithm>
 #include <cstring>
 #include <fstream>
-#include <functional>
 #include <memory>
 #include <mutex>
 #include <queue>
 #include <sys/stat.h>
 #include <utility>
-#include <zlib.h>
-#include <common/sane_windows.h>
 
 using std::fstream;
 
@@ -532,12 +532,11 @@ EErrorCode Archive::extractAll(const char* outputDirectory,
     // boost::interprocess::interprocess_semaphore bufferCount(0);
     // boost::interprocess::interprocess_semaphore queueFree(100);
 
-    std::thread readerThread(std::bind(&Archive::readFiles, this, std::ref(buffers), std::ref(queueMutex),
-                                       fileList.begin(), fileList.end()));
+    std::thread readerThread(&Archive::readFiles, this, std::ref(buffers), std::ref(queueMutex), fileList.begin(),
+                             fileList.end());
 
-    std::thread extractThread(std::bind(&Archive::extractFiles, this, outputDirectory, std::ref(buffers),
-                                        std::ref(queueMutex), static_cast<int>(fileList.size()), overwrite,
-                                        std::ref(filesDone)));
+    std::thread extractThread(&Archive::extractFiles, this, outputDirectory, std::ref(buffers), std::ref(queueMutex),
+                              static_cast<int>(fileList.size()), overwrite, std::ref(filesDone));
 
     bool readerDone = false;
     bool extractDone = false;
