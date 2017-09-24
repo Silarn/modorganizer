@@ -86,7 +86,7 @@ TEST(DirectoryTreeTest, SimpleTreeInit) {
 }
 
 TEST(DirectoryTreeTest, FindNode) {
-    // shared_memory_object::remove(g_SHMName);
+    boost::interprocess::shared_memory_object::remove(g_SHMName);
     ContainerType tree(g_SHMName, 64 * 1024);
     EXPECT_NE(nullptr, tree.addFile(R"(C:\temp\bla)", 0x42, 0, false));
 
@@ -102,12 +102,11 @@ struct TestVisitor {
         lastNode = node;
         flag40 = node->hasFlag(0x40);
         logger()->debug("{0} - {1}", lastNode->name(), flag40);
-        // BOOST_LOG_SEV(globalLogger::get(), LogLevel::Debug) << lastNode->name() << " - " << flag40;
     }
 };
 
 TEST(DirectoryTreeTest, VisitPath) {
-    // shared_memory_object::remove(g_SHMName);
+    boost::interprocess::shared_memory_object::remove(g_SHMName);
     ContainerType tree(g_SHMName, 64 * 1024);
     EXPECT_NE(nullptr, tree.addFile(R"(C:\temp\bla)", 1, 0x40, false));
 
@@ -120,7 +119,7 @@ TEST(DirectoryTreeTest, VisitPath) {
 }
 
 TEST(DirectoryTreeTest, WildCardFind) {
-    // shared_memory_object::remove(g_SHMName);
+    boost::interprocess::shared_memory_object::remove(g_SHMName);
     EXPECT_NO_THROW({
         ContainerType tree(g_SHMName, 64 * 1024);
 
@@ -181,7 +180,6 @@ TEST(DirectoryTreeTest, SHMAllocationError) {
             EXPECT_EQ(26, tree->node("C:")->node("temp")->node("az", MissingThrow)->data());
         } catch (const std::exception& e) {
             logger()->error("{0}", e.what());
-            // BOOST_LOG_SEV(globalLogger::get(), LogLevel::Error) << e.what();
             throw;
         }
     });
