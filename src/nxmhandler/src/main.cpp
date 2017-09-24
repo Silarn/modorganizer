@@ -150,6 +150,8 @@ static void applyChromeFix() {
 }
 
 int main(int argc, char* argv[]) {
+    auto tmp = QFileInfo(QFile(QString(argv[0]))).absoluteDir().absolutePath();
+    QCoreApplication::addLibraryPath(tmp + "/dlls");
     QApplication app(argc, argv);
 
     QStringList args = app.arguments();
