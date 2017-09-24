@@ -111,7 +111,7 @@ SharedParameters* HookContext::retrieveParameters(const USVFSParameters& params)
         res.first = m_ConfigurationSHM.construct<SharedParameters>("parameters")(
             params, VoidAllocatorT(m_ConfigurationSHM.get_segment_manager()));
         if (res.first == nullptr) {
-            USVFS_THROW_EXCEPTION(std::bad_alloc());
+            USVFS_THROW_EXCEPTION(bi::bad_alloc());
         }
     } else {
         spdlog::get("usvfs")->info("access existing config in {}", ::GetCurrentProcessId());

@@ -780,6 +780,7 @@ class TreeContainer {
         if (match.size() != 3) {
             USVFS_THROW_EXCEPTION(usage_error() << ex_msg("shared memory name invalid"));
         }
+        // TODO: Verify.
         // int count = boost::lexical_cast<int>(match[2]);
         int count = std::stoi(match.str(2));
 

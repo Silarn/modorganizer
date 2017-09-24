@@ -30,6 +30,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/winapi.h"
 #include <DbgHelp.h>
 #include <codecvt>
+#include <common/stringutils.h>
 #include <ctime>
 #include <filesystem>
 #include <fmt/format.h>
@@ -463,10 +464,7 @@ BOOL WINAPI VirtualLinkFile(LPCWSTR source, LPCWSTR destination, unsigned int fl
         std::string sourceU8 = ush::string_cast<std::string>(source, ush::CodePage::UTF8);
         auto res = context->redirectionTable().addFile(fs::path(destination), usvfs::RedirectionDataLocal(sourceU8),
                                                        !(flags & LINKFLAG_FAILIFEXISTS));
-        // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
-        // This will fail on unicode.
-        std::string fileExt = fs::path(sourceU8).extension().string();
-        std::transform(fileExt.begin(), fileExt.end(), fileExt.begin(), [](const char& a) { return std::tolower(a); });
+        std::string fileExt = common::toLower(fs::path(sourceU8).extension().string());
         if (extensions.find(fileExt) != extensions.end()) {
             std::string destinationU8 = ush::string_cast<std::string>(destination, ush::CodePage::UTF8);
 
@@ -542,9 +540,7 @@ BOOL WINAPI VirtualLinkDirectoryStatic(LPCWSTR source, LPCWSTR destination, unsi
 
                     // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
                     // This will fail on unicode.
-                    std::string fileExt = fs::path(nameU8).extension().string();
-                    std::transform(fileExt.begin(), fileExt.end(), fileExt.begin(),
-                                   [](const char& a) { return std::tolower(a); });
+                    std::string fileExt = common::toLower(fs::path(nameU8).extension().string());
 
                     if (extensions.find(fileExt) != extensions.end()) {
                         std::string destinationU8 =
