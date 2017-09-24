@@ -22,10 +22,10 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/windows_error.h"
 
 #include <common/sane_windows.h>
+#include <common/stringutils.h>
 #include <fmt/format.h>
 
 #include <algorithm>
-#include <cctype>
 #include <cstring>
 #include <iomanip>
 #include <sstream>
@@ -56,20 +56,8 @@ bool usvfs::shared::startswith(const wchar_t* string, const wchar_t* subString) 
     return *subString == '\0';
 }
 
-static fs::path normalize(const fs::path& path) { return fs::canonical(path); }
-
-// Two string case isentive equal
-// TODO: Add to common/stringutils.h
-static bool iequals(std::string a, std::string b) {
-    // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
-    // This will fail on unicode.
-    std::transform(a.begin(), a.end(), a.begin(), [](const char& a) { return std::tolower(a); });
-    std::transform(b.begin(), b.end(), b.begin(), [](const char& a) { return std::tolower(a); });
-    return a == b;
-}
-
 fs::path usvfs::shared::make_relative(const fs::path& fromIn, const fs::path& toIn) {
-    // TODO: Use std::filesystem::relative when MSVC Implements it.
+    // TODO: Use std::filesystem::relative when MSVC Implements it?
     // return fs::relative(fromIn, toIn);
     // converting path to lower case to make iterator comparison work correctly
     // on case-insenstive filesystems
@@ -84,7 +72,8 @@ fs::path usvfs::shared::make_relative(const fs::path& fromIn, const fs::path& to
 
     // TODO the following equivalent test is probably quite expensive as new
     // paths are created for each iteration but the case sensitivity depends on the fs
-    while ((fromIter != fromIterEnd) && (toIter != toIterEnd) && (iequals(fromIter->string(), toIter->string()))) {
+    while ((fromIter != fromIterEnd) && (toIter != toIterEnd) &&
+           (common::iequals(fromIter->string(), toIter->string()))) {
         ++fromIter;
         ++toIter;
     }
@@ -109,7 +98,7 @@ std::string usvfs::shared::to_hex(void* bufferIn, size_t bufferSize) {
     std::ostringstream temp;
     temp << std::hex;
     for (size_t i = 0; i < bufferSize; ++i) {
-        fmt::format("{:0>2X}", static_cast<unsigned int>(buffer[i]));
+        temp << fmt::format("{:0>2X}", static_cast<unsigned int>(buffer[i]));
         if ((i % 16) == 15) {
             temp << "\n";
         } else {
@@ -122,9 +111,7 @@ std::string usvfs::shared::to_hex(void* bufferIn, size_t bufferSize) {
 std::wstring usvfs::shared::to_upper(const std::wstring& input) {
     std::wstring result;
     result.resize(input.size());
-    // TODO: Switch to LCMapStringEx
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/dd318702(v=vs.85).aspx
-    ::LCMapStringW(LOCALE_INVARIANT, LCMAP_UPPERCASE, input.c_str(), static_cast<int>(input.size()), &result[0],
-                   static_cast<int>(result.size()));
+    ::LCMapStringEx(LOCALE_NAME_INVARIANT, LCMAP_UPPERCASE, input.data(), static_cast<int>(input.size()), &result[0],
+                    static_cast<int>(result.size()), NULL, NULL, 0);
     return result;
 }

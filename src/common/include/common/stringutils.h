@@ -1,8 +1,8 @@
 // Some string utilities.
 #pragma once
 #include <algorithm>
-#include <cctype>
 #include <codecvt>
+#include <cctype>
 #include <locale>
 #include <string>
 #include <vector>
@@ -63,22 +63,31 @@ static inline std::string trim_copy(std::string s) {
 
 // Check if basic_string<> starts with something.
 template <typename T>
-inline bool starts_with(const T& big_str, const T& small_str) {
+static inline bool starts_with(const T& big_str, const T& small_str) {
     return big_str.compare(0, small_str.length(), small_str) == 0;
 }
 
-inline std::wstring toWString(const std::string& str) {
+static inline std::wstring toWString(const std::string& str) {
     using convert_typeX = std::codecvt_utf8_utf16<wchar_t>;
     std::wstring_convert<convert_typeX, wchar_t> converterX;
 
     return converterX.from_bytes(str);
 }
 
-inline std::string toString(const std::wstring& wstr) {
+static inline std::string toString(const std::wstring& wstr) {
     using convert_typeX = std::codecvt_utf8_utf16<wchar_t>;
     std::wstring_convert<convert_typeX, wchar_t> converterX;
 
     return converterX.to_bytes(wstr);
+}
+
+// Two string case isentive equal
+static inline bool iequals(std::string a, std::string b) {
+    // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
+    // This will fail on unicode.
+    std::transform(a.begin(), a.end(), a.begin(), [](unsigned char c) { return std::tolower(c); });
+    std::transform(b.begin(), b.end(), b.begin(), [](unsigned char c) { return std::tolower(c); });
+    return a == b;
 }
 
 } // namespace common
