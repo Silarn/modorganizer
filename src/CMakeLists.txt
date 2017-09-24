@@ -251,6 +251,7 @@ add_subdirectory(game_gamebryo)
 add_subdirectory(game_fallout4)
 add_subdirectory(MO)
 add_subdirectory(helper)
+add_subdirectory(nxmhandler)
 # add_subdirectory(hookdll)
 
 

@@ -300,6 +300,7 @@ if(WIN32)
                 $<$<CONFIG:Debug>:--debug>
                 $<$<CONFIG:Release>:--release>
             $<TARGET_FILE:${library_name}> $<TARGET_FILE:uibase>
+            $<TARGET_FILE:${library_name}> $<TARGET_FILE:nxmhandler>
             
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/src/stylesheets
             $<TARGET_FILE_DIR:${library_name}>/stylesheets
