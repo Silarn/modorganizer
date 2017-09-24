@@ -85,6 +85,7 @@ static inline std::string toLower(std::string s) {
     // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
     // This will fail on unicode.
     std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
+    return s;
 }
 
 // Two string case isentive equal
