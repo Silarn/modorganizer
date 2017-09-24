@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #define GTEST_LANG_CXX11 1
+#define UNITTEST
 #include "usvfs/hookcontext.h"
 #include "usvfs/hooks/kernel32.h"
 #include "usvfs/hooks/ntdll.h"
@@ -32,11 +33,13 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/stringutils.h"
 #include "usvfs_shared/unicodestring.h"
 #include "usvfs_shared/winapi.h"
-#include "usvfs_shared/windows_sane.h"
-#include <fstream>
+
+#include <common/sane_windows.h>
 #include <gtest/gtest.h>
-#include <iostream>
 #include <spdlog/spdlog.h>
+
+#include <fstream>
+#include <iostream>
 
 namespace spd = spdlog;
 namespace uhooks = usvfs::hooks;
