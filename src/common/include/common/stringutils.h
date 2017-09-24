@@ -1,8 +1,8 @@
 // Some string utilities.
 #pragma once
 #include <algorithm>
-#include <codecvt>
 #include <cctype>
+#include <codecvt>
 #include <locale>
 #include <string>
 #include <vector>
@@ -81,13 +81,13 @@ static inline std::string toString(const std::wstring& wstr) {
     return converterX.to_bytes(wstr);
 }
 
-// Two string case isentive equal
-static inline bool iequals(std::string a, std::string b) {
+static inline std::string toLower(std::string s) {
     // TODO: https://stackoverflow.com/a/24063783/3665377 and proper comparision.
     // This will fail on unicode.
-    std::transform(a.begin(), a.end(), a.begin(), [](unsigned char c) { return std::tolower(c); });
-    std::transform(b.begin(), b.end(), b.begin(), [](unsigned char c) { return std::tolower(c); });
-    return a == b;
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c) { return std::tolower(c); });
 }
+
+// Two string case isentive equal
+static inline bool iequals(std::string a, std::string b) { return toLower(a) == toLower(b); }
 
 } // namespace common
