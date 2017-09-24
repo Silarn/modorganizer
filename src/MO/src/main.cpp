@@ -359,9 +359,8 @@ MOBase::IPluginGame* determineCurrentGame(QString const& moPath, QSettings& sett
 }
 
 void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
-    QByteArray localMsg = msg.toLocal8Bit();
     std::string smsg =
-        fmt::format("{:s} ({:s}:{:d}, {:s})\n", localMsg.constData(), context.file, context.line, context.function);
+        fmt::format("{:s} ({:s}:{:d}, {:s})\n", msg.toStdString(), context.file, context.line, context.function);
     switch (type) {
     case QtDebugMsg:
         smsg = fmt::format("Debug: {:s}", smsg);
