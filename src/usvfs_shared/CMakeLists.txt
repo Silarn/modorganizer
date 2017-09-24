@@ -51,6 +51,7 @@ target_include_directories(${library_name} PUBLIC
 )
 # Dependencies
 target_link_libraries(${library_name} PUBLIC fmt::fmt-header-only spdlog common Boost::boost)
+ADD_DEFINITIONS(-DSPDLOG_NO_NAME -DSPDLOG_NO_REGISTRY_MUTEX)
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
     ARCHIVE  DESTINATION lib # <prefix>/lib. DLL import libs.

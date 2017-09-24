@@ -53,6 +53,7 @@ source_group(Helpers FILES ${usvfsHelper_HDRS} ${usvfsHelper_SRCS})
 ## Library ##
 add_library(${library_name} SHARED ${usvfs_HDRS} ${usvfs_SRCS} ${usvfs_RCS} ${usvfsHelper_SRCS} ${usvfsHelper_HDRS})
 add_definitions(-DUSVFS_EXPORT)
+ADD_DEFINITIONS(-DSPDLOG_NO_NAME -DSPDLOG_NO_REGISTRY_MUTEX)
 SET_PROPERTY(
    SOURCE logger.cpp
    PROPERTY COMPILE_DEFINITIONS A DEFAULT_LOG_FILE=L"usvfs.log"
