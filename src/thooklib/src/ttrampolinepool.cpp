@@ -39,8 +39,6 @@ using namespace usvfs::shared;
 
 namespace HookLib {
 
-TrampolinePool* TrampolinePool::s_Instance = nullptr;
-
 TrampolinePool::TrampolinePool() : m_ThreadGuards(), m_MaxTrampolineSize(sizeof(LPVOID)) {
     m_BarrierAddr = &TrampolinePool::barrier;
     m_ReleaseAddr = &TrampolinePool::release;

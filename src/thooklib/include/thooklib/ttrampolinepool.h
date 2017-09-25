@@ -212,8 +212,6 @@ class TrampolinePool {
     static const int SIZE_OF_JUMP = 5;
 #endif
 
-    static TrampolinePool* s_Instance;
-
     bool m_FullBlock{false};
 
     BufferMap m_Buffers;
