@@ -41,8 +41,7 @@ static const HOOKHANDLE INVALID_HOOK = (HOOKHANDLE)-1;
 /// \brief install a stub (function to be called before the target function)
 /// \param functionAddress address of the function to stub
 /// \param stubAddress address of the stub function. This function has to have the signature of void foobar(LPVOID
-/// address).
-///        address receives the address of the function.
+/// address). address receives the address of the function.
 /// \param error (optional) if set, the referenced variable will receive an error code describing the problem (if any)
 /// \return a handle to reference the hook in later operations or INVALID_HOOK on error
 ///
@@ -53,8 +52,7 @@ HOOKHANDLE InstallStub(LPVOID functionAddress, LPVOID stubAddress, HookError* er
 /// \param module the module containing the function to hook
 /// \param functionName name of the function to stub (as exported by the library)
 /// \param stubAddress address of the stub function. This function has to have the signature of void foobar(LPVOID
-/// address).
-///        address receives the address of the function.
+/// address). address receives the address of the function.
 /// \param error (optional) if set, the referenced variable will receive an error code describing the problem (if any)
 /// \return a handle to reference the hook in later operations or INVALID_HOOK on error
 ///
@@ -64,8 +62,10 @@ HOOKHANDLE InstallStub(HMODULE module, LPCSTR functionName, LPVOID stubAddress, 
 /// \brief install a hook (function replacing the existing functionality of the function)
 /// \param functionAddress address of the function to hook
 /// \param hookAddress address of the replacement function. This function has to have the exact same signature as the
-/// replaced function \param error (optional) if set, the referenced variable will receive an error code describing the
-/// problem (if any) \return a handle to reference the hook in later operations or INVALID_HOOK on error
+/// replaced function
+/// \param error (optional) if set, the referenced variable will receive an error code describing the
+/// problem (if any)
+/// \return a handle to reference the hook in later operations or INVALID_HOOK on error
 ///
 HOOKHANDLE InstallHook(LPVOID functionAddress, LPVOID hookAddress, HookError* error = nullptr);
 
@@ -73,8 +73,10 @@ HOOKHANDLE InstallHook(LPVOID functionAddress, LPVOID hookAddress, HookError* er
 /// \brief install a hook (function replacing the existing functionality of the function)
 /// \param functionName name of the function to hook (as exported by the library)
 /// \param hookAddress address of the replacement function. This function has to have the exact same signature as the
-/// replaced function \param error (optional) if set, the referenced variable will receive an error code describing the
-/// problem (if any) \return a handle to reference the hook in later operations or INVALID_HOOK on error
+/// replaced function
+/// \param error (optional) if set, the referenced variable will receive an error code describing the
+/// problem (if any)
+/// \return a handle to reference the hook in later operations or INVALID_HOOK on error
 ///
 HOOKHANDLE InstallHook(HMODULE module, LPCSTR functionName, LPVOID hookAddress, HookError* error = nullptr);
 
