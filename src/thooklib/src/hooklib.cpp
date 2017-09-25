@@ -267,8 +267,8 @@ BOOL HookRIPIndirection(THookInfo& hookInfo, HookError* error) {
 BOOL HookChainHook(THookInfo& hookInfo, LPBYTE jumpPos, HookError* error) {
     // disassemble the long jump
     disasm().setInputBuffer(jumpPos, JUMP_SIZE);
+    disasm().disassemble();
 
-    ud_disassemble(disasm());
     if (ud_insn_mnemonic(disasm()) != UD_Ijmp) {
         // this shouldn't happen, we only call this if the jump was discovered before
         throw std::runtime_error("failed to find jump in patch");
