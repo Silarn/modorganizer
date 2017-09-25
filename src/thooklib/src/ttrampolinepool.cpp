@@ -39,10 +39,7 @@ using namespace usvfs::shared;
 
 namespace HookLib {
 
-TrampolinePool::TrampolinePool() : m_ThreadGuards(), m_MaxTrampolineSize(sizeof(LPVOID)) {
-    m_BarrierAddr = &TrampolinePool::barrier;
-    m_ReleaseAddr = &TrampolinePool::release;
-
+TrampolinePool::TrampolinePool() {
     SYSTEM_INFO sysInfo{};
     GetSystemInfo(&sysInfo);
     m_BufferSize = sysInfo.dwPageSize;
@@ -54,7 +51,7 @@ TrampolinePool::TrampolinePool() : m_ThreadGuards(), m_MaxTrampolineSize(sizeof(
     //      of finding a memory block we can reserve but then there is a problem with converting
     //      negative jump distances to 32 bit I didn't understand.
     //      Everything up to 2 ^ 31 seems to be fine though
-    m_SearchRange = static_cast<size_t>(pow(2, 30)) - 1;
+    m_SearchRange = static_cast<size_t>(std::pow(2, 30)) - 1;
     m_AddressMask = std::numeric_limits<uint64_t>::max() - m_SearchRange;
 }
 

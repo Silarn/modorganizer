@@ -23,7 +23,6 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 
 #include <common/predef.h>
 #include <common/sane_windows.h>
-#include <usvfs_shared/logging.h>
 
 #include <map>
 #include <mutex>
@@ -219,14 +218,14 @@ class TrampolinePool {
     typedef std::map<void*, void*> TThreadMap;
     detail::thread_specific_ptr<TThreadMap> m_ThreadGuards;
 
-    LPVOID m_BarrierAddr;
-    LPVOID m_ReleaseAddr;
+    LPVOID m_BarrierAddr = &TrampolinePool::barrier;
+    LPVOID m_ReleaseAddr = &TrampolinePool::release;
 
     DWORD m_BufferSize = {1024};
     size_t m_SearchRange;
     uint64_t m_AddressMask;
 
-    int m_MaxTrampolineSize;
+    int m_MaxTrampolineSize = sizeof(LPVOID);
 };
 
 } // namespace HookLib
