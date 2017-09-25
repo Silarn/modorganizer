@@ -41,12 +41,11 @@ namespace HookLib {
 
 TrampolinePool* TrampolinePool::s_Instance = nullptr;
 
-TrampolinePool::TrampolinePool() : m_MaxTrampolineSize(sizeof(LPVOID)) {
+TrampolinePool::TrampolinePool() : m_ThreadGuards(), m_MaxTrampolineSize(sizeof(LPVOID)) {
     m_BarrierAddr = &TrampolinePool::barrier;
     m_ReleaseAddr = &TrampolinePool::release;
 
-    SYSTEM_INFO sysInfo;
-    ::ZeroMemory(&sysInfo, sizeof(SYSTEM_INFO));
+    SYSTEM_INFO sysInfo{};
     GetSystemInfo(&sysInfo);
     m_BufferSize = sysInfo.dwPageSize;
 
@@ -174,7 +173,7 @@ void TrampolinePool::addBarrier(LPVOID rerouteAddr, LPVOID original, X86Assemble
                              // back on the stack
     assembler.mov(eax, ecx); // move result of actual call to eax
     assembler.ret();         // return, using the original return address
-#endif                       // IS_X64
+#endif
 
     assembler.bind(skipLabel);
 }
@@ -473,8 +472,7 @@ void TrampolinePool::forceUnlockBarrier() {
 
 TrampolinePool::BufferMap::iterator TrampolinePool::allocateBuffer(LPVOID addressNear) {
     // allocate a buffer that we can write to and that is executable
-    SYSTEM_INFO sysInfo;
-    ::ZeroMemory(&sysInfo, sizeof(SYSTEM_INFO));
+    SYSTEM_INFO sysInfo{};
     GetSystemInfo(&sysInfo);
 
     LPVOID rounded = roundAddress(addressNear);

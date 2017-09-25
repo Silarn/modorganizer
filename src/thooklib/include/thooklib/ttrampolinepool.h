@@ -45,43 +45,44 @@ namespace detail {
 template <typename Bar>
 class thread_specific_ptr {
   private:
-    static thread_local std::unordered_map<thread_specific_ptr*, Bar*> tls;
-    Bar* get_() const {
-        auto I = tls.find(const_cast<thread_specific_ptr*>(this));
-        if (I != tls.end()) {
+    using TLS = std::unordered_map<const thread_specific_ptr<Bar>*, Bar*>;
+    using TSelf = thread_specific_ptr<Bar>;
+    static TLS& tls() {
+        // FIXME: Technically a memory leak.
+        // But otherwise crash in destructor if called after main due to being cleaned up.
+        // Could have destructor call delete if it's the last one?
+        static thread_local TLS* tls = new TLS();
+        return *tls;
+    }
+    static Bar* get_(const TSelf* t) {
+        auto I = tls().find(t);
+        if (I != tls().end()) {
             return I->second;
         }
-        auto II = tls.emplace(const_cast<thread_specific_ptr*>(this),
-                              nullptr); // Could use std::piecewise_construct here...
-        return II.first->second;
+        return nullptr;
     }
-    void set_(Bar* new_value) {
-        get_();
-        tls[this] = new_value;
-    }
+    static void set_(const TSelf* t, Bar* new_value) { tls()[t] = new_value; }
+    static void erase_(const TSelf* t) { tls().erase(t); }
 
   public:
-    explicit thread_specific_ptr() = default;
+    thread_specific_ptr() { set_(this, nullptr); };
     ~thread_specific_ptr() { reset(); };
-    Bar* get() const { return get_(); }
+    Bar* get() const { return get_(this); }
     Bar* operator->() const { return get(); }
     Bar& operator*() const { return *get(); }
     void reset(Bar* new_value = nullptr) {
-        auto Old = get();
+        Bar* Old = get();
         if (Old != new_value && Old) {
             delete Old;
         }
-        set_(new_value);
+        set_(this, new_value);
     }
     Bar* release() {
-        // TODO: Set current thread pointer to null.
         Bar* old = get();
-        set_(new_value);
+        set_(this, nullptr);
         return old;
     }
 };
-template <typename T>
-thread_local std::unordered_map<thread_specific_ptr<T>*, T*> thread_specific_ptr<T>::tls;
 } // namespace detail
 
 ///
@@ -161,6 +162,7 @@ class TrampolinePool {
 
   private:
     TrampolinePool();
+    ~TrampolinePool() = default;
 
     TrampolinePool& operator=(const TrampolinePool& reference); // not implemented
 

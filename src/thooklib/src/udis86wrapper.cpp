@@ -27,7 +27,6 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 
 #if COMMON_IS_64
 #pragma message("64bit build")
-#define IS_X64 1
 #elif COMMON_IS_86
 #pragma message("32bit build")
 #else
@@ -39,12 +38,12 @@ namespace HookLib {
 
 UDis86Wrapper::UDis86Wrapper() {
     ud_init(&m_Obj);
-    ud_set_syntax(&m_Obj, UD_SYN_INTEL);
 #if IS_X64
     ud_set_mode(&m_Obj, 64);
 #else
     ud_set_mode(&m_Obj, 32);
 #endif
+    ud_set_syntax(&m_Obj, UD_SYN_INTEL);
 }
 
 void UDis86Wrapper::setInputBuffer(const uint8_t* buffer, size_t size) {

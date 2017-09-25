@@ -25,11 +25,13 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 namespace HookLib {
 
 class UDis86Wrapper {
-
   public:
     UDis86Wrapper();
 
     void setInputBuffer(const uint8_t* buffer, size_t size);
+    // Disassemble.
+    // Returns number of bytes disassembled.
+    unsigned int disassemble() { return ud_disassemble(&m_Obj); }
 
     ud_t& obj();
 
@@ -48,7 +50,6 @@ class UDis86Wrapper {
     ///
     uint64_t jumpTarget();
 
-  private:
   private:
     ud_t m_Obj;
     const uint8_t* m_Buffer{nullptr};

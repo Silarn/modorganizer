@@ -19,10 +19,10 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "thooklib/hooklib.h"
+#include "thooklib/asmjit_sane.h"
 #include "thooklib/ttrampolinepool.h"
 #include "thooklib/udis86wrapper.h"
 #include "thooklib/utility.h"
-#include "thooklib/asmjit_sane.h"
 
 #include <common/predef.h>
 #include <usvfs_shared/addrtools.h>
@@ -432,8 +432,8 @@ BOOL HookDisasm(THookInfo& hookInfo, HookError* error) {
 enum EPreamble { PRE_PATCHFREE, PRE_PATCHUSED, PRE_RIPINDIRECT, PRE_FOREIGNHOOK, PRE_UNKNOWN };
 
 EPreamble DeterminePreamble(LPBYTE address) {
-    ud_set_input_buffer(disasm(), address, JUMP_SIZE);
-    ud_disassemble(disasm());
+    disasm().setInputBuffer(address, JUMP_SIZE);
+    disasm().disassemble();
 
     if ((ud_insn_mnemonic(disasm()) == UD_Imov) && (ud_insn_opr(disasm(), 0) == ud_insn_opr(disasm(), 1)) &&
         (ud_insn_opr(disasm(), 0)->type == UD_OP_REG)) {
@@ -444,8 +444,8 @@ EPreamble DeterminePreamble(LPBYTE address) {
         LPBYTE shortTarget = ShortJumpTarget(address);
 
         // test if that short jump leads to a long jump
-        ud_set_input_buffer(disasm(), shortTarget, JUMP_SIZE);
-        ud_disassemble(disasm());
+        disasm().setInputBuffer(shortTarget, JUMP_SIZE);
+        disasm().disassemble();
         if (ud_insn_mnemonic(disasm()) == UD_Ijmp) {
             const ud_operand* op = ud_insn_opr(disasm(), 0);
             if (op->base == UD_R_RIP) {
