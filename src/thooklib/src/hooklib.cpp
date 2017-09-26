@@ -72,7 +72,7 @@ struct THookInfo {
 };
 
 UDis86Wrapper& disasm() {
-    static UDis86Wrapper instance;
+    static UDis86Wrapper instance{};
     return instance;
 }
 
@@ -286,14 +286,13 @@ BOOL HookChainHook(THookInfo& hookInfo, LPBYTE jumpPos, HookError* error) {
     spdlog::get("usvfs")->info("existing hook to {0:x} in {1}", chainTarget,
                                shared::string_cast<std::string>(winapi::ex::wide::getSectionName((void*)chainTarget)));
 
+    // Create bridge.
     if (hookInfo.stub) {
-        hookInfo.trampoline = TrampolinePool::instance().storeStub(hookInfo.replacementFunction,
-                                                                   reinterpret_cast<LPVOID>(hookInfo.originalFunction),
-                                                                   reinterpret_cast<LPVOID>(chainTarget));
+        hookInfo.trampoline = TrampolinePool::instance().storeStub(
+            hookInfo.replacementFunction, hookInfo.originalFunction, reinterpret_cast<LPVOID>(chainTarget));
     } else {
         hookInfo.trampoline = TrampolinePool::instance().storeTrampoline(
-            hookInfo.replacementFunction, reinterpret_cast<LPVOID>(hookInfo.originalFunction),
-            reinterpret_cast<LPVOID>(chainTarget));
+            hookInfo.replacementFunction, hookInfo.originalFunction, reinterpret_cast<LPVOID>(chainTarget));
     }
 
     DWORD oldProtect = 0;
@@ -431,15 +430,14 @@ BOOL HookDisasm(THookInfo& hookInfo, HookError* error) {
 }
 
 enum EPreamble {
-    PRE_PATCHFREE, // No one else has hooked it?
-    PRE_PATCHUSED,
-    PRE_RIPINDIRECT,
-    PRE_FOREIGNHOOK, // Someone else has hooked it.
+    PRE_PATCHFREE,   // No one else has hooked it?
+    PRE_PATCHUSED,   // Someone hot patched it?
+    PRE_RIPINDIRECT, // ???
+    PRE_FOREIGNHOOK, // Someone else has hooked it with a jmp.
     PRE_UNKNOWN      // We can't tell.
 };
 
-// Determine the type of the function based on the starting bytes.
-//
+// Determine if the function has already been hooked in some way.
 EPreamble DeterminePreamble(LPBYTE address) {
     disasm().setInputBuffer(address, JUMP_SIZE);
     disasm().disassemble();
