@@ -4,34 +4,21 @@
 #include "usvfs_shared/windows_error.h"
 #include <filesystem>
 #include <gtest/gtest.h>
-#include <spdlog/spdlog.h>
 namespace fs = std::experimental::filesystem;
 
 using namespace usvfs::shared;
 using namespace InjectLib;
 
-#ifdef DEBUG
-static const wchar_t INJECT_LIB[] = L"tinjectlibTestDll-d.dll";
-#else
-static const wchar_t INJECT_LIB[] = L"tinjectlibTestDll.dll";
-#endif
-
-static std::shared_ptr<spdlog::logger> logger() {
-    std::shared_ptr<spdlog::logger> result = spdlog::get("test");
-    if (result.get() == nullptr) {
-        result = spdlog::stdout_logger_mt("test");
-    }
-    return result;
-}
+static const std::wstring INJECT_LIB = L"tinjectlibTestDll.dll";
+static const std::wstring INJECT_EXE = L"tinjectlibTestExe.exe";
 
 bool spawn(HANDLE& processHandle, HANDLE& threadHandle) {
-    STARTUPINFO si;
-    ::ZeroMemory(&si, sizeof(si));
+    STARTUPINFO si{};
+    PROCESS_INFORMATION pi{};
     si.cb = sizeof(si);
 
-    PROCESS_INFORMATION pi;
-    BOOL success = ::CreateProcess(TEXT("tinjectlibTestExe.exe"), nullptr, nullptr, nullptr, FALSE, CREATE_SUSPENDED,
-                                   nullptr, nullptr, &si, &pi);
+    BOOL success = ::CreateProcessW(INJECT_EXE.data(), nullptr, nullptr, nullptr, FALSE, CREATE_SUSPENDED, nullptr,
+                                    nullptr, &si, &pi);
 
     if (!success) {
         throw windows_error("failed to start process");
@@ -48,7 +35,7 @@ TEST(InjectingTest, InjectionNoInit) {
 
     HANDLE process, thread;
     spawn(process, thread);
-    EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB));
+    EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB.data()));
     ResumeThread(thread);
 
     DWORD res = WaitForSingleObject(process, INFINITE);
@@ -62,14 +49,18 @@ TEST(InjectingTest, InjectionNoInit) {
 
 TEST(InjectingTest, InjectionSimpleInit) {
     // Verify lib can inject with a init function with null parameters
-    HANDLE process, thread;
+    HANDLE process;
+    HANDLE thread;
     spawn(process, thread);
-    EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB, "InitNoParam"));
-    ResumeThread(thread);
+    EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB.data(), "InitNoParam"));
+    EXPECT_EQ(ResumeThread(thread), 1);
 
     DWORD res = WaitForSingleObject(process, INFINITE);
+    EXPECT_EQ(res, WAIT_OBJECT_0);
     DWORD exitCode = NO_ERROR;
     res = GetExitCodeProcess(process, &exitCode);
+    EXPECT_TRUE(res);
+    EXPECT_NE(res, STILL_ACTIVE);
     EXPECT_EQ(10001, exitCode); // used init function exits process with this exit code
 
     CloseHandle(process);
@@ -82,7 +73,7 @@ TEST(InjectingTest, InjectionComplexInit) {
     static const WCHAR param[] = L"magic_parameter";
     HANDLE process, thread;
     spawn(process, thread);
-    EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB, "InitComplexParam",
+    EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB.data(), "InitComplexParam",
                                          reinterpret_cast<LPCVOID>(param), wcslen(param) * sizeof(WCHAR)));
 
     ResumeThread(thread);
@@ -101,7 +92,7 @@ TEST(InjectingTest, InjectionNoQuitInit) {
 
     HANDLE process, thread;
     spawn(process, thread);
-    EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB, "InitNoQuit"));
+    EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB.data(), "InitNoQuit"));
     ResumeThread(thread);
 
     DWORD res = WaitForSingleObject(process, INFINITE);
@@ -118,7 +109,7 @@ TEST(InjectingTest, InjectionSkipInit) {
 
     HANDLE process, thread;
     spawn(process, thread);
-    EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB, "__InitInvalid", nullptr, 0, true));
+    EXPECT_NO_THROW(InjectLib::InjectDLL(process, thread, INJECT_LIB.data(), "__InitInvalid", nullptr, 0, true));
     ResumeThread(thread);
 
     DWORD res = WaitForSingleObject(process, INFINITE);
@@ -131,11 +122,8 @@ TEST(InjectingTest, InjectionSkipInit) {
 }
 
 int main(int argc, char** argv) {
-    auto logger = spdlog::stdout_logger_mt("usvfs");
-    logger->set_level(spdlog::level::warn);
-
     fs::path filePath(winapi::wide::getModuleFileName(nullptr));
-    SetCurrentDirectoryW(filePath.parent_path().wstring().c_str());
+    fs::current_path(filePath.parent_path());
 
     testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
