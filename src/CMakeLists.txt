@@ -235,6 +235,8 @@ set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
 find_package(Boost 1.65.1 REQUIRED)
 add_definitions(-DBOOST_ALL_NO_LIB)
+# MinHook
+import_target(minhook "libMinHook-x64-v141-md" ${PREFIX_PATH}/include "MinHook.h" "STATIC")
 
 ## Targets ##
 add_subdirectory(common)

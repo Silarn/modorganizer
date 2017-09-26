@@ -3,6 +3,9 @@
 #include "thooklib/utility.h"
 
 #include <common/sane_windows.h>
+
+#include <MinHook.h>
+
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 #include <usvfs_shared/exceptionex.h>
@@ -22,8 +25,10 @@ HANDLE WINAPI THCreateFileA_1(LPCSTR lpFileName, DWORD dwDesiredAccess, DWORD dw
     if (strcmp(lpFileName, INVALID_FILENAME) == 0) {
         return MARKERHANDLE;
     } else {
+        MH_DisableHook(CreateFileA);
         HANDLE res = ::CreateFileA(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
                                    dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
+        MH_EnableHook(CreateFileA);
         return res;
     }
 }
@@ -44,10 +49,6 @@ HANDLE WINAPI THCreateFileW_1(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD d
                              dwFlagsAndAttributes, hTemplateFile);
     }
 }
-
-static bool stubCalled = false;
-
-void __cdecl CreateFileStub(LPVOID) { stubCalled = true; }
 
 class HookingTest : public testing::Test {
   public:
@@ -94,17 +95,6 @@ TEST_F(HookingTest, CanHook) {
     RemoveHook(hook);
 }
 
-TEST_F(HookingTest, CanStub) {
-    HMODULE k32Mod = GetModuleHandleA("kernel32.dll");
-    HOOKHANDLE hook = InstallStub(k32Mod, "CreateFileW", CreateFileStub);
-    if (hook == INVALID_HOOK) {
-        k32Mod = GetModuleHandleA("kernelbase.dll");
-        hook = InstallStub(k32Mod, "CreateFileW", CreateFileStub);
-    }
-    EXPECT_NE(INVALID_HOOK, hook);
-    RemoveHook(hook);
-}
-
 TEST_F(HookingTest, RemoveHook) {
     // test that we can remove a hook
     HMODULE k32Mod = GetModuleHandleA("kernel32.dll");
@@ -117,22 +107,6 @@ TEST_F(HookingTest, RemoveHook) {
     EXPECT_NE(INVALID_HOOK, hook);
     RemoveHook(hook);
     HANDLE test = CreateFileA(INVALID_FILENAME, GENERIC_READ, 0, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-    EXPECT_EQ(INVALID_HANDLE_VALUE, test);
-}
-
-TEST_F(HookingTest, CreateFileStubTest) {
-    stubCalled = false;
-    // test if our stub works
-    HMODULE k32Mod = GetModuleHandleA("kernel32.dll");
-    HOOKHANDLE hook = InstallStub(k32Mod, "CreateFileA", CreateFileStub);
-    if (hook == INVALID_HOOK) {
-        k32Mod = GetModuleHandleA("kernelbase.dll");
-        hook = InstallStub(k32Mod, "CreateFileA", CreateFileStub);
-    }
-    EXPECT_NE(INVALID_HOOK, hook);
-    HANDLE test = CreateFileA(INVALID_FILENAME, GENERIC_READ, 0, nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-    RemoveHook(hook);
-    EXPECT_EQ(true, stubCalled);
     EXPECT_EQ(INVALID_HANDLE_VALUE, test);
 }
 
@@ -212,8 +186,11 @@ TEST_F(HookingTest, Threading) {
 }
 
 int main(int argc, char** argv) {
+    MH_Initialize();
     auto logger = spdlog::stdout_logger_mt("usvfs");
     logger->set_level(spdlog::level::warn);
     testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    auto tmp = RUN_ALL_TESTS();
+    MH_Uninitialize();
+    return tmp;
 }
