@@ -20,7 +20,9 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs/hookcallcontext.h"
 #include "usvfs/hookcontext.h"
-#include "usvfs_shared/logging.h"
+
+#include <usvfs_shared/logging.h>
+
 #include <bitset>
 #include <memory>
 #include <thread>

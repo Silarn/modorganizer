@@ -23,9 +23,10 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs/loghelpers.h"
 #include "usvfs/usvfs.h"
 #include "usvfs/usvfsparameters.h"
-#include "usvfs_shared/exceptionex.h"
-#include "usvfs_shared/shared_memory.h"
-#include "usvfs_shared/winapi.h"
+
+#include <usvfs_shared/exceptionex.h>
+#include <usvfs_shared/shared_memory.h>
+#include <usvfs_shared/winapi.h>
 
 namespace bi = boost::interprocess;
 using usvfs::shared::SharedMemoryT;

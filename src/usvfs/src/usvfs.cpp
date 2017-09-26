@@ -19,23 +19,27 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "usvfs/usvfs.h"
-#include "thooklib/ttrampolinepool.h"
+
 #include "usvfs/hookmanager.h"
 #include "usvfs/inject.h"
 #include "usvfs/loghelpers.h"
 #include "usvfs/redirectiontree.h"
-#include "usvfs_shared/scopeguard.h"
-#include "usvfs_shared/shmlogger.h"
-#include "usvfs_shared/stringcast.h"
-#include "usvfs_shared/winapi.h"
-#include <DbgHelp.h>
-#include <codecvt>
+
+#include <thooklib/ttrampolinepool.h>
+#include <usvfs_shared/scopeguard.h>
+#include <usvfs_shared/shmlogger.h>
+#include <usvfs_shared/stringcast.h>
+#include <usvfs_shared/winapi.h>
+
 #include <common/stringutils.h>
-#include <ctime>
-#include <filesystem>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
+
+#include <DbgHelp.h>
+#include <codecvt>
+#include <ctime>
+#include <filesystem>
 #include <unordered_map>
 
 namespace fs = std::experimental::filesystem;
