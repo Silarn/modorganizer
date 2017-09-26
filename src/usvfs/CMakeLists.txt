@@ -67,7 +67,7 @@ target_include_directories(${library_name} PUBLIC
 # Dependencies
 target_link_libraries(${library_name} PUBLIC fmt::fmt-header-only spdlog usvfs_shared thooklib
                                             AsmJit UDIS86 tinjectlib Version
-                                            Boost::boost
+                                            Boost::boost minhook
 )
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config

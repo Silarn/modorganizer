@@ -60,7 +60,6 @@ class HookManager {
     static void logStub(LPVOID address);
 
     void installHook(HMODULE module1, HMODULE module2, const std::string& functionName, LPVOID hook);
-    void installStub(HMODULE module1, HMODULE module2, const std::string& functionName);
     void initHooks();
     void removeHooks();
 

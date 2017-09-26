@@ -25,16 +25,14 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs/loghelpers.h"
 #include "usvfs/redirectiontree.h"
 
-#include <thooklib/ttrampolinepool.h>
-#include <usvfs_shared/scopeguard.h>
-#include <usvfs_shared/shmlogger.h>
-#include <usvfs_shared/stringcast.h>
-#include <usvfs_shared/winapi.h>
-
 #include <common/stringutils.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
 #include <spdlog/spdlog.h>
+#include <usvfs_shared/scopeguard.h>
+#include <usvfs_shared/shmlogger.h>
+#include <usvfs_shared/stringcast.h>
+#include <usvfs_shared/winapi.h>
 
 #include <DbgHelp.h>
 #include <codecvt>
@@ -245,9 +243,6 @@ LONG WINAPI VEHandler(PEXCEPTION_POINTERS exceptionPtrs) {
     }
 
     auto logger = spdlog::get("hooks");
-    // ensure that the barrier won't keep future hook functions from running in
-    // case the process lives
-    ON_BLOCK_EXIT([]() { HookLib::TrampolinePool::instance().forceUnlockBarrier(); });
 
     try {
         std::pair<uintptr_t, uintptr_t> range = winapi::ex::getSectionRange(dllModule);

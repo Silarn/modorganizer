@@ -35,6 +35,9 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs_shared/winapi.h"
 
 #include <common/sane_windows.h>
+
+#include <MinHook.h>
+
 #include <gtest/gtest.h>
 #include <spdlog/spdlog.h>
 
@@ -136,18 +139,16 @@ class USVFSTestAuto : public testing::Test {
 
 TEST_F(USVFSTest, CanResizeRedirectiontree) {
     using usvfs::shared::MissingThrow;
-    EXPECT_NO_THROW({
-        usvfs::RedirectionTreeContainer container("treetest_shm", 1024);
-        for (char i = 'a'; i <= 'z'; ++i) {
-            for (char j = 'a'; j <= 'z'; ++j) {
-                std::string name = std::string(R"(C:\temp\)") + i + j;
-                container.addFile(name, usvfs::RedirectionDataLocal("gaga"), false);
-            }
+    usvfs::RedirectionTreeContainer container("treetest_shm", 1024);
+    for (char i = 'a'; i <= 'z'; ++i) {
+        for (char j = 'a'; j <= 'z'; ++j) {
+            std::string name = std::string(R"(C:\temp\)") + i + j;
+            container.addFile(name, usvfs::RedirectionDataLocal("gaga"), false);
         }
+    }
 
-        EXPECT_EQ("gaga", container->node("C:")->node("temp")->node("aa", MissingThrow)->data().linkTarget);
-        EXPECT_EQ("gaga", container->node("C:")->node("temp")->node("az", MissingThrow)->data().linkTarget);
-    });
+    EXPECT_EQ("gaga", container->node("C:")->node("temp")->node("aa", MissingThrow)->data().linkTarget);
+    EXPECT_EQ("gaga", container->node("C:")->node("temp")->node("az", MissingThrow)->data().linkTarget);
 }
 
 TEST_F(USVFSTest, CreateFileHookReportsCorrectErrorOnMissingFile) {
@@ -278,10 +279,13 @@ TEST_F(USVFSTestAuto, CanCreateMultipleLinks) {
 }
 
 int main(int argc, char** argv) {
+    MH_Initialize();
     // note: this makes the logger available only to functions statically linked
     // to the test binary, not those called in the dll
     auto logger = spdlog::stdout_logger_mt("usvfs");
     logger->set_level(spdlog::level::warn);
     testing::InitGoogleTest(&argc, argv);
-    return RUN_ALL_TESTS();
+    auto ret = RUN_ALL_TESTS();
+    MH_Uninitialize();
+    return ret;
 }

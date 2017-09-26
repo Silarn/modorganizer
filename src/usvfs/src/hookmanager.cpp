@@ -25,7 +25,6 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs/usvfs.h"
 #include "usvfs/usvfsparameters.h"
 
-#include <thooklib/ttrampolinepool.h>
 #include <thooklib/utility.h>
 #include <usvfs_shared/directory_tree.h>
 #include <usvfs_shared/exceptionex.h>
@@ -152,49 +151,8 @@ void HookManager::installHook(HMODULE module1, HMODULE module2, const std::strin
     }
 }
 
-void HookManager::installStub(HMODULE module1, HMODULE module2, const std::string& functionName) {
-    HOOKHANDLE handle = INVALID_HOOK;
-    HookError err = ERR_NONE;
-    LPVOID funcAddr = nullptr;
-    HMODULE usedModule = nullptr;
-    // both module1 and module2 are allowed to be null
-    if (module1 != nullptr) {
-        funcAddr = MyGetProcAddress(module1, functionName.c_str());
-        if (funcAddr != nullptr) {
-            handle = InstallStub(funcAddr, logStub, &err);
-        } else {
-            spdlog::get("usvfs")->debug("{} doesn't contain {}", winapi::ansi::getModuleFileName(module1),
-                                        functionName);
-        }
-        if (handle != INVALID_HOOK)
-            usedModule = module1;
-    }
-
-    if ((handle == INVALID_HOOK) && (module2 != nullptr)) {
-        funcAddr = MyGetProcAddress(module2, functionName.c_str());
-        if (funcAddr != nullptr) {
-            handle = InstallStub(funcAddr, logStub, &err);
-        } else {
-            spdlog::get("usvfs")->debug("{} doesn't contain {}", winapi::ansi::getModuleFileName(module2),
-                                        functionName);
-        }
-        if (handle != INVALID_HOOK)
-            usedModule = module2;
-    }
-
-    if (handle == INVALID_HOOK) {
-        spdlog::get("usvfs")->error("failed to stub {0}: {1}", functionName, GetErrorString(err));
-    } else {
-        m_Stubs.insert(make_pair(funcAddr, functionName));
-        m_Hooks.insert(make_pair(std::string(functionName), handle));
-        spdlog::get("usvfs")->info("stubbed {0} ({1}) in {2} type {3}", functionName, funcAddr,
-                                   winapi::ansi::getModuleFileName(usedModule), GetHookType(handle));
-    }
-}
 
 void HookManager::initHooks() {
-    HookLib::TrampolinePool::instance().setBlock(true);
-
     HMODULE k32Mod = GetModuleHandleA("kernel32.dll");
     spdlog::get("usvfs")->debug("kernel32.dll at {0:x}", reinterpret_cast<uintptr_t>(k32Mod));
     // kernelbase.dll contains the actual implementation for functions formerly in
@@ -234,8 +192,6 @@ void HookManager::initHooks() {
     installHook(kbaseMod, k32Mod, "CopyFileExA", uhooks::CopyFileExA);
     installHook(kbaseMod, k32Mod, "CopyFileExW", uhooks::CopyFileExW);
 
-    installStub(kbaseMod, k32Mod, "CreateHardLinkA");
-    installStub(kbaseMod, k32Mod, "CreateHardLinkW");
     installHook(kbaseMod, k32Mod, "GetFullPathNameW", uhooks::GetFullPathNameW);
 
     installHook(kbaseMod, k32Mod, "GetFileVersionInfoW", uhooks::GetFileVersionInfoW);
@@ -251,17 +207,10 @@ void HookManager::initHooks() {
     installHook(ntdllMod, nullptr, "NtOpenFile", uhooks::NtOpenFile);
     installHook(ntdllMod, nullptr, "NtCreateFile", uhooks::NtCreateFile);
     installHook(ntdllMod, nullptr, "NtClose", uhooks::NtClose);
-    installStub(ntdllMod, nullptr, "NtDeleteFile");
 
     HMODULE shellMod = GetModuleHandleA("shell32.dll");
     if (shellMod != nullptr) {
         spdlog::get("usvfs")->debug("shell32.dll at {0:x}", reinterpret_cast<uintptr_t>(shellMod));
-        installStub(shellMod, nullptr, "SHFileOperationA");
-        installStub(shellMod, nullptr, "SHFileOperationW");
-        installStub(shellMod, nullptr, "ShellExecuteA");
-        installStub(shellMod, nullptr, "ShellExecuteW");
-        installStub(shellMod, nullptr, "ShellExecuteExA");
-        installStub(shellMod, nullptr, "ShellExecuteExW");
     }
 
     /*  HMODULE oleMod = GetModuleHandleA("ole32.dll");
@@ -287,7 +236,6 @@ void HookManager::initHooks() {
       installHook(kbaseMod, k32Mod, "GetModuleHandleExA", uhooks::GetModuleHandleExA);
     */
     spdlog::get("usvfs")->debug("hooks installed");
-    HookLib::TrampolinePool::instance().setBlock(false);
 }
 
 void HookManager::removeHooks() {
