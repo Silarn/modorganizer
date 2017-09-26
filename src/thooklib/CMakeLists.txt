@@ -5,18 +5,13 @@ set(library_name "thooklib")
 ## Files ##
 # Main
 SET(thooklib_HDRS
-    include/${library_name}/asmjit_sane.h
     include/${library_name}/utility.h
     include/${library_name}/hooklib.h
-    include/${library_name}/udis86wrapper.h
-    include/${library_name}/ttrampolinepool.h
 )
 
 SET(thooklib_SRCS
     src/utility.cpp
     src/hooklib.cpp
-    src/udis86wrapper.cpp
-    src/ttrampolinepool.cpp
 )
 
 ## Library ##

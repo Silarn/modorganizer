@@ -19,9 +19,6 @@ You should have received a copy of the GNU General Public License
 along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #include "thooklib/hooklib.h"
-#include "thooklib/asmjit_sane.h"
-#include "thooklib/ttrampolinepool.h"
-#include "thooklib/udis86wrapper.h"
 #include "thooklib/utility.h"
 
 #include <common/sane_windows.h>
@@ -29,10 +26,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <MinHook.h>
 
 #include <common/predef.h>
-#include <usvfs_shared/addrtools.h>
-#include <usvfs_shared/shmlogger.h>
-#include <usvfs_shared/winapi.h>
-#include <usvfs_shared/windows_error.h>
+#include <spdlog/spdlog.h>
 
 #include <algorithm>
 #include <map>
@@ -48,13 +42,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #endif
 #define IS_X64 COMMON_IS_64
 
-using namespace asmjit;
-// from here on out I'll only test for 64 or "other"
-
 using namespace HookLib;
-using namespace asmjit;
-
-using namespace usvfs;
 
 struct THookInfo {
     LPVOID originalFunction;
