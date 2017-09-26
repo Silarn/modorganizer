@@ -134,7 +134,7 @@ void addStub(size_t userDataSize, X86Assembler& assembler, bool skipInit, TDataR
     assembler.bind(Label_DLLLoaded);
 
     // determine address of the init function
-    if (initFunction != nullptr) {
+    if (initFunction) {
         Label Label_SkipInit = assembler.newLabel();
         assembler.mov(rcx, rax);                                                      // handle of the dll
         assembler.mov(rdx, imm(reinterpret_cast<int64_t>(remoteData->initFunction))); // name of init function
@@ -222,14 +222,14 @@ void addStub(size_t userDataSize, X86Assembler& assembler, bool skipInit, TDataR
 
 REGWORD WriteInjectionStub(HANDLE processHandle, LPCWSTR dllName, LPCSTR initFunction, LPCVOID userData,
                            size_t userDataSize, bool skipInit, REGWORD returnAddress) {
-    HMODULE k32mod = ::LoadLibrary(__TEXT("kernel32.dll"));
+    HMODULE k32mod = ::LoadLibraryW(L"kernel32.dll");
     TDataRemote data = {0};
 
-    if (k32mod != nullptr) {
+    if (k32mod) {
         data.loadLibrary = reinterpret_cast<TLoadLibraryType>(GetProcAddress(k32mod, "LoadLibraryW"));
         data.getProcAddress = reinterpret_cast<TGetProcAddressType>(GetProcAddress(k32mod, "GetProcAddress"));
         data.getLastError = reinterpret_cast<TGetLastErrorType>(GetProcAddress(k32mod, "GetLastError"));
-        if ((data.loadLibrary == nullptr) || (data.getProcAddress == nullptr) || (data.getLastError == nullptr)) {
+        if (!data.loadLibrary || !data.getProcAddress || !data.getLastError) {
             throw windows_error("failed to determine address for required functions");
         }
     } else {
@@ -238,7 +238,7 @@ REGWORD WriteInjectionStub(HANDLE processHandle, LPCWSTR dllName, LPCSTR initFun
 
     data.returnAddress = returnAddress;
 
-    if (initFunction != nullptr) {
+    if (initFunction) {
         strncpy_s(data.initFunction, MAX_FUNCTIONAME, initFunction, MAX_FUNCTIONAME);
         data.initFunction[MAX_FUNCTIONAME] = '\0';
     } else {
@@ -253,7 +253,7 @@ REGWORD WriteInjectionStub(HANDLE processHandle, LPCWSTR dllName, LPCSTR initFun
     // allocate memory in the target process and write the data-block there
     LPVOID remoteMem = VirtualAllocEx(processHandle, nullptr, totalSize, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-    if (remoteMem == nullptr) {
+    if (!remoteMem) {
         throw windows_error("failed to allocate memory in target process");
     }
 
@@ -266,7 +266,7 @@ REGWORD WriteInjectionStub(HANDLE processHandle, LPCWSTR dllName, LPCSTR initFun
     }
 
     // write user data to remote memory if necessary
-    if (userData != nullptr) {
+    if (userData) {
         if (!WriteProcessMemory(processHandle, AddrAdd(remoteMem, sizeof(TDataRemote)), userData, userDataSize,
                                 &written)) {
             throw windows_error("failed to write user data to target process");
@@ -286,14 +286,14 @@ REGWORD WriteInjectionStub(HANDLE processHandle, LPCWSTR dllName, LPCSTR initFun
     rcode.init(runtime.getCodeInfo());
     X86Assembler assembler(&rcode);
 #if IS_X64
-    if (returnAddress != 0) {
+    if (returnAddress) {
         // put return address on the stack
         // (this damages rax which hopefully doesn't matter)
         assembler.mov(rax, imm((intptr_t)(void*)data.returnAddress));
         assembler.push(rax);
     } // otherwise no return address was specified here. It better be on the stack already
 #else
-    if (returnAddress != 0) {
+    if (returnAddress) {
         assembler.push(imm((intptr_t)(void*)data.returnAddress));
     }
 #endif
@@ -326,21 +326,21 @@ void InjectDLLEIP(HANDLE processHandle, HANDLE threadHandle, LPCWSTR dllName, LP
     threadHandle =
         OpenThread((THREAD_GET_CONTEXT | THREAD_SET_CONTEXT | THREAD_SUSPEND_RESUME), FALSE, GetThreadId(threadHandle));
 
-    if (threadHandle == nullptr) {
+    if (!threadHandle) {
         throw windows_error("failed to open thread");
     }
 
-    CONTEXT threadContext;
+    CONTEXT threadContext{};
     threadContext.ContextFlags = CONTEXT_CONTROL;
 
     // documentation says starting with Win7 SP1 you HAVE to call SetXStateFeaturesMask
-    HMODULE k32mod = ::LoadLibrary(__TEXT("kernel32.dll"));
-    if (k32mod == nullptr) {
+    HMODULE k32mod = ::LoadLibraryW(L"kernel32.dll");
+    if (!k32mod) {
         throw windows_error("failed to load kernel32.dll");
     }
     TSetXStateFeaturesMaskType sxsfm =
         reinterpret_cast<TSetXStateFeaturesMaskType>(GetProcAddress(k32mod, "SetXStateFeaturesMask"));
-    if (sxsfm != nullptr) {
+    if (sxsfm) {
         sxsfm(&threadContext, 0);
     }
     ::FreeLibrary(k32mod);
@@ -368,6 +368,7 @@ void InjectDLLEIP(HANDLE processHandle, HANDLE threadHandle, LPCWSTR dllName, LP
     if (SetThreadContext(threadHandle, &threadContext) == 0) {
         throw windows_error("failed to overwrite thread context");
     }
+    // CloseHandle(threadHandle);
 }
 
 void InjectDLLRemoteThread(HANDLE processHandle, LPCWSTR dllName, LPCSTR initFunction, LPCVOID userData,
