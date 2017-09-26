@@ -107,6 +107,7 @@ void WriteLongJump(LPBYTE jumpAddr, LPVOID destination) {
     // a working, space-optimized, relative jump to outside the generated code and
     // we do want to optimize this jump
 #if IS_X64
+    // FIXME: Shouldnt that be minus 5?
     intptr_t dist = reinterpret_cast<intptr_t>(destination) - (reinterpret_cast<intptr_t>(jumpAddr) + 5);
     int32_t distShort = static_cast<int32_t>(dist);
 #else
@@ -286,7 +287,7 @@ BOOL HookChainHook(THookInfo& hookInfo, LPBYTE jumpPos, HookError* error) {
     spdlog::get("usvfs")->info("existing hook to {0:x} in {1}", chainTarget,
                                shared::string_cast<std::string>(winapi::ex::wide::getSectionName((void*)chainTarget)));
 
-    // Create bridge.
+    // Setup Trampoline.
     if (hookInfo.stub) {
         hookInfo.trampoline = TrampolinePool::instance().storeStub(
             hookInfo.replacementFunction, hookInfo.originalFunction, reinterpret_cast<LPVOID>(chainTarget));
@@ -300,6 +301,7 @@ BOOL HookChainHook(THookInfo& hookInfo, LPBYTE jumpPos, HookError* error) {
         throw std::runtime_error("failed to change virtual protection");
     }
 
+    // Write JMP
     WriteLongJump(jumpPos, hookInfo.trampoline);
 
     if (!VirtualProtect(jumpPos, size, oldProtect, &oldProtect)) {
@@ -309,7 +311,7 @@ BOOL HookChainHook(THookInfo& hookInfo, LPBYTE jumpPos, HookError* error) {
     hookInfo.type = THookInfo::TYPE_CHAINPATCH;
     hookInfo.detour = reinterpret_cast<LPVOID>(chainTarget);
 
-    if (error != nullptr) {
+    if (error) {
         *error = ERR_NONE;
     }
 
@@ -438,6 +440,7 @@ enum EPreamble {
 };
 
 // Determine if the function has already been hooked in some way.
+// Prolouge?
 EPreamble DeterminePreamble(LPBYTE address) {
     disasm().setInputBuffer(address, JUMP_SIZE);
     disasm().disassemble();
