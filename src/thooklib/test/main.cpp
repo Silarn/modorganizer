@@ -177,7 +177,7 @@ TEST_F(HookingTest, CreateFileHookRecursion) {
 }
 
 // FIXME: Fails. Can't figure out why. Don't know if it passes without my changes or not anyway.
-TEST_F(HookingTest, DISABLED_Threading) {
+TEST_F(HookingTest, Threading) {
     // test that multiple threads can concurrently call a hooked function without
     // incorrect results.
     // TODO: this test doesn't reliably find thread-unsafeties
