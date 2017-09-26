@@ -120,8 +120,8 @@ class TrampolinePool {
     ///
     /// store a trampoline for hot-patchable functions, where the original function
     /// is unharmed.
-    /// \param reroute the reroute function
-    /// \param original original function
+    /// \param address of the reroute function
+    /// \param original function address
     /// \param returnAddress address under which the original functionality can be reached.
     /// \return address of the trampoline function
     ///
