@@ -26,13 +26,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <usvfs_shared/shmlogger.h>
 
 using namespace asmjit;
-#if COMMON_IS_64
 using namespace x86;
-#elif COMMON_IS_86
-using namespace asmjit::x86;
-#else
-#error "Unsupported Architecture"
-#endif
 #define IS_X64 COMMON_IS_64
 
 using namespace usvfs::shared;
@@ -56,7 +50,7 @@ TrampolinePool::TrampolinePool() {
 }
 
 TrampolinePool& TrampolinePool::instance() {
-    static TrampolinePool sInstance;
+    static TrampolinePool sInstance{};
     return sInstance;
 }
 
