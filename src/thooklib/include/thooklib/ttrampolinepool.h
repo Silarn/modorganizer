@@ -156,8 +156,6 @@ class TrampolinePool {
     };
 
     typedef std::map<LPVOID, BufferList> BufferMap;
-    static const intptr_t ADDRESS_MASK =
-        0xFFFFFFFFFF000000LL; // mask to "round" addresses to consolidate near trampolines
 
   private:
     TrampolinePool();
@@ -211,7 +209,7 @@ class TrampolinePool {
     static const int SIZE_OF_JUMP = 5;
 #endif
 
-    bool m_FullBlock{false};
+    bool m_FullBlock = false;
 
     BufferMap m_Buffers;
 
@@ -221,7 +219,7 @@ class TrampolinePool {
     LPVOID m_BarrierAddr = &TrampolinePool::barrier;
     LPVOID m_ReleaseAddr = &TrampolinePool::release;
 
-    DWORD m_BufferSize = {1024};
+    DWORD m_BufferSize = 1024;
     size_t m_SearchRange;
     uint64_t m_AddressMask;
 
