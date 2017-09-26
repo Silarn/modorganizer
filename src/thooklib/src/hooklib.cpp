@@ -30,6 +30,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include <usvfs_shared/winapi.h>
 #include <usvfs_shared/windows_error.h>
 
+#include <algorithm>
 #include <map>
 
 #if COMMON_IS_64
@@ -269,18 +270,18 @@ BOOL HookChainHook(THookInfo& hookInfo, LPBYTE jumpPos, HookError* error) {
     disasm().setInputBuffer(jumpPos, JUMP_SIZE);
     disasm().disassemble();
 
-    if (ud_insn_mnemonic(disasm()) != UD_Ijmp) {
+    if (disasm().mnemonic() != UD_Ijmp) {
         // this shouldn't happen, we only call this if the jump was discovered before
         throw std::runtime_error("failed to find jump in patch");
     }
 
     uintptr_t chainTarget = disasm().jumpTarget();
 
-    size_t size = ud_insn_len(disasm());
+    size_t size = disasm().len();
 
     // save the original code for the preamble so we can restore it later
     hookInfo.preamble.resize(size);
-    memcpy(&hookInfo.preamble[0], jumpPos, size);
+    std::copy(jumpPos, jumpPos + size, hookInfo.preamble.begin());
 
     spdlog::get("usvfs")->info("existing hook to {0:x} in {1}", chainTarget,
                                shared::string_cast<std::string>(winapi::ex::wide::getSectionName((void*)chainTarget)));
@@ -429,25 +430,33 @@ BOOL HookDisasm(THookInfo& hookInfo, HookError* error) {
     return TRUE;
 }
 
-enum EPreamble { PRE_PATCHFREE, PRE_PATCHUSED, PRE_RIPINDIRECT, PRE_FOREIGNHOOK, PRE_UNKNOWN };
+enum EPreamble {
+    PRE_PATCHFREE, // No one else has hooked it?
+    PRE_PATCHUSED,
+    PRE_RIPINDIRECT,
+    PRE_FOREIGNHOOK, // Someone else has hooked it.
+    PRE_UNKNOWN      // We can't tell.
+};
 
+// Determine the type of the function based on the starting bytes.
+//
 EPreamble DeterminePreamble(LPBYTE address) {
     disasm().setInputBuffer(address, JUMP_SIZE);
     disasm().disassemble();
 
-    if ((ud_insn_mnemonic(disasm()) == UD_Imov) && (ud_insn_opr(disasm(), 0) == ud_insn_opr(disasm(), 1)) &&
-        (ud_insn_opr(disasm(), 0)->type == UD_OP_REG)) {
+    auto type = disasm().mnemonic();
+    if ((type == UD_Imov) && (disasm()[0] == disasm()[1]) && (disasm()[0]->type == UD_OP_REG)) {
         // mov edi, edi
         return PRE_PATCHFREE;
-    } else if ((ud_insn_mnemonic(disasm()) == UD_Ijmp) && (ud_insn_len(disasm()) == 2)) {
+    } else if ((type == UD_Ijmp) && (disasm().len() == 2)) {
         // determine target of the short jump
         LPBYTE shortTarget = ShortJumpTarget(address);
 
         // test if that short jump leads to a long jump
         disasm().setInputBuffer(shortTarget, JUMP_SIZE);
         disasm().disassemble();
-        if (ud_insn_mnemonic(disasm()) == UD_Ijmp) {
-            const ud_operand* op = ud_insn_opr(disasm(), 0);
+        if (disasm().mnemonic() == UD_Ijmp) {
+            const ud_operand* op = disasm()[0];
             if (op->base == UD_R_RIP) {
                 return PRE_RIPINDIRECT;
             } else {
@@ -456,7 +465,7 @@ EPreamble DeterminePreamble(LPBYTE address) {
         } else {
             return PRE_UNKNOWN;
         }
-    } else if (ud_insn_mnemonic(disasm()) == UD_Ijmp) {
+    } else if (type == UD_Ijmp) {
         return PRE_FOREIGNHOOK;
     } else {
         return PRE_UNKNOWN;
@@ -471,6 +480,7 @@ static HOOKHANDLE GenerateHandle() {
 }
 
 HOOKHANDLE applyHook(THookInfo info, HookError* error) {
+    // TODO: Figure out how this works.
     // apply the correct hook function depending on how the function start looks
     EPreamble preamble = DeterminePreamble((LPBYTE)info.originalFunction);
 
@@ -524,9 +534,10 @@ HOOKHANDLE HookLib::InstallStub(HMODULE module, LPCSTR functionName, LPVOID stub
 }
 
 HOOKHANDLE HookLib::InstallHook(LPVOID functionAddress, LPVOID hookAddress, HookError* error) {
-    if (functionAddress == nullptr) {
-        if (error != nullptr)
+    if (!functionAddress) {
+        if (error) {
             *error = ERR_INVALIDPARAMETERS;
+        }
         return INVALID_HOOK;
     }
     THookInfo info;
