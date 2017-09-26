@@ -33,7 +33,7 @@ class UDis86Wrapper {
     // Calls ud_set_input_buffer and ud_set_pc.
     // This should be called before anything else.
     void setInputBuffer(const uint8_t* buffer, size_t size);
-    
+
     // Disassemble.
     // Returns number of bytes disassembled.
     // ud_disassemble
