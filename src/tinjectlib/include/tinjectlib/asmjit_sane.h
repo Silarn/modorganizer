@@ -20,5 +20,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 #define ASMJIT_STATIC
+#pragma warning(push, 0)
 #include <asmjit/asmjit.h>
 #include <asmjit/x86.h>
+#pragma warning(pop)
