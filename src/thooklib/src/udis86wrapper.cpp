@@ -84,13 +84,13 @@ intptr_t UDis86Wrapper::jumpOffset() {
 }
 
 uint64_t UDis86Wrapper::jumpTarget() {
-    // TODO: assert we're actually on a jump
+    assert(mnemonic() == UD_Ijmp);
 
-    uint64_t res = ud_insn_off(&m_Obj) + ud_insn_len(&m_Obj);
+    uint64_t res = ud_insn_off(&m_Obj) + len();
 
     res += jumpOffset();
 
-    if (ud_insn_opr(&m_Obj, 0)->base == UD_R_RIP) {
+    if ((*this)[0]->base == UD_R_RIP) {
         res = *reinterpret_cast<uintptr_t*>(res);
     }
 
