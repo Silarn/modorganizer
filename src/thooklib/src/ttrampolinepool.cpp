@@ -103,7 +103,7 @@ static void popAll(X86Assembler& assembler) {
 
 void TrampolinePool::addBarrier(LPVOID rerouteAddr, LPVOID original, X86Assembler& assembler) {
     Label skipLabel = assembler.newLabel();
-
+    // CallConv::kIdHostStdCall;
 #if IS_X64
     pushAll(assembler);
     assembler.mov(rcx, imm(reinterpret_cast<int64_t>(original))); // set call parameter for call to barrier function
@@ -137,7 +137,7 @@ void TrampolinePool::addBarrier(LPVOID rerouteAddr, LPVOID original, X86Assemble
     assembler.pop(r10);      // get the result from the replacement function to a register
     assembler.push(rax);     // push the original return address back on the stack
     assembler.mov(rax, r10); // move result of actual call to rax
-    assembler.ret();         // return, using the original return address
+    
 #else                        // IS_X64
     assembler.push(imm(void_ptr_cast<int32_t>(original))); // push original function, as parameter to barrier
     assembler.mov(ecx, (Ptr) static_cast<void*>(TrampolinePool::barrier));
@@ -161,8 +161,8 @@ void TrampolinePool::addBarrier(LPVOID rerouteAddr, LPVOID original, X86Assemble
     assembler.push(eax);     // push the original return address (returned by TTrampolinePool::release)
                              // back on the stack
     assembler.mov(eax, ecx); // move result of actual call to eax
-    assembler.ret();         // return, using the original return address
 #endif
+    assembler.ret();         // return, using the original return address
 
     assembler.bind(skipLabel);
 }
@@ -245,10 +245,10 @@ LPVOID TrampolinePool::storeTrampoline(LPVOID reroute, LPVOID original, LPVOID r
     spot = AddrAdd(spot, sizeof(LPVOID));
     bufferList.offset += sizeof(LPVOID);
 
-    JitRuntime runtime;
-    CodeHolder rcode;
-    rcode.init(runtime.getCodeInfo());
-    X86Assembler assembler(&rcode);
+    JitRuntime runtime;                // Setup runtime.
+    CodeHolder rcode;                  // Holds code and relocation information.
+    rcode.init(runtime.getCodeInfo()); // Initialize to the same arch as JIT runtime.
+    X86Assembler assembler(&rcode);    // Create and attach X86Assembler to `rcode`.
 
     addBarrier(reroute, original, assembler);
 #if IS_X64
@@ -500,9 +500,9 @@ TrampolinePool::BufferMap::iterator TrampolinePool::allocateBuffer(LPVOID addres
     return iter;
 }
 
-LPVOID TrampolinePool::barrier(LPVOID function) { return instance().barrierInt(function); }
+LPVOID __stdcall TrampolinePool::barrier(LPVOID function) { return instance().barrierInt(function); }
 
-LPVOID TrampolinePool::release(LPVOID function) { return instance().releaseInt(function); }
+LPVOID __stdcall TrampolinePool::release(LPVOID function) { return instance().releaseInt(function); }
 
 LPVOID TrampolinePool::barrierInt(LPVOID func) {
     if (m_FullBlock) {
