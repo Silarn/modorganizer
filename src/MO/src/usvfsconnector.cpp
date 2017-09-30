@@ -19,6 +19,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/usvfsconnector.h"
 #include "MO/settings.h"
 
+#include <common/sane_windows.h>
+
+#include <MinHook.h>
+
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QProgressDialog>
@@ -87,6 +91,9 @@ LogLevel logLevel(int level) {
 }
 
 UsvfsConnector::UsvfsConnector() {
+    // INFO: SHould be safe to call here as this is part of OrganizerCore
+    MH_Initialize();
+    //
     USVFSParameters params;
     LogLevel level = logLevel(Settings::instance().logLevel());
     USVFSInitParameters(&params, SHMID, false, level);
@@ -105,6 +112,9 @@ UsvfsConnector::UsvfsConnector() {
 }
 
 UsvfsConnector::~UsvfsConnector() {
+    // INFO: Should be safe to call here as this is part of OrganizerCore
+    MH_Uninitialize();
+    //
     DisconnectVFS();
     m_LogWorker.exit();
     m_WorkerThread.quit();
