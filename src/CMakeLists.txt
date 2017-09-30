@@ -147,12 +147,12 @@ else()
 endif()
 
 ## Helper Function ##
-#if import_target
 # includeDir is where obvious.
 # libraryName will be the name of the imported target.
 # libraryFile is the name of the library on disk, IE zlib.dll
 # includeFile will be the path relative to includeDir
 # type will be STATIC or SHARED or INTERFACE or the like.
+#if import_target
 function(import_target libraryName libraryFile includeDir includeFile type)
     # Variables
     set(INCLUDE_DIRS ${includeDir})
