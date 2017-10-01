@@ -245,7 +245,7 @@ target_include_directories(${library_name}Shared PUBLIC
 )
 # Dependencies
 target_link_libraries(${library_name}Shared PUBLIC Qt5::Widgets
-                      bsatk common
+                      bsatk common spdlog
 )
 
 ## Executable ##

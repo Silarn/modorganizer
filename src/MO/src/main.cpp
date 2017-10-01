@@ -16,86 +16,148 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "MO/Shared/appconfig.h"
-#include "MO/Shared/windows_error.h"
-#include "MO/helper.h"
-#include "MO/instancemanager.h"
-#include "MO/logbuffer.h"
-#include "MO/mainwindow.h"
 #include "MO/moapplication.h"
-#include "MO/nxmaccessmanager.h"
-#include "MO/selectiondialog.h"
-#include "MO/singleinstance.h"
 
-#include <QDesktopServices>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QSplashScreen>
+// Spdlog optimizations
+#define SPDLOG_NO_THREAD_ID      // We don't use thread id.
+#define SPDLOG_NO_REGISTRY_MUTEX // We don't use the registry.
+#include <spdlog/sinks/ostream_sink.h>
+#include <spdlog/spdlog.h>
+
 #include <common/predef.h>
-#include <common/stringutils.h>
+#include <common/sane_windows.h>
+#include <common/util.h>
 #include <fmt/format.h>
-#include <uibase/report.h>
-#include <uibase/tutorialmanager.h>
+
+#include <QMessageLogContext>
+#include <QString>
+#include <QStringList>
+#include <QtGlobal>
 
 #include <DbgHelp.h>
-#include <ShellAPI.h>
-#include <array>
 #include <filesystem>
-#include <fstream>
+#include <iostream>
+#include <memory>
 #include <sstream>
 #include <string>
-
+#include <vector>
 namespace fs = std::experimental::filesystem;
+using namespace std::string_literals;
 
 #pragma comment(linker, "/manifestdependency:\"name='dlls' version='1.0.0.0' type='win32'\"")
 
-using namespace MOBase;
-using namespace MOShared;
+// All messages logged through the Log::Logger class are also logged here in a thread safe manner.
+// This is so MyUnhandledExceptionFilter can access the log and include it in the dump.
+static std::stringstream errorLog;
 
-// Debug output will be logged here as well as to the console.
-// This way it can be used in the Minidump.
-static thread_local std::stringstream errorLog;
-
-// Create directory and make sure it's writeable.
-static bool createAndMakeWritable(const fs::path& fullPath) {
-    if (!fs::exists(fullPath)) {
-        try {
-            fs::create_directories(fullPath);
-        } catch (const fs::filesystem_error&) {
-            return false;
-        }
-    }
-    return true;
+namespace Log {
+// Logging specific details
+namespace details {
+// Implementation for setting up logging file sink.
+// log_path is a required argument taking the path to the full path to the log file.
+static spdlog::sink_ptr file_sink(fs::path log_path) {
+    fs::path full_path(log_path);
+    return std::make_shared<spdlog::sinks::simple_file_sink_mt>(full_path.string());
 }
+static spdlog::sink_ptr console_sink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+static spdlog::sink_ptr minidump_sink = std::make_shared<spdlog::sinks::ostream_sink_mt>(errorLog);
+} // namespace details
 
-// Bootstraping code
-// Creates required directories, removes old files, verifies can start.
-static bool bootstrap() {
-    // remove the temporary backup directory in case we're restarting after an update
-    fs::path backupDirectory = qApp->applicationDirPath().toStdString() / fs::path("update_backup");
-    if (fs::exists(backupDirectory)) {
-        fs::remove_all(backupDirectory);
+// An abstraction that handles logging.
+// This class is thread safe.
+class Logger {
+public:
+    // Create a new log file with the name `name` at path `log_path`
+    // Log files must be unique, or else strange things may happen.
+    // This is because spdlog requires logs to the same file to use the same sink, and a new sink is created each time
+    // this is called.
+    Logger(std::string filename, fs::path log_path) : m_name(filename), m_logPath(log_path) {
+        // Make the path canoical and immune to working directory changes.
+        log_path = fs::canonical(log_path);
+        // First create the log directory.
+        fs::create_directories(log_path);
+        // Setup spdlog sinks.
+        std::vector<spdlog::sink_ptr> sinks;
+        // Add file sink.
+        sinks.push_back(details::file_sink(log_path / (filename + ".log")));
+        // Add Minidump sink.
+        sinks.push_back(details::minidump_sink);
+        // If debug configuration, log to the console as well.
+#if COMMON_IS_DEBUG
+        sinks.push_back(details::console_sink);
+#endif
+        // Create the Logger.
+        m_logger = std::make_unique<spdlog::logger>(m_name, std::begin(sinks), std::end(sinks));
+        // Change level to debug.
+#if COMMON_IS_DEBUG
+        m_logger->set_level(spdlog::level::debug);
+#endif
     }
-    fs::path dataPath = qApp->property("dataPath").toString().toStdString();
 
-    // Remove all logfiles matching ModOrganizer*.log, except for five. Sorted by name.
-    fs::path logPath = dataPath / AppConfig::logPath();
-    removeOldFiles(QString::fromStdString(logPath.string()), "usvfs*.log", 5, QDir::Name);
-
-    if (!createAndMakeWritable(logPath)) {
-        return false;
+public:
+    fs::path get_log_dir() { return m_logPath; }
+    void flush() { m_logger->flush(); }
+#pragma region Public Log API
+    // Abosultely fatal error.
+    // Flushes logger, terminates the program.
+    template <typename... Args>
+    void fatal(Args&&... args) {
+        m_logger->critical(format(std::forward<Args>(args)...));
+        m_logger->flush();
+        std::terminate();
     }
 
-    return true;
-}
+    // The emitting component isn't working, or isn't working as intended.
+    template <typename... Args>
+    void error(Args&&... args) {
+        m_logger->error(format(std::forward<Args>(args)...));
+    }
 
-// Determines if the string `link` is a nexus link.
-bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
+    // The emitting component is working as intended, but an error may be imminent.
+    template <typename... Args>
+    void warn(Args&&... args) {
+        m_logger->warn(format(std::forward<Args>(args)...));
+    }
 
+    // The emitting component has successfully completed an operation.
+    template <typename... Args>
+    void success(Args&&... args) {
+        m_logger->info("Success: {0:s}", format(std::forward<Args>(args)...));
+    }
+
+    // Information thats only useful when debugging.
+    template <typename... Args>
+    void debug(Args&&... args) {
+        m_logger->debug(format(std::forward<Args>(args)...));
+    }
+
+    // Everything else, doesn't reflect a change in the component status, just information about what it's doing.
+    template <typename... Args>
+    void info(Args&&... args) {
+        m_logger->info(format(std::forward<Args>(args)...));
+    }
+#pragma endregion
+private:
+    std::unique_ptr<spdlog::logger> m_logger;
+    std::string m_name;
+    fs::path m_logPath;
+
+protected:
+    template <typename... Args>
+    std::string format(Args&&... args) const {
+        // spdlog passes all args to this internally
+        return fmt::format(std::forward<Args>(args)...);
+    }
+};
+
+} // namespace Log
+
+static Log::Logger moLog("mo_interface", common::get_exe_dir() / "Logs");
+
+// Callback to filter information from the Minidump.
 static BOOL CALLBACK MyMiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_INPUT pInput,
                                         PMINIDUMP_CALLBACK_OUTPUT pOutput) {
     BOOL bRet = FALSE;
-
     // Check parameters
     if (pInput == 0 || pOutput == 0) {
         return FALSE;
@@ -145,12 +207,13 @@ static BOOL CALLBACK MyMiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_I
     return bRet;
 }
 
+// Helper function to create the Mini Dump.
 static std::string CreateMiniDump(std::wstring dumpname, EXCEPTION_POINTERS* exceptionPtrs) {
     std::string errorMsg;
     // Create Dump File.
     fs::path dumpPath = LR"(\\?\)" + dumpname;
-    HANDLE dumpFile = ::CreateFileW(dumpPath.native().data(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE, nullptr,
-                                    CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+    HANDLE dumpFile = CreateFileW(dumpPath.native().data(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE, nullptr,
+                                  CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
     if (dumpFile != INVALID_HANDLE_VALUE) {
         _MINIDUMP_EXCEPTION_INFORMATION exceptionInfo;
         exceptionInfo.ThreadId = ::GetCurrentThreadId();
@@ -175,16 +238,10 @@ static std::string CreateMiniDump(std::wstring dumpname, EXCEPTION_POINTERS* exc
         ::FlushFileBuffers(dumpFile);
         ::CloseHandle(dumpFile);
         if (!success) {
-            errorMsg = QString("failed to save minidump to %1 (error %2)")
-                           .arg(QString::fromStdWString(dumpPath.wstring()))
-                           .arg(::GetLastError())
-                           .toStdString();
+            errorMsg = fmt::format("failed to save minidump to {} (error code: {})", dumpPath.string(), GetLastError());
         }
     } else {
-        errorMsg = QString("failed to create %1 (error %2)")
-                       .arg(QString::fromStdWString(dumpPath.wstring()))
-                       .arg(::GetLastError())
-                       .toStdString();
+        errorMsg = fmt::format("failed to create {} (error code: {})", dumpPath.string(), GetLastError());
     }
     return errorMsg;
 }
@@ -193,33 +250,131 @@ static std::string CreateMiniDump(std::wstring dumpname, EXCEPTION_POINTERS* exc
 // Writes a minidump and displays information to the User.
 static LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* exceptionPtrs) {
 #ifdef COMMON_IS_DEBUG
-    // This is so we can step into the handler.
-    QMessageBox::critical(nullptr, QObject::tr("Test"), QObject::tr("TEST"));
+    // Windows doesnt call this hook if a debugger is attatched.
+    // As a workaround, we can provide a hook point where execution flow is
+    // paused so we can attatch a debugger INSIDE the hook.
+    MessageBoxA(nullptr, "Hook Debugger Now.", "Debug Hook",
+                MB_OK | MB_ICONINFORMATION | MB_SETFOREGROUND | MB_TOPMOST);
 #endif
     LONG result = EXCEPTION_EXECUTE_HANDLER;
-    std::wstring dumpName = qApp->applicationFilePath().append(".dmp").toStdWString();
-    bool createDump =
-        QMessageBox::question(nullptr, QObject::tr("Whoops!"),
-                              QObject::tr("ModOrganizer has crashed! "
-                                          "Should a diagnostic file be created? "
-                                          "If you make an issue at https://github.com/ModOrganizer/modorganizer, "
-                                          "including this file (%1), "
-                                          "the bug is a lot more likely to be fixed. "
-                                          "Please include a short description of what you were "
-                                          "doing when the crash happened")
-                                  .arg(QString::fromStdWString(dumpName))) == QMessageBox::Yes;
+    // TODO: Make this immune to the working directory.
+    // Some sort of global setting for the app path?
+    fs::path dumpFile = fs::canonical(fs::path("Logs") / "ModOrganizer.exe.dmp");
+    auto msg = fmt::format("Should a diagnostic file be created? "
+                           "If you make an issue at https://github.com/ModOrganizer/modorganizer, "
+                           "including this file ({0:s}), "
+                           "the bug is a lot more likely to be fixed. "
+                           "Please include a short description of what you were "
+                           "doing when the crash happened.",
+                           dumpFile.string());
+    bool createDump = MessageBoxA(nullptr, msg.data(), "Mod Organizer has crashed!", MB_YESNO | MB_ICONERROR) == IDYES;
     if (createDump) {
-        // Message to display to the user for why this couldnt be handled.
-        std::string errorMsg = CreateMiniDump(dumpName, exceptionPtrs);
+        std::string errorMsg = CreateMiniDump(dumpFile, exceptionPtrs);
         if (!errorMsg.empty()) {
-            QMessageBox::critical(
-                nullptr, QObject::tr("Whoops!"),
-                QObject::tr("ModOrganizer has crashed! Unfortunately I was not able to write a diagnostic file: %1")
-                    .arg(QString::fromStdString(errorMsg)));
+            auto msg = fmt::format("Unfortunately I was not able to write the diagnostic file: {0:s}", errorMsg);
+            MessageBoxA(nullptr, msg.data(), "Mod Organzier has crashed!", MB_OK | MB_ICONERROR);
         }
     }
     return result;
 }
+
+// Handle all internal Qt Logging.
+void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
+    static Log::Logger logQ("QT", common::get_exe_dir() / "Logs");
+    std::string smsg =
+        fmt::format("{:s} ({:s}:{:d}, {:s})\n", msg.toStdString(), context.file, context.line, context.function);
+    switch (type) {
+    case QtDebugMsg:
+        logQ.debug(smsg);
+        break;
+    case QtInfoMsg:
+        logQ.info(smsg);
+        break;
+    case QtWarningMsg:
+        logQ.warn(smsg);
+        break;
+    case QtCriticalMsg:
+        logQ.error(smsg);
+        break;
+    case QtFatalMsg:
+        logQ.fatal(smsg);
+        break;
+    }
+}
+
+#if 0
+#include "MO/Shared/appconfig.h"
+#include "MO/Shared/windows_error.h"
+#include "MO/helper.h"
+#include "MO/instancemanager.h"
+#include "MO/logbuffer.h"
+#include "MO/mainwindow.h"
+#include "MO/nxmaccessmanager.h"
+#include "MO/selectiondialog.h"
+#include "MO/singleinstance.h"
+
+#include <QDesktopServices>
+#include <QFileDialog>
+#include <QMessageBox>
+#include <QSplashScreen>
+#include <common/predef.h>
+#include <common/stringutils.h>
+#include <fmt/format.h>
+#include <uibase/report.h>
+#include <uibase/tutorialmanager.h>
+
+#include <DbgHelp.h>
+#include <ShellAPI.h>
+#include <array>
+#include <filesystem>
+#include <fstream>
+#include <sstream>
+#include <string>
+
+namespace fs = std::experimental::filesystem;
+
+using namespace MOBase;
+using namespace MOShared;
+
+// Debug output will be logged here as well as to the console.
+// This way it can be used in the Minidump.
+static thread_local std::stringstream errorLog;
+
+// Create directory and make sure it's writeable.
+static bool createAndMakeWritable(const fs::path& fullPath) {
+    if (!fs::exists(fullPath)) {
+        try {
+            fs::create_directories(fullPath);
+        } catch (const fs::filesystem_error&) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Bootstraping code
+// Creates required directories, removes old files, verifies can start.
+static bool bootstrap() {
+    // remove the temporary backup directory in case we're restarting after an update
+    fs::path backupDirectory = qApp->applicationDirPath().toStdString() / fs::path("update_backup");
+    if (fs::exists(backupDirectory)) {
+        fs::remove_all(backupDirectory);
+    }
+    fs::path dataPath = qApp->property("dataPath").toString().toStdString();
+
+    // Remove all logfiles matching ModOrganizer*.log, except for five. Sorted by name.
+    fs::path logPath = dataPath / AppConfig::logPath();
+    removeOldFiles(QString::fromStdString(logPath.string()), "usvfs*.log", 5, QDir::Name);
+
+    if (!createAndMakeWritable(logPath)) {
+        return false;
+    }
+
+    return true;
+}
+
+// Determines if the string `link` is a nexus link.
+bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
 
 QString determineProfile(QStringList& arguments, const QSettings& settings) {
     QString selectedProfileName = QString::fromUtf8(settings.value("selected_profile", "").toByteArray());
@@ -356,29 +511,6 @@ MOBase::IPluginGame* determineCurrentGame(QString const& moPath, QSettings& sett
     }
 
     return nullptr;
-}
-
-void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QString& msg) {
-    std::string smsg =
-        fmt::format("{:s} ({:s}:{:d}, {:s})\n", msg.toStdString(), context.file, context.line, context.function);
-    switch (type) {
-    case QtDebugMsg:
-        smsg = fmt::format("Debug: {:s}", smsg);
-        break;
-    case QtInfoMsg:
-        smsg = fmt::format("Info: {:s}", smsg);
-        break;
-    case QtWarningMsg:
-        smsg = fmt::format("Warning: {:s}", smsg);
-        break;
-    case QtCriticalMsg:
-        smsg = fmt::format("Critical: {:s}", smsg);
-        break;
-    case QtFatalMsg:
-        smsg = fmt::format("Fatal: {:s}", smsg);
-        break;
-    }
-    errorLog << smsg;
 }
 
 // extend path to include dll directory so plugins don't need a manifest
@@ -530,15 +662,32 @@ int runApplication(MOApplication& application, SingleInstance& instance, const Q
     }
 }
 
+#endif
+
 int main(int argc, char* argv[]) {
-    // Install some semebelance of logging and error handling.
-    // This will be overwritten by LogBuffer, and until then logs nothing to stdout.
-    qInstallMessageHandler(&myMessageOutput);
-    SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
-
-    MOApplication application(argc, argv);
-    QStringList arguments = application.arguments();
-
+    // This try...catch allows proper cleanup before rethrowing the
+    // exception to let MyUnhandledExceptionFilter handle it.
+    // This allows, for example, the log to be flushed flushed before the crash.
+    try {
+        // Setup Logging.
+        moLog.info("Mod Organizer started.");
+        moLog.info("Setting up Exception Handlers and external logging wrappers.");
+        // Exception and error handling.
+        // Overwide the default windows crash behaviour.
+        SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
+        // Handle internal Qt logging.
+        qInstallMessageHandler(&myMessageOutput);
+        moLog.success("Handlers and logging successfully setup.");
+        // Setup application
+        moLog.info("Setting up Application and processing commandline");
+        MOApplication application(argc, argv);
+        QStringList arguments = application.arguments();
+    } catch (...) {
+        moLog.error("Mod Organizer crashed...");
+        moLog.flush();
+        throw;
+    }
+#if 0
     // Handle arguments
     if ((arguments.length() >= 4) && (arguments.at(1) == "launch")) {
         // all we're supposed to do is launch another process
@@ -612,4 +761,5 @@ int main(int argc, char* argv[]) {
         }
         argc = 1;
     } while (true);
+#endif
 }
