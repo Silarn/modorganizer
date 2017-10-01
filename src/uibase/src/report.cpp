@@ -27,12 +27,15 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 namespace MOBase {
 
 void reportError(const QString& message) {
+    // This is required because otherwise QT will crash if
+    // an exception was thrown in, say, QApplication::notify/the event loop.
+    // This seems to be a reliable way to determine if it is safe to display a MessageBox.
     if (QApplication::topLevelWidgets().count() != 0) {
         QMessageBox messageBox(QMessageBox::Warning, QObject::tr("Error"), message, QMessageBox::Ok);
         messageBox.exec();
     } else {
         ::MessageBoxW(nullptr, message.toStdWString().c_str(), QObject::tr("Error").toStdWString().c_str(),
-                      MB_ICONERROR | MB_OK);
+                      MB_OK | MB_ICONERROR);
     }
 }
 } // namespace MOBase
