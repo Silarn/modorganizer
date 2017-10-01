@@ -25,16 +25,16 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 class MOApplication : public QApplication {
     Q_OBJECT
-  public:
+public:
     MOApplication(int& argc, char** argv);
 
     virtual bool notify(QObject* receiver, QEvent* event);
-  public slots:
+public slots:
     bool setStyleFile(const QString& style);
-  private slots:
+private slots:
     void updateStyle(const QString& fileName);
 
-  private:
+private:
     QFileSystemWatcher m_StyleWatcher;
     QString m_DefaultStyle;
 };

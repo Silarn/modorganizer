@@ -29,7 +29,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 using MOBase::reportError;
 
 class ProxyStyle : public QProxyStyle {
-  public:
+public:
     ProxyStyle(QStyle* baseStyle = 0) : QProxyStyle(baseStyle) {}
 
     void drawPrimitive(PrimitiveElement element, const QStyleOption* option, QPainter* painter,
