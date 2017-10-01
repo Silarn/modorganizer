@@ -59,24 +59,23 @@ void InstanceManager::setCurrentInstance(const std::string& name) {
 }
 
 std::string InstanceManager::queryInstanceName() const {
-    // FIXME: WOuld be nice to eliminate this entirely and support it in MO itself.
+    // FIXME: Would be nice to eliminate this entirely and support it in MO itself.
     // IE, proper seperate profiles rather than seperate instances emulating it.
-    QString instanceId;
-    while (instanceId.isEmpty()) {
-        QInputDialog dialog;
-        // FIXME: Would be neat if we could take the names from the game plugins but
-        // the required initialization order requires the ini file to be
-        // available *before* we load plugins
-        dialog.setComboBoxItems({"Oblivion", "Skyrim", "SkyrimSE", "Fallout 3", "Fallout NV", "Fallout 4"});
-        dialog.setComboBoxEditable(true);
-        dialog.setWindowTitle(QObject::tr("Enter Instance Name"));
-        dialog.setLabelText(QObject::tr("Name"));
-        if (dialog.exec() == QDialog::Rejected) {
-            throw MOBase::MyException(QObject::tr("Canceled"));
-        }
-        instanceId = dialog.textValue().replace(QRegExp("[^0-9a-zA-Z ]"), "");
+    std::string instanceId;
+    QInputDialog dialog;
+    // FIXME: Would be neat if we could take the names from the game plugins but
+    // the required initialization order requires the ini file to be
+    // available *before* we load plugins
+    dialog.setComboBoxItems({"Oblivion", "Skyrim", "SkyrimSE", "Fallout 3", "Fallout NV", "Fallout 4"});
+    dialog.setComboBoxEditable(true);
+    dialog.setWindowTitle(QObject::tr("Enter Instance Name"));
+    dialog.setLabelText(QObject::tr("Name"));
+    if (dialog.exec() == QDialog::Rejected) {
+        throw MOBase::MyException(QObject::tr("Canceled"));
     }
-    return instanceId.toStdString();
+    // TODO: Remove Special Characters utility function.
+    instanceId = dialog.textValue().replace(QRegExp("[^0-9a-zA-Z ]"), "").toStdString();
+    return instanceId;
 }
 
 std::string InstanceManager::chooseInstance(const std::list<std::string>& instanceList) const {
