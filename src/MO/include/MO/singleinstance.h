@@ -27,6 +27,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 // used to ensure only a single instance of Mod Organizer is started and to
 // allow secondary instances to send messages to the primary (visible) one.
 // This way, secondary instances can start a download in the primary one
+// TODO: Seems to only use Shared Memory as a marker for a socket. That seems a bit dumb.
 class SingleInstance : public QObject {
     Q_OBJECT
 public:
