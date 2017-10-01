@@ -22,7 +22,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QCommandLinkButton>
 
 SelectionDialog::SelectionDialog(const QString& description, QWidget* parent, const QSize& iconSize)
-    : QDialog(parent), ui(new Ui::SelectionDialog), m_Choice(nullptr), m_ValidateByData(false), m_IconSize(iconSize) {
+    : QDialog(parent), ui(new Ui::SelectionDialog), m_IconSize(iconSize) {
     ui->setupUi(this);
 
     ui->descriptionLabel->setText(description);
@@ -48,14 +48,18 @@ void SelectionDialog::addChoice(const QString& buttonText, const QString& descri
 
 int SelectionDialog::numChoices() const { return ui->buttonBox->findChildren<QCommandLinkButton*>(QString()).count(); }
 
-QVariant SelectionDialog::getChoiceData() { return m_Choice->property("data"); }
+QVariant SelectionDialog::getChoiceData() {
+    if (!m_Choice) {
+        return {};
+    }
+    return m_Choice->property("data");
+}
 
 QString SelectionDialog::getChoiceString() {
-    if ((m_Choice == nullptr) || (m_ValidateByData && !m_Choice->property("data").isValid())) {
+    if (!m_Choice || (m_ValidateByData && !m_Choice->property("data").isValid())) {
         return QString();
-    } else {
-        return m_Choice->text();
     }
+    return m_Choice->text();
 }
 
 void SelectionDialog::disableCancel() {
@@ -67,9 +71,9 @@ void SelectionDialog::on_buttonBox_clicked(QAbstractButton* button) {
     m_Choice = button;
     if (!m_ValidateByData || m_Choice->property("data").isValid()) {
         this->accept();
-    } else {
-        this->reject();
+        return;
     }
+    this->reject();
 }
 
 void SelectionDialog::on_cancelButton_clicked() { this->reject(); }
