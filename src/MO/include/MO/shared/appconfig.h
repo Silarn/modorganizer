@@ -22,7 +22,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 namespace AppConfig {
 
 #define APPPARAM(partype, parid, value)                                                                                \
-    partype parid() { return value; }
+    inline partype parid() { return value; }
 
 APPPARAM(std::wstring, translationPrefix, L"organizer")
 APPPARAM(std::wstring, pluginPath, L"plugins")
