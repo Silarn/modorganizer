@@ -19,12 +19,12 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/moapplication.h"
 
 #include <MO/Shared/appconfig.h>
+#include <QFile>
 #include <QPainter>
 #include <QProxyStyle>
 #include <QStyleFactory>
 #include <QStyleOption>
 #include <uibase/report.h>
-#include <uibase/utility.h>
 
 using MOBase::reportError;
 
@@ -77,7 +77,7 @@ bool MOApplication::setStyleFile(const QString& styleName) {
     if (styleName.length() != 0) {
         // Attempt to create a path to one of our own styles
         QString styleSheetName =
-            applicationDirPath() + "/" + MOBase::ToQString(AppConfig::stylesheetsPath()) + "/" + styleName;
+            applicationDirPath() + "/" + QString::fromStdWString(AppConfig::stylesheetsPath()) + "/" + styleName;
         // If it's a real style, use it.
         // Otherwise pass directly to updateStyle and let it figure it out.
         // Assuming styleName is a QT one or actually a path of it's own.
