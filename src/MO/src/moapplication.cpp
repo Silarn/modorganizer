@@ -34,6 +34,7 @@ public:
 
     void drawPrimitive(PrimitiveElement element, const QStyleOption* option, QPainter* painter,
                        const QWidget* widget) const {
+        // Custom behaviour for drag and drop only.
         if (element == QStyle::PE_IndicatorItemViewItemDrop) {
             painter->setRenderHint(QPainter::Antialiasing, true);
 
@@ -74,8 +75,12 @@ bool MOApplication::setStyleFile(const QString& styleName) {
     }
     // set new stylesheet or clear it
     if (styleName.length() != 0) {
+        // Attempt to create a path to one of our own styles
         QString styleSheetName =
             applicationDirPath() + "/" + MOBase::ToQString(AppConfig::stylesheetsPath()) + "/" + styleName;
+        // If it's a real style, use it.
+        // Otherwise pass directly to updateStyle and let it figure it out.
+        // Assuming styleName is a QT one or actually a path of it's own.
         if (QFile::exists(styleSheetName)) {
             m_StyleWatcher.addPath(styleSheetName);
             updateStyle(styleSheetName);
@@ -89,6 +94,7 @@ bool MOApplication::setStyleFile(const QString& styleName) {
     return true;
 }
 
+// Intercept all events and report errors if they occur.
 bool MOApplication::notify(QObject* receiver, QEvent* event) {
     try {
         return QApplication::notify(receiver, event);
@@ -106,14 +112,17 @@ bool MOApplication::notify(QObject* receiver, QEvent* event) {
 
 void MOApplication::updateStyle(const QString& fileName) {
     if (fileName == "Fusion") {
+        // Create the fusion style and apply it, along with an empty stylesheet.
         setStyle(QStyleFactory::create("fusion"));
         setStyleSheet("");
     } else {
+        // Reset the style to default, then apply the stylesheet.
         setStyle(new ProxyStyle(QStyleFactory::create(m_DefaultStyle)));
+        // Set the stylesheet, if the file exists.
         if (QFile::exists(fileName)) {
             setStyleSheet(QString("file:///%1").arg(fileName));
         } else {
-            qWarning("invalid stylesheet: %s", qPrintable(fileName));
+            qWarning("invalid stylesheet: %s", qUtf8Printable(fileName));
         }
     }
 }

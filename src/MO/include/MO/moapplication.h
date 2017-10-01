@@ -23,6 +23,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QApplication>
 #include <QFileSystemWatcher>
 
+// MO Application object.
+// Handles style changes for the UI.
 class MOApplication : public QApplication {
     Q_OBJECT
 public:
@@ -30,8 +32,10 @@ public:
 
     virtual bool notify(QObject* receiver, QEvent* event);
 public slots:
+    // Set the style file to be used.
     bool setStyleFile(const QString& style);
 private slots:
+    // Update the style if the file changes.
     void updateStyle(const QString& fileName);
 
 private:
