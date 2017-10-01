@@ -18,32 +18,48 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
 #include <QSettings>
-#include <QString>
 
+#include <filesystem>
+#include <list>
+#include <string>
+namespace fs = std::experimental::filesystem;
+
+// Singleton class managing certain non application specific settings and instances.
+// Settings such as where the application settings are and which ones to use?
+// TODO: Isnt there already a Settings class? May need to consoloidate them.
 class InstanceManager {
 public:
+    // Return the Instance.
     static InstanceManager& instance();
 
-    QString determineDataPath();
+    // Determine the Application data directory for the current instance.
+    fs::path determineDataPath();
     void clearCurrentInstance();
 
 private:
     InstanceManager();
 
-    QString currentInstance() const;
-    QString instancePath() const;
+    // Set or get the current instance value
+    std::string currentInstance() const;
+    void setCurrentInstance(const std::string& name);
 
-    QStringList instances() const;
+    // Let the User choose an Instance to be used.
+    std::string chooseInstance(const std::list<std::string>& instanceList) const;
 
-    void setCurrentInstance(const QString& name);
+    // Get a list of possible instances
+    std::list<std::string> instances() const;
 
-    QString queryInstanceName() const;
-    QString chooseInstance(const QStringList& instanceList) const;
+    // Return the base instance path for non portable installs.
+    fs::path instancePath() const;
 
-    void createDataPath(const QString& dataPath) const;
+    // Ask the user for the name of their Instance.
+    std::string queryInstanceName() const;
+    // Create a new Instance
+    void createDataPath(const fs::path& dataPath) const;
+    // Determine if this is a portable install.
     bool portableInstall() const;
 
 private:
     QSettings m_AppSettings;
-    bool m_Reset{false};
+    bool m_Reset = false;
 };
