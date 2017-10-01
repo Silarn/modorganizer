@@ -27,7 +27,8 @@ static const int s_Timeout = 5000;
 
 using MOBase::reportError;
 
-SingleInstance::SingleInstance(bool forcePrimary, QObject* parent) : QObject(parent) {
+SingleInstance::SingleInstance(bool forcePrimary) : QObject(nullptr) {
+    // Set Shared Memory key to s_Key.
     m_SharedMem.setKey(s_Key);
     // Create shared memory.
     // If failure, check if forcePrimary is true and do it anyway.
@@ -56,8 +57,8 @@ SingleInstance::SingleInstance(bool forcePrimary, QObject* parent) : QObject(par
     // Listen for messages if we're the primary instance.
     if (m_PrimaryInstance) {
         connect(&m_Server, SIGNAL(newConnection()), this, SLOT(receiveMessage()));
-        // has to be called before listen
         m_Server.setSocketOptions(QLocalServer::WorldAccessOption);
+        // Listen on s_Key.
         m_Server.listen(s_Key);
     }
 }
@@ -69,6 +70,7 @@ void SingleInstance::sendMessage(const QString& message) {
     }
     QLocalSocket socket(this);
 
+    // Attempt connection with two retries.
     bool connected = false;
     for (int i = 0; i < 2 && !connected; ++i) {
         if (i > 0) {
