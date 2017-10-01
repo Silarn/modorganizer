@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/instancemanager.h"
+#include "MO/logbuffer.h"
 #include "MO/moapplication.h"
 #include "MO/singleinstance.h"
 
@@ -104,6 +105,7 @@ public:
 
 public:
     fs::path get_log_dir() { return m_logPath; }
+    fs::path get_log_path() { return m_logPath / m_name += ".log"s; }
     void flush() { m_logger->flush(); }
 #pragma region Public Log API
     // Abosultely fatal error.
@@ -160,7 +162,9 @@ protected:
 
 } // namespace Log
 
-static Log::Logger moLog("mo_interface", common::get_exe_dir() / "Logs");
+// Initlization log, only used here.
+// Next to the EXE and debugs startup.
+static Log::Logger moLog("mo_init", common::get_exe_dir() / "Logs");
 
 //
 #pragma region "Error / external log handling."
@@ -348,7 +352,6 @@ bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseI
 #include "MO/Shared/appconfig.h"
 #include "MO/Shared/windows_error.h"
 #include "MO/helper.h"
-#include "MO/logbuffer.h"
 #include "MO/mainwindow.h"
 #include "MO/nxmaccessmanager.h"
 #include "MO/selectiondialog.h"
@@ -753,6 +756,7 @@ int main(int argc, char* argv[]) {
         // In previous versions of MO this was the same place as the executable, but
         // Now it can be any location the User desires.
         // This handles the user choosing whether to use portable mode or a custom location or what.
+        moLog.info("Getting MO Data Path");
         fs::path dataPath;
         try {
             dataPath = InstanceManager::instance().determineDataPath();
@@ -761,6 +765,7 @@ int main(int argc, char* argv[]) {
             return 1;
         }
         application.setProperty("dataPath", QString::fromStdWString(dataPath.native()));
+        moLog.info("MO Data Path: '{}'", dataPath);
     } catch (...) {
         moLog.error("Mod Organizer crashed...");
         moLog.flush();
@@ -768,14 +773,6 @@ int main(int argc, char* argv[]) {
     }
 #if 0
     do {
-        // Setup logging
-        // INFO: Calls qInstallMessageHandler, overwriting the one here.
-        // Solution was to remove printing from ours and only log it for the minidump
-        // And have LogBuffer call the old one.
-        const fs::path logPath =
-            qApp->property("dataPath").toString().toStdString() / fs::path("logs") / "mo_interface.log";
-        LogBuffer::init(100, QtDebugMsg, QString::fromStdString(logPath.string()));
-
         fs::path splash = dataPath / "splash.png";
         if (!fs::exists(splash)) {
             splash = ":/MO/gui/splash";
