@@ -14,7 +14,7 @@ SET(HDRS
 )
 
 SET(SRCS
-    src/apihook.cpp
+    src/common.cpp
 )
 
 ## Library ##
