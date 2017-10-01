@@ -16,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "MO/instancemanager.h"
 #include "MO/moapplication.h"
 #include "MO/singleinstance.h"
 
@@ -347,12 +348,10 @@ bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseI
 #include "MO/Shared/appconfig.h"
 #include "MO/Shared/windows_error.h"
 #include "MO/helper.h"
-#include "MO/instancemanager.h"
 #include "MO/logbuffer.h"
 #include "MO/mainwindow.h"
 #include "MO/nxmaccessmanager.h"
 #include "MO/selectiondialog.h"
-#include "MO/singleinstance.h"
 
 #include <QDesktopServices>
 #include <QFileDialog>
@@ -749,6 +748,19 @@ int main(int argc, char* argv[]) {
                 return 0;
             }
         } // We continue for the Primary Instance only.
+        moLog.info("Primary Instance");
+        // Find Mod Organizer data Directory.
+        // In previous versions of MO this was the same place as the executable, but
+        // Now it can be any location the User desires.
+        // This handles the user choosing whether to use portable mode or a custom location or what.
+        fs::path dataPath;
+        try {
+            dataPath = InstanceManager::instance().determineDataPath();
+        } catch (const std::exception& e) {
+            QMessageBox::critical(nullptr, QObject::tr("Failed to set up instance"), e.what());
+            return 1;
+        }
+        application.setProperty("dataPath", QString::fromStdWString(dataPath.native()));
     } catch (...) {
         moLog.error("Mod Organizer crashed...");
         moLog.flush();
@@ -756,18 +768,6 @@ int main(int argc, char* argv[]) {
     }
 #if 0
     do {
-        // Find Mod Organizer data Directory.
-        // In previous versions of MO this was the same place as the executable, but
-        // Now it can be any location the User desires.
-        fs::path dataPath;
-        try {
-            dataPath = InstanceManager::instance().determineDataPath().toStdWString();
-        } catch (const std::exception& e) {
-            QMessageBox::critical(nullptr, QObject::tr("Failed to set up instance"), e.what());
-            return 1;
-        }
-        application.setProperty("dataPath", QString::fromStdWString(dataPath.native()));
-
         // Setup logging
         // INFO: Calls qInstallMessageHandler, overwriting the one here.
         // Solution was to remove printing from ours and only log it for the minidump
