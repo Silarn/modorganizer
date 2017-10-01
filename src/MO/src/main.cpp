@@ -259,7 +259,7 @@ static LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* except
     LONG result = EXCEPTION_EXECUTE_HANDLER;
     // TODO: Make this immune to the working directory.
     // Some sort of global setting for the app path?
-    fs::path dumpFile = fs::canonical(fs::path("Logs") / "ModOrganizer.exe.dmp");
+    fs::path dumpFile = fs::canonical(common::get_exe_dir() / fs::path("Logs") / "ModOrganizer.exe.dmp");
     auto msg = fmt::format("Should a diagnostic file be created? "
                            "If you make an issue at https://github.com/ModOrganizer/modorganizer, "
                            "including this file ({0:s}), "
