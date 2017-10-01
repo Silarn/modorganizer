@@ -31,7 +31,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
  **/
 class SingleInstance : public QObject {
     Q_OBJECT
-  public:
+public:
     /**
      * @brief constructor
      *
@@ -57,7 +57,7 @@ class SingleInstance : public QObject {
      **/
     void sendMessage(const QString& message);
 
-  signals:
+signals:
 
     /**
      * @brief emitted when a secondary instance has sent a message (to us)
@@ -66,13 +66,13 @@ class SingleInstance : public QObject {
      **/
     void messageSent(const QString& message);
 
-  public slots:
+public slots:
 
-  private slots:
+private slots:
 
     void receiveMessage();
 
-  private:
+private:
     bool m_PrimaryInstance = false;
     QSharedMemory m_SharedMem;
     QLocalServer m_Server;
