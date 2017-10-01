@@ -17,6 +17,7 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/moapplication.h"
+#include "MO/singleinstance.h"
 
 // Spdlog optimizations
 #define SPDLOG_NO_THREAD_ID      // We don't use thread id.
@@ -32,6 +33,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <fmt/ostream.h>
 
 #include <QDir>
+#include <QMessageBox>
 #include <QMessageLogContext>
 #include <QProcess>
 #include <QSslSocket>
@@ -338,6 +340,9 @@ void setupPath() {
     }
 }
 
+// Determines if the string `link` is a nexus link.
+bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
+
 #if 0
 #include "MO/Shared/appconfig.h"
 #include "MO/Shared/windows_error.h"
@@ -408,9 +413,6 @@ static bool bootstrap() {
 
     return true;
 }
-
-// Determines if the string `link` is a nexus link.
-bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
 
 QString determineProfile(QStringList& arguments, const QSettings& settings) {
     QString selectedProfileName = QString::fromUtf8(settings.value("selected_profile", "").toByteArray());
@@ -728,26 +730,31 @@ int main(int argc, char* argv[]) {
 #else
         moLog.info("Qt does not supports SSL.");
 #endif
+        moLog.info("Enforcing Single Instance");
+        // Enforce a single Instance of MO.
+        // Handle NXM Downloads
+        // FIXME: Won't logging up until this point conflict, since they're writing to the same file.
+        // Solution could be to enforce this earlier?
+        SingleInstance instance(forcePrimary);
+        if (!instance.primaryInstance()) {
+            moLog.warn("Not Primary Instance");
+            if ((arguments.size() == 2) && isNxmLink(arguments.at(1))) {
+                moLog.info("Just handling a NXM Link");
+                instance.sendMessage(arguments.at(1));
+                return 0;
+            } else if (arguments.size() == 1) {
+                moLog.error("Duplicate Instance");
+                QMessageBox::information(nullptr, QObject::tr("Mod Organizer"),
+                                         QObject::tr("An instance of Mod Organizer is already running"));
+                return 0;
+            }
+        } // We continue for the Primary Instance only.
     } catch (...) {
         moLog.error("Mod Organizer crashed...");
         moLog.flush();
         throw;
     }
 #if 0
-    // Enforce single instance, and handle nxm downloads.
-    SingleInstance instance(forcePrimary);
-    if (!instance.primaryInstance()) {
-        if ((arguments.size() == 2) && isNxmLink(arguments.at(1))) {
-            qDebug("not primary instance, sending download message");
-            instance.sendMessage(arguments.at(1));
-            return 0;
-        } else if (arguments.size() == 1) {
-            QMessageBox::information(nullptr, QObject::tr("Mod Organizer"),
-                                     QObject::tr("An instance of Mod Organizer is already running"));
-            return 0;
-        }
-    } // we continue for the primary instance OR if MO was called with parameters
-
     do {
         // Find Mod Organizer data Directory.
         // In previous versions of MO this was the same place as the executable, but
