@@ -16,7 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "MO/logbuffer.h"
+#include "MO/logging.h"
 
 #include <QFile>
 #include <QIcon>
@@ -24,15 +24,51 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <uibase/report.h>
 #include <uibase/scopeguard.h>
 
+#include <iostream>
+
 using MOBase::reportError;
 
-QScopedPointer<LogBuffer> LogBuffer::s_Instance;
+std::unique_ptr<LogBuffer> LogBuffer::s_Instance;
 QMutex LogBuffer::s_Mutex;
 QtMessageHandler LogBuffer::old_handler;
 
-LogBuffer::LogBuffer(int messageCount, QtMsgType minMsgType, const QString& outputFileName)
-    : QAbstractItemModel(nullptr), m_OutFileName(outputFileName), m_ShutDown(false), m_MinMsgType(minMsgType),
-      m_NumMessages(0) {
+////
+// Convert Qt log levels to Log::Level
+Log::Level QtToLog(QtMsgType type) {
+    switch (type) {
+    case QtDebugMsg:
+        return Log::Level::DEBUG;
+    case QtInfoMsg:
+        return Log::Level::INFO;
+    case QtWarningMsg:
+        return Log::Level::WARNING;
+    case QtCriticalMsg:
+        return Log::Level::ERR;
+    case QtFatalMsg:
+        return Log::Level::FATAL;
+    default:
+        return Log::Level::NOTSET;
+    }
+}
+////
+
+void LogBuffer::init(int messageCount, Log::Level minMsgType, fs::path outputFileName) {
+    s_Instance.reset(new LogBuffer(messageCount, minMsgType, outputFileName));
+    qInstallMessageHandler(&LogBuffer::log);
+}
+
+void LogBuffer::log(QtMsgType type, const QMessageLogContext& context, const QString& message) {
+    assert(s_Instance);
+    // Qt Logs seem to have an extra newline at the end.
+    std::string msg = message.toStdString();
+    msg.resize(msg.size() - 1);
+    s_Instance->logMessage(QtToLog(type), msg);
+}
+
+LogBuffer::LogBuffer(int messageCount, Log::Level minMsgType, fs::path logFile)
+    : QAbstractItemModel(nullptr), m_logFile(logFile), m_MinMsgType(minMsgType) {
+    m_log.reset(new Log::Logger(m_logFile));
+    m_log;
     m_Messages.resize(messageCount);
 }
 
@@ -41,7 +77,8 @@ LogBuffer::~LogBuffer() {
     write();
 }
 
-void LogBuffer::logMessage(QtMsgType type, const QString& message) {
+void LogBuffer::logMessage(Log::Level type, const std::string& message) {
+    m_log->log(type, message);
     if (type >= m_MinMsgType) {
         Message msg = {type, QTime::currentTime(), message};
         if (m_NumMessages < m_Messages.size()) {
@@ -54,7 +91,7 @@ void LogBuffer::logMessage(QtMsgType type, const QString& message) {
             emit dataChanged(createIndex(0, 0), createIndex(static_cast<int>(m_Messages.size()), 0));
         }
         ++m_NumMessages;
-        if (type >= QtCriticalMsg) {
+        if (type >= Log::Level::ERR) {
             write();
         }
     }
@@ -82,13 +119,6 @@ void LogBuffer::write() const {
     ::SetLastError(lastError);
 }
 
-void LogBuffer::init(int messageCount, QtMsgType minMsgType, const QString& outputFileName) {
-    QMutexLocker guard(&s_Mutex);
-
-    s_Instance.reset(new LogBuffer(messageCount, minMsgType, outputFileName));
-    old_handler = qInstallMessageHandler(LogBuffer::log);
-}
-
 char LogBuffer::msgTypeID(QtMsgType type) {
     switch (type) {
     case QtDebugMsg:
@@ -102,34 +132,6 @@ char LogBuffer::msgTypeID(QtMsgType type) {
     default:
         return '?';
     }
-}
-
-void LogBuffer::log(QtMsgType type, const QMessageLogContext& context, const QString& message) {
-    // QMutexLocker doesn't support timeout...
-    if (!s_Mutex.tryLock(100)) {
-        fprintf(stderr, "failed to log: %s", qPrintable(message));
-        return;
-    }
-    ON_BLOCK_EXIT([]() { s_Mutex.unlock(); });
-    old_handler(type, context, message); // INFO: Old handler registered in application main.cpp
-
-    if (!s_Instance.isNull()) {
-        s_Instance->logMessage(type, message);
-    }
-
-    if (type == QtDebugMsg) {
-        fprintf(stdout, "%s [%c] %s\n", qPrintable(QTime::currentTime().toString()), msgTypeID(type),
-                qPrintable(message));
-    } else {
-        if (context.line != 0) {
-            fprintf(stdout, "%s [%c] (%s:%u) %s\n", qPrintable(QTime::currentTime().toString()), msgTypeID(type),
-                    context.file, context.line, qPrintable(message));
-        } else {
-            fprintf(stdout, "%s [%c] %s\n", qPrintable(QTime::currentTime().toString()), msgTypeID(type),
-                    qPrintable(message));
-        }
-    }
-    fflush(stdout);
 }
 
 QModelIndex LogBuffer::index(int row, int column, const QModelIndex&) const { return createIndex(row, column, row); }
@@ -233,4 +235,73 @@ void log(const char* format, ...) {
 
 QString LogBuffer::Message::toString() const {
     return QString("%1 [%2] %3").arg(time.toString()).arg(msgTypeID(type)).arg(message);
+}
+
+////
+
+////
+// Convert Log::Level log levels to spdlog::level
+static spdlog::level::level_enum LogToSpd(Log::Level type) {
+    switch (type) {
+    case Log::Level::DEBUG:
+        return spdlog::level::debug;
+    case Log::Level::INFO:
+        return spdlog::level::info;
+    case Log::Level::WARNING:
+        return spdlog::level::warn;
+    case Log::Level::ERR:
+        return spdlog::level::err;
+    case Log::Level::FATAL:
+        return spdlog::level::critical;
+    default:
+        return spdlog::level::debug;
+    }
+}
+////
+
+spdlog::sink_ptr Log::details::file_sink(fs::path log_path) {
+    fs::path full_path(log_path);
+    return std::make_shared<spdlog::sinks::simple_file_sink_mt>(full_path.string());
+}
+
+spdlog::sink_ptr Log::details::console_sink() {
+    static auto tmp = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
+    return tmp;
+}
+
+spdlog::sink_ptr Log::details::ostream_sink() {
+    static auto tmp = std::make_shared<spdlog::sinks::ostream_sink_mt>(errorLog);
+    return tmp;
+}
+
+Log::Logger::Logger(std::string filename, fs::path log_path, Log::Level l)
+    : m_name(filename), m_logPath(log_path), m_level(l) {
+    // Make the path canoical and immune to working directory changes.
+    log_path = fs::canonical(log_path);
+    // First create the log directory.
+    fs::create_directories(log_path);
+    // Setup spdlog sinks.
+    std::vector<spdlog::sink_ptr> sinks;
+    // Add file sink.
+    sinks.push_back(details::file_sink(log_path / (filename + ".log")));
+    // Add global log sink.
+    sinks.push_back(details::ostream_sink());
+    // If debug configuration, log to the console as well.
+#if COMMON_IS_DEBUG
+    sinks.push_back(details::console_sink());
+#endif
+    // Create the Logger.
+    m_logger = std::make_unique<spdlog::logger>(m_name, std::begin(sinks), std::end(sinks));
+    // Change level to supplied.
+    m_logger->set_level(LogToSpd(m_level));
+    // If logging fails, print to stderr.
+    m_logger->set_error_handler([](const std::string& msg) { std::cerr << "Failed to log: " << msg << '\n'; });
+}
+
+Log::Logger::Logger(fs::path log_file_path, Log::Level l)
+    : Logger(log_file_path.stem().string(), log_file_path.parent_path(), l) {}
+
+void Log::Logger::log_level(Log::Level l) {
+    m_level = l;
+    m_logger->set_level(LogToSpd(l));
 }

@@ -44,7 +44,7 @@ SET(HDRS
     include/${library_name}/messagedialog.h
     include/${library_name}/mainwindow.h
     include/${library_name}/loghighlighter.h
-    include/${library_name}/logbuffer.h
+    include/${library_name}/logging.h
     include/${library_name}/lockeddialog.h
     include/${library_name}/loadmechanism.h
     include/${library_name}/installationmanager.h
@@ -132,7 +132,7 @@ SET(SRCS
     src/mainwindow.cpp
     src/main.cpp
     src/loghighlighter.cpp
-    src/logbuffer.cpp
+    src/logging.cpp
     src/lockeddialog.cpp
     src/loadmechanism.cpp
     src/installationmanager.cpp
