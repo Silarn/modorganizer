@@ -26,10 +26,15 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <common/predef.h>
 #include <common/sane_windows.h>
+#include <common/stringutils.h>
 #include <common/util.h>
 #include <fmt/format.h>
+#include <fmt/ostream.h>
 
+#include <QDir>
 #include <QMessageLogContext>
+#include <QProcess>
+#include <QSslSocket>
 #include <QString>
 #include <QStringList>
 #include <QtGlobal>
@@ -154,6 +159,8 @@ protected:
 
 static Log::Logger moLog("mo_interface", common::get_exe_dir() / "Logs");
 
+//
+#pragma region "Error / external log handling."
 // Callback to filter information from the Minidump.
 static BOOL CALLBACK MyMiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_INPUT pInput,
                                         PMINIDUMP_CALLBACK_OUTPUT pOutput) {
@@ -299,6 +306,35 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QS
     case QtFatalMsg:
         logQ.fatal(smsg);
         break;
+    }
+}
+#pragma endregion
+//
+
+// Extend the PATH enviroment variable for this process to include the dlls subdirectory.
+// This way plugins don't need a manifest.
+void setupPath() {
+    // TODO: Possibly use SetDllDirectory?
+    // May need to turn it off when loading other processes?
+    // FIXME: This doesnt seem to be working.
+    // The FO4 plugin requires liblz4.
+    // It can't find it in the dlls directory without the manifest.
+    fs::path appDirPath = common::get_exe_dir();
+    moLog.info("Setting up PATH");
+
+    auto bufsize = ::GetEnvironmentVariableW(L"PATH", NULL, 0);
+    std::wstring path;
+    path.resize(bufsize);
+    ::GetEnvironmentVariableW(L"PATH", path.data(), path.size());
+    moLog.debug("Old PATH: {}", common::toString(path));
+    path[path.size() - 1] = ';';
+    path += appDirPath / "dlls";
+    moLog.debug("New PATH: {}", common::toString(path));
+
+    auto err = ::SetEnvironmentVariableW(L"PATH", path.data());
+    if (!err) {
+        auto code = ::GetLastError();
+        moLog.warn("Could not setup PATH. Error Code {}", code);
     }
 }
 
@@ -513,33 +549,6 @@ MOBase::IPluginGame* determineCurrentGame(QString const& moPath, QSettings& sett
     return nullptr;
 }
 
-// extend path to include dll directory so plugins don't need a manifest
-// (using AddDllDirectory would be an alternative to this but it seems fairly
-// complicated esp.
-//  since it isn't easily accessible on Windows < 8
-//  SetDllDirectory replaces other search directories and this seems to
-//  propagate to child processes)
-void setupPath() {
-    // FIXME: This doesnt seem to be working.
-    // The FO4 plugin requires liblz4.
-    // It can't find it in the dlls directory without the manifest.
-    fs::path appDirPath = QCoreApplication::applicationDirPath().toStdWString();
-    qDebug("MO at: %s", qUtf8Printable(QString::fromStdWString(appDirPath.native())));
-
-    auto bufsize = ::GetEnvironmentVariableW(L"PATH", NULL, 0);
-    std::wstring path;
-    path.resize(bufsize);
-    ::GetEnvironmentVariableW(L"PATH", path.data(), path.size());
-    path[path.size() - 1] = ';';
-    path += appDirPath / "dlls";
-
-    auto err = ::SetEnvironmentVariableW(L"PATH", path.data());
-    if (!err) {
-        auto code = ::GetLastError();
-        qWarning("Could not setup PATH. Error Code %d", code);
-    }
-}
-
 int runApplication(MOApplication& application, SingleInstance& instance, const QString& splashPath) {
     qDebug("start main application");
     // Display splash screen
@@ -671,6 +680,7 @@ int main(int argc, char* argv[]) {
     try {
         // Setup Logging.
         moLog.info("Mod Organizer started.");
+        moLog.info("MO Located At: {}", common::get_exe_dir());
         moLog.info("Setting up Exception Handlers and external logging wrappers.");
         // Exception and error handling.
         // Overwide the default windows crash behaviour.
@@ -682,39 +692,48 @@ int main(int argc, char* argv[]) {
         moLog.info("Setting up Application and processing commandline");
         MOApplication application(argc, argv);
         QStringList arguments = application.arguments();
+        // Handle launch argument.
+        // First argument should be launch
+        // Second should be the working directory
+        // third the program to run
+        // Fourth and onwards, arguments to the program.
+        if ((arguments.length() >= 4) && (arguments.at(1) == "launch")) {
+            // All we're supposed to do is launch another process, so do that.
+            moLog.info("Launch argument passed.");
+            auto wdir = QDir::fromNativeSeparators(arguments.at(2));
+            auto prog = QDir::fromNativeSeparators(arguments.at(3));
+            auto args = arguments.mid(4);
+            moLog.info("Launching {} with arguments: '{}' and working directory '{}'", prog.toStdString(),
+                       args.join(" ").toStdString(), wdir.toStdString());
+            QProcess process;
+            process.setWorkingDirectory(wdir);
+            process.setProgram(prog);
+            process.setArguments(args);
+            process.start();
+            process.waitForFinished(-1);
+            return process.exitCode();
+        }
+        // Handle update argument.
+        bool forcePrimary = false;
+        if (arguments.contains("update")) {
+            moLog.info("We updated! Forcing primary instance");
+            arguments.removeAll("update");
+            // Force ourselves to be the primary instance if we're updating.
+            forcePrimary = true;
+        }
+        // Setup Paths.
+        setupPath();
+#if !defined(QT_NO_SSL)
+        moLog.info("Qt supports SSL: {}", QSslSocket::supportsSsl());
+#else
+        moLog.info("Qt does not supports SSL.");
+#endif
     } catch (...) {
         moLog.error("Mod Organizer crashed...");
         moLog.flush();
         throw;
     }
 #if 0
-    // Handle arguments
-    if ((arguments.length() >= 4) && (arguments.at(1) == "launch")) {
-        // all we're supposed to do is launch another process
-        QProcess process;
-        process.setWorkingDirectory(QDir::fromNativeSeparators(arguments.at(2)));
-        process.setProgram(QDir::fromNativeSeparators(arguments.at(3)));
-        process.setArguments(arguments.mid(4));
-        process.start();
-        process.waitForFinished(-1);
-        return process.exitCode();
-    }
-
-    bool forcePrimary = false;
-    if (arguments.contains("update")) {
-        arguments.removeAll("update");
-        forcePrimary = true;
-    }
-
-    // Setup Paths for Plugins.
-    setupPath();
-
-#if !defined(QT_NO_SSL)
-    qDebug("ssl support: %d", QSslSocket::supportsSsl());
-#else
-    qDebug("non-ssl build");
-#endif
-
     // Enforce single instance, and handle nxm downloads.
     SingleInstance instance(forcePrimary);
     if (!instance.primaryInstance()) {
