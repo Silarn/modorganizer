@@ -6,7 +6,10 @@ with mods and thus need an easy and reliable way to install and
 uninstall them.
 
 ## About This Branch
-This branch is a WIP and is not ready to be used or built by others. Right now mostly refactoring and backend improvements/replacements.
+This branch is a WIP and is not ready to be used or built by others.
+Right now mostly refactoring and backend improvements/replacements.
+
+This branch is currently provided AS-IS and Works For Me™. Code may not compile or run correctly, dependencies may not be specified, etc.
 
 Use at your own risk.
 
