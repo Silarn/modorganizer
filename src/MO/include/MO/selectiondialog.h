@@ -42,6 +42,7 @@ public:
      * @param description the description that shows up under in small letters inside the button
      * @param data data to be stored with the button. Please note that as soon as one choice has data associated with it
      * (non-invalid QVariant) all buttons that contain no data will be treated as "cancel" buttons
+     * @param icon Optional icon to be used for the choice.
      */
     void addChoice(const QString& buttonText, const QString& description, const QVariant& data,
                    const QIcon& icon = QIcon());
@@ -49,6 +50,7 @@ public:
     // Return the number of choices.
     int numChoices() const;
 
+    // Return information from the currently selected Choice.
     QVariant getChoiceData();
     QString getChoiceString();
 
@@ -60,9 +62,9 @@ private slots:
     void on_cancelButton_clicked();
 
 private:
-    Ui::SelectionDialog* ui;
-    QAbstractButton* m_Choice;
-    bool m_ValidateByData;
+    Ui::SelectionDialog* ui = nullptr;
+    QAbstractButton* m_Choice = nullptr;
+    bool m_ValidateByData = false;
     QSize m_IconSize;
 };
 
