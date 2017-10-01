@@ -27,6 +27,8 @@ namespace Ui {
 class SelectionDialog;
 }
 
+// Dialog used for Multiple Choice Selection.
+// Displays a list of choices
 class SelectionDialog : public QDialog {
     Q_OBJECT
 public:
@@ -41,15 +43,16 @@ public:
      * @param data data to be stored with the button. Please note that as soon as one choice has data associated with it
      * (non-invalid QVariant) all buttons that contain no data will be treated as "cancel" buttons
      */
-    void addChoice(const QString& buttonText, const QString& description, const QVariant& data);
+    void addChoice(const QString& buttonText, const QString& description, const QVariant& data,
+                   const QIcon& icon = QIcon());
 
-    void addChoice(const QIcon& icon, const QString& buttonText, const QString& description, const QVariant& data);
-
+    // Return the number of choices.
     int numChoices() const;
 
     QVariant getChoiceData();
     QString getChoiceString();
 
+    // Disable the cancel button.
     void disableCancel();
 
 private slots:

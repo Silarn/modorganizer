@@ -30,28 +30,20 @@ SelectionDialog::SelectionDialog(const QString& description, QWidget* parent, co
 
 SelectionDialog::~SelectionDialog() { delete ui; }
 
-void SelectionDialog::addChoice(const QString& buttonText, const QString& description, const QVariant& data) {
+void SelectionDialog::addChoice(const QString& buttonText, const QString& description, const QVariant& data,
+                                const QIcon& icon) {
     QAbstractButton* button = new QCommandLinkButton(buttonText, description, ui->buttonBox);
     if (m_IconSize.isValid()) {
         button->setIconSize(m_IconSize);
     }
-    button->setProperty("data", data);
-    ui->buttonBox->addButton(button, QDialogButtonBox::AcceptRole);
-    if (data.isValid())
-        m_ValidateByData = true;
-}
-
-void SelectionDialog::addChoice(const QIcon& icon, const QString& buttonText, const QString& description,
-                                const QVariant& data) {
-    QAbstractButton* button = new QCommandLinkButton(buttonText, description, ui->buttonBox);
-    if (m_IconSize.isValid()) {
-        button->setIconSize(m_IconSize);
+    if (!icon.isNull()) {
+        button->setIcon(icon);
     }
-    button->setIcon(icon);
     button->setProperty("data", data);
     ui->buttonBox->addButton(button, QDialogButtonBox::AcceptRole);
-    if (data.isValid())
+    if (data.isValid()) {
         m_ValidateByData = true;
+    }
 }
 
 int SelectionDialog::numChoices() const { return ui->buttonBox->findChildren<QCommandLinkButton*>(QString()).count(); }
