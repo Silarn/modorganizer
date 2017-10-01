@@ -29,8 +29,7 @@ class SelectionDialog;
 
 class SelectionDialog : public QDialog {
     Q_OBJECT
-
-  public:
+public:
     explicit SelectionDialog(const QString& description, QWidget* parent = 0, const QSize& iconSize = QSize());
 
     ~SelectionDialog();
@@ -53,13 +52,11 @@ class SelectionDialog : public QDialog {
 
     void disableCancel();
 
-  private slots:
-
+private slots:
     void on_buttonBox_clicked(QAbstractButton* button);
-
     void on_cancelButton_clicked();
 
-  private:
+private:
     Ui::SelectionDialog* ui;
     QAbstractButton* m_Choice;
     bool m_ValidateByData;
