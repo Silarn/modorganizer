@@ -35,4 +35,12 @@ fs::path get_exe_dir() {
     return ret;
 }
 
+bool is_writeable(fs::path dir) {
+    if (!fs::exists(dir) || fs::is_directory(dir)) {
+        return false;
+    }
+    auto perms = fs::status(dir).permissions();
+    return (perms & fs::perms::owner_write) != fs::perms::none;
+}
+
 } // namespace common
