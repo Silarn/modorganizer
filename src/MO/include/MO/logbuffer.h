@@ -30,7 +30,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 class LogBuffer : public QAbstractItemModel {
     Q_OBJECT
-  public:
+public:
     static void init(int messageCount, QtMsgType minMsgType, const QString& outputFileName);
     static void log(QtMsgType type, const QMessageLogContext& context, const QString& message);
 
@@ -39,22 +39,22 @@ class LogBuffer : public QAbstractItemModel {
 
     static LogBuffer* instance() { return s_Instance.data(); }
 
-  public:
+public:
     virtual ~LogBuffer();
 
     void logMessage(QtMsgType type, const QString& message);
 
     // QAbstractItemModel interface
-  public:
+public:
     QModelIndex index(int row, int column, const QModelIndex& parent) const;
     QModelIndex parent(const QModelIndex& child) const;
     int rowCount(const QModelIndex& parent) const;
     int columnCount(const QModelIndex& parent) const;
     QVariant data(const QModelIndex& index, int role) const;
-  signals:
-  public slots:
+signals:
+public slots:
 
-  private:
+private:
     explicit LogBuffer(int messageCount, QtMsgType minMsgType, const QString& outputFileName);
     LogBuffer(const LogBuffer& reference);            // not implemented
     LogBuffer& operator=(const LogBuffer& reference); // not implemented
@@ -63,7 +63,7 @@ class LogBuffer : public QAbstractItemModel {
 
     static char msgTypeID(QtMsgType type);
 
-  private:
+private:
     struct Message {
         QtMsgType type;
         QTime time;
@@ -71,7 +71,7 @@ class LogBuffer : public QAbstractItemModel {
         QString toString() const;
     };
 
-  private:
+private:
     static QScopedPointer<LogBuffer> s_Instance;
     static QMutex s_Mutex;
 
