@@ -16,21 +16,18 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #pragma once
-
 #include <QSettings>
 #include <QString>
 
 class InstanceManager {
-
-  public:
+public:
     static InstanceManager& instance();
 
     QString determineDataPath();
     void clearCurrentInstance();
 
-  private:
+private:
     InstanceManager();
 
     QString currentInstance() const;
@@ -46,7 +43,7 @@ class InstanceManager {
     void createDataPath(const QString& dataPath) const;
     bool portableInstall() const;
 
-  private:
+private:
     QSettings m_AppSettings;
     bool m_Reset{false};
 };
