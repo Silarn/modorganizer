@@ -63,7 +63,7 @@ class IPluginGame;
 class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
-  private:
+private:
     struct SignalCombinerAnd {
         typedef bool result_type;
         template <typename InputIterator>
@@ -78,12 +78,12 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
         }
     };
 
-  private:
+private:
     using SignalAboutToRunApplication = boost::signals2::signal<bool(const QString&), SignalCombinerAnd>;
     using SignalFinishedRunApplication = boost::signals2::signal<void(const QString&, unsigned int)>;
     using SignalModInstalled = boost::signals2::signal<void(const QString&)>;
 
-  public:
+public:
     OrganizerCore(const QSettings& initSettings);
 
     ~OrganizerCore();
@@ -151,7 +151,7 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
 
     void setLogLevel(int logLevel);
 
-  public:
+public:
     MOBase::IModRepositoryBridge* createNexusBridge() const;
     QString profileName() const;
     QString profilePath() const;
@@ -187,14 +187,14 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     void refreshModList(bool saveChanges = true);
     QStringList modsSortedByProfilePriority() const;
 
-  public: // IPluginDiagnose interface
+public: // IPluginDiagnose interface
     virtual std::vector<unsigned int> activeProblems() const;
     virtual QString shortDescription(unsigned int key) const;
     virtual QString fullDescription(unsigned int key) const;
     virtual bool hasGuidedFix(unsigned int key) const;
     virtual void startGuidedFix(unsigned int key) const;
 
-  public slots:
+public slots:
 
     void profileRefresh();
     void externalMessage(const QString& message);
@@ -213,7 +213,7 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
 
     bool nexusLogin(bool retry = false);
 
-  signals:
+signals:
 
     /**
      * @brief emitted after a mod has been installed
@@ -225,7 +225,7 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
 
     void close();
 
-  private:
+private:
     void storeSettings();
 
     QSettings::Status storeSettings(const QString& fileName);
@@ -251,7 +251,7 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
 
     bool waitForProcessCompletion(HANDLE handle, LPDWORD exitCode);
 
-  private slots:
+private slots:
 
     void directory_refreshed();
     void downloadRequested(QNetworkReply* reply, int modID, const QString& fileName);
@@ -260,10 +260,10 @@ class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     void loginSuccessful(bool necessary);
     void loginFailed(const QString& message);
 
-  private:
+private:
     static const unsigned int PROBLEM_TOOMANYPLUGINS = 1;
 
-  private:
+private:
     IUserInterface* m_UserInterface = nullptr;
     PluginContainer* m_PluginContainer = nullptr;
     QString m_GameName;
