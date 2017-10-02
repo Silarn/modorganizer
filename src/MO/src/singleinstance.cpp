@@ -18,14 +18,14 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/singleinstance.h"
 
+#include <QIODevice>
 #include <QLocalSocket>
+#include <QString>
 #include <uibase/report.h>
 #include <uibase/utility.h>
 
 static const char s_Key[] = "mo-43d1a3ad-eeb0-4818-97c9-eda5216c29b5";
 static const int s_Timeout = 5000;
-
-using MOBase::reportError;
 
 SingleInstance::SingleInstance(bool forcePrimary) : QObject(nullptr) {
     // Set Shared Memory key to s_Key.
@@ -83,13 +83,13 @@ void SingleInstance::sendMessage(const QString& message) {
     }
 
     if (!connected) {
-        reportError(tr("failed to connect to running instance: %1").arg(socket.errorString()));
+        MOBase::reportError(tr("failed to connect to running instance: %1").arg(socket.errorString()));
         return;
     }
 
     socket.write(message.toUtf8());
     if (!socket.waitForBytesWritten(s_Timeout)) {
-        reportError(tr("failed to communicate with running instance: %1").arg(socket.errorString()));
+        MOBase::reportError(tr("failed to communicate with running instance: %1").arg(socket.errorString()));
         return;
     }
 
@@ -99,7 +99,7 @@ void SingleInstance::sendMessage(const QString& message) {
 void SingleInstance::receiveMessage() {
     QLocalSocket* socket = m_Server.nextPendingConnection();
     if (!socket->waitForReadyRead(s_Timeout)) {
-        reportError(tr("failed to receive data from secondary instance: %1").arg(socket->errorString()));
+        MOBase::reportError(tr("failed to receive data from secondary instance: %1").arg(socket->errorString()));
         return;
     }
 
