@@ -16,27 +16,22 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
-#ifndef SELFUPDATER_H
-#define SELFUPDATER_H
-
+#pragma once
+#include <QFile>
+#include <QJsonObject>
+#include <QObject>
+#include <QString>
+#include <QtGlobal>
 #include <github/github.h>
 #include <uibase/versioninfo.h>
 
-class Archive;
+#include <memory>
+// Fwds
 class NexusInterface;
-namespace MOBase {
-class IPluginGame;
-}
-
-#include <QFile>
-#include <QObject>
-#include <QString>
-#include <QVariant>
-#include <QtGlobal> //for qint64
-
+class QWidget;
 class QNetworkReply;
 class QProgressDialog;
+class Archive;
 
 // @brief manages updates for Mod Organizer itself
 // This class is used to update the Mod Organizer
@@ -62,8 +57,7 @@ public:
     //
     // @param nexusInterface interface to query information from nexus
     // @param parent parent widget
-    // @todo passing the nexus interface is unneccessary
-    explicit SelfUpdater(NexusInterface* nexusInterface);
+    explicit SelfUpdater();
 
     virtual ~SelfUpdater();
 
@@ -112,7 +106,7 @@ private:
     bool m_Canceled = false;
     int m_Attempts = 3;
 
-    Archive* m_ArchiveHandler = nullptr;
+    std::unique_ptr<Archive> m_ArchiveHandler;
 
     QFile m_UpdateFile;
     MOBase::VersionInfo m_MOVersion;
@@ -120,5 +114,3 @@ private:
     GitHub m_GitHub;
     QJsonObject m_UpdateCandidate;
 };
-
-#endif // SELFUPDATER_H

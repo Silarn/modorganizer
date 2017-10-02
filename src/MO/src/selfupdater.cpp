@@ -18,91 +18,108 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/selfupdater.h"
 #include "MO/bbcode.h"
-#include "MO/downloadmanager.h"
 #include "MO/installationmanager.h"
-#include "MO/messagedialog.h"
+#include "MO/logging.h"
 #include "MO/nexusinterface.h"
 #include "MO/nxmaccessmanager.h"
 #include "MO/settings.h"
 
-#include <MO/Shared/util.h>
+#include <MO/shared/appconfig.h>
+#include <MO/shared/util.h>
+#include <archive/archive.h>
+#include <common/util.h>
+#include <uibase/report.h>
+#include <uibase/utility.h>
+#include <uibase/versioninfo.h>
+
 #include <QAbstractButton>
 #include <QApplication>
+#include <QDir>
+#include <QIODevice>
+#include <QJsonObject>
+#include <QJsonValue>
 #include <QLibrary>
 #include <QMessageBox>
-#include <QProcess>
-#include <uibase/iplugingame.h>
-#include <uibase/report.h>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QObject>
+#include <QProgressDialog>
+#include <QString>
+#include <QUrl>
+#include <QtGlobal>
 
+#include <assert.h>
+#include <exception>
 #include <shellapi.h>
 
-using namespace MOBase;
-using namespace MOShared;
+using CreateArchiveType = Archive* (*)();
 
-typedef Archive* (*CreateArchiveType)();
-
+// Helper function to resolve functions from a DLL.
 template <typename T>
 static T resolveFunction(QLibrary& lib, const char* name) {
     T temp = reinterpret_cast<T>(lib.resolve(name));
-    if (temp == nullptr) {
+    if (!temp) {
         throw std::runtime_error(QObject::tr("invalid 7-zip32.dll: %1").arg(lib.errorString()).toLatin1().constData());
     }
     return temp;
 }
 
-SelfUpdater::SelfUpdater(NexusInterface* nexusInterface)
-    : m_Parent(nullptr), m_Interface(nexusInterface), m_Reply(nullptr), m_Attempts(3) {
-    QLibrary archiveLib(QCoreApplication::applicationDirPath() + "\\dlls\\archive.dll");
+SelfUpdater::SelfUpdater() : m_Interface(NexusInterface::instance()) {
+    auto path = common::get_exe_dir() / AppConfig::archiveDll();
+    QLibrary archiveLib(QString::fromStdWString(path.native()));
     if (!archiveLib.load()) {
-        throw MyException(tr("archive.dll not loaded: \"%1\"").arg(archiveLib.errorString()));
+        throw MOBase::MyException(tr("archive.dll not loaded: \"%1\"").arg(archiveLib.errorString()));
     }
 
     CreateArchiveType CreateArchiveFunc = resolveFunction<CreateArchiveType>(archiveLib, "CreateArchive");
 
-    m_ArchiveHandler = CreateArchiveFunc();
+    m_ArchiveHandler.reset(CreateArchiveFunc());
     if (!m_ArchiveHandler->isValid()) {
-        // FIXME: This.
-        // throw MyException(InstallationManager::getErrorString(m_ArchiveHandler->getLastError()));
+        // FIXME: This stops startup.
+        // Should probably just fix Archive.dll
+        // throw MOBase::MyException(InstallationManager::getErrorString(m_ArchiveHandler->getLastError()));
     }
+    // TODO: Expand on this.
+    VS_FIXEDFILEINFO version = MOShared::GetFileVersion(common::get_exe_dir() / AppConfig::applicationExeName());
 
-    VS_FIXEDFILEINFO version = GetFileVersion(ToWString(QApplication::applicationFilePath()));
-
-    m_MOVersion = VersionInfo(version.dwFileVersionMS >> 16, version.dwFileVersionMS & 0xFFFF,
-                              version.dwFileVersionLS >> 16, version.dwFileVersionLS & 0xFFFF);
+    m_MOVersion = MOBase::VersionInfo(version.dwFileVersionMS >> 16, version.dwFileVersionMS & 0xFFFF,
+                                      version.dwFileVersionLS >> 16, version.dwFileVersionLS & 0xFFFF);
 }
 
-SelfUpdater::~SelfUpdater() { delete m_ArchiveHandler; }
+SelfUpdater::~SelfUpdater() {}
 
 void SelfUpdater::setUserInterface(QWidget* widget) { m_Parent = widget; }
 
 void SelfUpdater::testForUpdate() {
     // TODO: if prereleases are disabled we could just request the latest release
     // directly
-    m_GitHub.releases(GitHub::Repository("LePresidente", "modorganizer"), [this](const QJsonArray& releases) {
+    // TODO: AppConfig
+    m_GitHub.releases(GitHub::Repository("ModOrganizer", "modorganizer"), [this](const QJsonArray& releases) {
         QJsonObject newest;
         for (const QJsonValue& releaseVal : releases) {
             QJsonObject release = releaseVal.toObject();
             if (!release["draft"].toBool() &&
                 (Settings::instance().usePrereleases() || !release["prerelease"].toBool())) {
-                if (newest.empty() ||
-                    (VersionInfo(release["tag_name"].toString()) > VersionInfo(newest["tag_name"].toString()))) {
+                if (newest.empty() || (MOBase::VersionInfo(release["tag_name"].toString()) >
+                                       MOBase::VersionInfo(newest["tag_name"].toString()))) {
                     newest = release;
                 }
             }
         }
 
         if (!newest.empty()) {
-            VersionInfo newestVer(newest["tag_name"].toString());
+            MOBase::VersionInfo newestVer(newest["tag_name"].toString());
             if (newestVer > this->m_MOVersion) {
                 m_UpdateCandidate = newest;
-                qDebug("update available: %s -> %s", qPrintable(this->m_MOVersion.displayString()),
-                       qPrintable(newestVer.displayString()));
+                MOLog::instance().info("Update Available: {} -> {}", this->m_MOVersion.displayString().toStdString(),
+                                       newestVer.displayString().toStdString());
                 emit updateAvailable();
             } else if (newestVer < this->m_MOVersion) {
-                // this could happen if the user switches from using prereleases to
+                // INFO: this could happen if the user switches from using prereleases to
                 // stable builds. Should we downgrade?
-                qDebug("this version is newer than the newest installed one: %s -> %s",
-                       qPrintable(this->m_MOVersion.displayString()), qPrintable(newestVer.displayString()));
+                MOLog::instance().info("this version is newer than the newest installed one: {} -> {}",
+                                       this->m_MOVersion.displayString().toStdString(),
+                                       newestVer.displayString().toStdString());
             }
         }
     });
@@ -110,13 +127,13 @@ void SelfUpdater::testForUpdate() {
 
 void SelfUpdater::startUpdate() {
     // the button can't be pressed if there isn't an update candidate
-    Q_ASSERT(!m_UpdateCandidate.empty());
+    assert(!m_UpdateCandidate.empty());
 
     QMessageBox query(
         QMessageBox::Question, tr("New update available (%1)").arg(m_UpdateCandidate["tag_name"].toString()),
         BBCode::convertToHTML(m_UpdateCandidate["body"].toString()), QMessageBox::Yes | QMessageBox::Cancel, m_Parent);
 
-    query.button(QMessageBox::Yes)->setText(tr("Install"));
+    query.button(QMessageBox::Yes)->setText(QObject::tr("Install"));
 
     int res = query.exec();
 
@@ -160,7 +177,7 @@ void SelfUpdater::closeProgress() {
 
 void SelfUpdater::openOutputFile(const QString& fileName) {
     QString outputPath = QDir::fromNativeSeparators(qApp->property("dataPath").toString()) + "/" + fileName;
-    qDebug("downloading to %s", qPrintable(outputPath));
+    MOLog::instance().info("Downloading to {}", outputPath.toStdString());
     m_UpdateFile.setFileName(outputPath);
     m_UpdateFile.open(QIODevice::WriteOnly);
 }
@@ -227,24 +244,25 @@ void SelfUpdater::downloadFinished() {
 
     if ((m_UpdateFile.size() == 0) || (error != QNetworkReply::NoError) || m_Canceled) {
         if (!m_Canceled) {
-            reportError(tr("Download failed: %1").arg(error));
+            MOBase::reportError(tr("Download failed: %1").arg(error));
         }
         m_UpdateFile.remove();
         return;
     }
 
-    qDebug("download: %s", m_UpdateFile.fileName().toUtf8().constData());
+    MOLog::instance().info("Download: {}", m_UpdateFile.fileName().toUtf8().toStdString());
 
     try {
         installUpdate();
     } catch (const std::exception& e) {
-        reportError(tr("Failed to install update: %1").arg(e.what()));
+        MOBase::reportError(tr("Failed to install update: %1").arg(e.what()));
     }
 }
 
 void SelfUpdater::downloadCancel() { m_Canceled = true; }
 
 void SelfUpdater::installUpdate() {
+    // FIXME: This.
     const QString mopath = QDir::fromNativeSeparators(qApp->property("dataPath").toString());
 
     HINSTANCE res =
@@ -253,7 +271,7 @@ void SelfUpdater::installUpdate() {
     if (res > (HINSTANCE)32) {
         QCoreApplication::quit();
     } else {
-        reportError(tr("Failed to start %1: %2").arg(m_UpdateFile.fileName()).arg((int)res));
+        MOBase::reportError(tr("Failed to start %1: %2").arg(m_UpdateFile.fileName()).arg((int)res));
     }
 
     m_UpdateFile.remove();
