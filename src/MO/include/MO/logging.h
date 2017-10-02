@@ -165,7 +165,10 @@ protected:
 class MOLog : public Log::Logger {
 public:
     // Get the instance. Don't call this without calling init.
-    static MOLog& instance() { return *m_instance; }
+    static MOLog& instance() {
+        assert(m_instance && "MOLog has to be initialized first");
+        return *m_instance;
+    }
     // Initalize a logger to the file `logFile`.
     static void init(fs::path logFile) { m_instance.reset(new MOLog(logFile)); }
     //
