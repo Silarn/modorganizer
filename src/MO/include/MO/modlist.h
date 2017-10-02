@@ -16,22 +16,24 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifndef MODLIST_H
 #define MODLIST_H
-
 #include "MO/categories.h"
 #include "MO/modinfo.h"
 #include "MO/nexusinterface.h"
 #include "MO/profile.h"
+
+#include <uibase/imodlist.h>
+
 #include <QFile>
 #include <QListWidget>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QVector>
+
 #include <boost/signals2.hpp>
+
 #include <set>
-#include <uibase/imodlist.h>
 #include <vector>
 
 class QSortFilterProxyModel;
@@ -226,16 +228,6 @@ private:
     bool toggleSelection(QAbstractItemView* itemView);
 
 private:
-    struct TModInfo {
-        TModInfo(unsigned int index, ModInfo::Ptr modInfo)
-            : modInfo(modInfo), nameOrder(index), priorityOrder(0), modIDOrder(0), categoryOrder(0) {}
-        ModInfo::Ptr modInfo;
-        unsigned int nameOrder;
-        unsigned int priorityOrder;
-        unsigned int modIDOrder;
-        unsigned int categoryOrder;
-    };
-
     struct TModInfoChange {
         QString name;
         QFlags<IModList::ModState> state;
