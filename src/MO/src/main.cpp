@@ -49,10 +49,6 @@ using namespace std::string_literals;
 
 #pragma comment(linker, "/manifestdependency:\"name='dlls' version='1.0.0.0' type='win32'\"")
 
-// All messages logged through the Log::Logger class are also logged here in a thread safe manner.
-// This is so MyUnhandledExceptionFilter can access the log and include it in the dump.
-static std::stringstream errorLog;
-
 // Initlization log, only used here.
 // Next to the EXE and debugs startup.
 static Log::Logger moLog("mo_init", common::get_exe_dir() / "Logs");
@@ -124,13 +120,6 @@ static std::string CreateMiniDump(std::wstring dumpname, EXCEPTION_POINTERS* exc
         exceptionInfo.ThreadId = ::GetCurrentThreadId();
         exceptionInfo.ExceptionPointers = exceptionPtrs;
         exceptionInfo.ClientPointers = FALSE;
-        _MINIDUMP_USER_STREAM_INFORMATION userInfo;
-        std::string txt = errorLog.str();
-        std::array<_MINIDUMP_USER_STREAM, 1> tmp = {
-            {CommentStreamA, txt.size() + 1, txt.data()},
-        };
-        userInfo.UserStreamCount = tmp.size();
-        userInfo.UserStreamArray = &tmp[0];
         _MINIDUMP_CALLBACK_INFORMATION callbackInfo;
         callbackInfo.CallbackRoutine = &MyMiniDumpCallback;
         callbackInfo.CallbackParam = 0;
@@ -138,7 +127,7 @@ static std::string CreateMiniDump(std::wstring dumpname, EXCEPTION_POINTERS* exc
         MINIDUMP_TYPE mtype =
             static_cast<MINIDUMP_TYPE>(MiniDumpNormal | MiniDumpWithIndirectlyReferencedMemory | MiniDumpScanMemory);
         BOOL success = MiniDumpWriteDump(::GetCurrentProcess(), ::GetCurrentProcessId(), dumpFile, mtype,
-                                         &exceptionInfo, &userInfo, &callbackInfo);
+                                         &exceptionInfo, nullptr, &callbackInfo);
 
         ::FlushFileBuffers(dumpFile);
         ::CloseHandle(dumpFile);
