@@ -30,12 +30,13 @@ void reportError(const QString& message) {
     // This is required because otherwise QT will crash if
     // an exception was thrown in, say, QApplication::notify/the event loop.
     // This seems to be a reliable way to determine if it is safe to display a MessageBox.
+    auto title = QObject::tr("Error");
     if (QApplication::topLevelWidgets().count() != 0) {
-        QMessageBox messageBox(QMessageBox::Warning, QObject::tr("Error"), message, QMessageBox::Ok);
+        QMessageBox messageBox(QMessageBox::Warning, title, message, QMessageBox::Ok);
         messageBox.exec();
     } else {
-        ::MessageBoxW(nullptr, message.toStdWString().c_str(), QObject::tr("Error").toStdWString().c_str(),
-                      MB_OK | MB_ICONERROR);
+        ::MessageBoxW(nullptr, message.toStdWString().c_str(), title.toStdWString().data(), MB_OK | MB_ICONERROR);
     }
 }
+
 } // namespace MOBase
