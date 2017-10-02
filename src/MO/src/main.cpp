@@ -17,15 +17,9 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/instancemanager.h"
-#include "MO/logbuffer.h"
+#include "MO/logging.h"
 #include "MO/moapplication.h"
 #include "MO/singleinstance.h"
-
-// Spdlog optimizations
-#define SPDLOG_NO_THREAD_ID      // We don't use thread id.
-#define SPDLOG_NO_REGISTRY_MUTEX // We don't use the registry.
-#include <spdlog/sinks/ostream_sink.h>
-#include <spdlog/spdlog.h>
 
 #include <common/predef.h>
 #include <common/sane_windows.h>
@@ -58,109 +52,6 @@ using namespace std::string_literals;
 // All messages logged through the Log::Logger class are also logged here in a thread safe manner.
 // This is so MyUnhandledExceptionFilter can access the log and include it in the dump.
 static std::stringstream errorLog;
-
-namespace Log {
-// Logging specific details
-namespace details {
-// Implementation for setting up logging file sink.
-// log_path is a required argument taking the path to the full path to the log file.
-static spdlog::sink_ptr file_sink(fs::path log_path) {
-    fs::path full_path(log_path);
-    return std::make_shared<spdlog::sinks::simple_file_sink_mt>(full_path.string());
-}
-static spdlog::sink_ptr console_sink = std::make_shared<spdlog::sinks::wincolor_stdout_sink_mt>();
-static spdlog::sink_ptr minidump_sink = std::make_shared<spdlog::sinks::ostream_sink_mt>(errorLog);
-} // namespace details
-
-// An abstraction that handles logging.
-// This class is thread safe.
-class Logger {
-public:
-    // Create a new log file with the name `name` at path `log_path`
-    // Log files must be unique, or else strange things may happen.
-    // This is because spdlog requires logs to the same file to use the same sink, and a new sink is created each time
-    // this is called.
-    Logger(std::string filename, fs::path log_path) : m_name(filename), m_logPath(log_path) {
-        // Make the path canoical and immune to working directory changes.
-        log_path = fs::canonical(log_path);
-        // First create the log directory.
-        fs::create_directories(log_path);
-        // Setup spdlog sinks.
-        std::vector<spdlog::sink_ptr> sinks;
-        // Add file sink.
-        sinks.push_back(details::file_sink(log_path / (filename + ".log")));
-        // Add Minidump sink.
-        sinks.push_back(details::minidump_sink);
-        // If debug configuration, log to the console as well.
-#if COMMON_IS_DEBUG
-        sinks.push_back(details::console_sink);
-#endif
-        // Create the Logger.
-        m_logger = std::make_unique<spdlog::logger>(m_name, std::begin(sinks), std::end(sinks));
-        // Change level to debug.
-#if COMMON_IS_DEBUG
-        m_logger->set_level(spdlog::level::debug);
-#endif
-    }
-
-public:
-    fs::path get_log_dir() { return m_logPath; }
-    fs::path get_log_path() { return m_logPath / m_name += ".log"s; }
-    void flush() { m_logger->flush(); }
-#pragma region Public Log API
-    // Abosultely fatal error.
-    // Flushes logger, terminates the program.
-    template <typename... Args>
-    void fatal(Args&&... args) {
-        m_logger->critical(format(std::forward<Args>(args)...));
-        m_logger->flush();
-        std::terminate();
-    }
-
-    // The emitting component isn't working, or isn't working as intended.
-    template <typename... Args>
-    void error(Args&&... args) {
-        m_logger->error(format(std::forward<Args>(args)...));
-    }
-
-    // The emitting component is working as intended, but an error may be imminent.
-    template <typename... Args>
-    void warn(Args&&... args) {
-        m_logger->warn(format(std::forward<Args>(args)...));
-    }
-
-    // The emitting component has successfully completed an operation.
-    template <typename... Args>
-    void success(Args&&... args) {
-        m_logger->info("Success: {0:s}", format(std::forward<Args>(args)...));
-    }
-
-    // Information thats only useful when debugging.
-    template <typename... Args>
-    void debug(Args&&... args) {
-        m_logger->debug(format(std::forward<Args>(args)...));
-    }
-
-    // Everything else, doesn't reflect a change in the component status, just information about what it's doing.
-    template <typename... Args>
-    void info(Args&&... args) {
-        m_logger->info(format(std::forward<Args>(args)...));
-    }
-#pragma endregion
-private:
-    std::unique_ptr<spdlog::logger> m_logger;
-    std::string m_name;
-    fs::path m_logPath;
-
-protected:
-    template <typename... Args>
-    std::string format(Args&&... args) const {
-        // spdlog passes all args to this internally
-        return fmt::format(std::forward<Args>(args)...);
-    }
-};
-
-} // namespace Log
 
 // Initlization log, only used here.
 // Next to the EXE and debugs startup.
@@ -766,6 +657,10 @@ int main(int argc, char* argv[]) {
         }
         application.setProperty("dataPath", QString::fromStdWString(dataPath.native()));
         moLog.info("MO Data Path: '{}'", dataPath);
+        // Setup logging.
+        moLog.info("Initalizing Application Log.");
+        const fs::path logPath = dataPath / "Logs" / "mo_interface.log";
+        MOLog::init(logPath);
     } catch (...) {
         moLog.error("Mod Organizer crashed...");
         moLog.flush();
