@@ -74,6 +74,7 @@ public:
     Logger(std::string filename, fs::path log_path, Log::Level = Log::Level::DEBUG);
     // Full path to a log file.
     Logger(fs::path log_file_path, Log::Level = Log::Level::DEBUG);
+    virtual ~Logger() = default;
 
 public:
     fs::path get_log_dir() { return m_logPath; }
@@ -162,68 +163,24 @@ protected:
 
 } // namespace Log
 
-// Singleton class that handles displaying logs to Qt
-// Intended to be used with a QAbstractItemView.
-class LogBuffer : public QAbstractItemModel {
-    Q_OBJECT
+// Singleton class that handles logging for the Mod Organizer application.
+// This class has it's init method called as part of the Mod Organizer boot sequence.
+class MOLog : public Log::Logger {
 public:
-    // Initalize a new LogBuffer instance.
-    // messageCount is how many messages will fit in the Buffer.
-    // minMsgType is the minimum log level for the message to be displayed.
-    // logFile is the full path to the log file that will be used.
-    // Installs a Qt Message Handler, logging all messages through the Log function.
-    // Should not be called from multipul threads.
-    static void init(int messageCount, Log::Level minMsgType, fs::path logFile);
-    // Qt Message Handler. All Log messages from Qt go through here.
-    static void log(QtMsgType type, const QMessageLogContext& context, const QString& message);
-
-    static void writeNow();
-    static void cleanQuit();
-
-    static LogBuffer* instance() { return s_Instance.get(); }
-
-public:
-    virtual ~LogBuffer();
-
-    // Actually Log a message.
-    void logMessage(Log::Level type, const std::string& message);
-
-    // QAbstractItemModel interface
-public:
-    QModelIndex index(int row, int column, const QModelIndex& parent) const;
-    QModelIndex parent(const QModelIndex& child) const;
-    int rowCount(const QModelIndex& parent) const;
-    int columnCount(const QModelIndex& parent) const;
-    QVariant data(const QModelIndex& index, int role) const;
-signals:
-public slots:
+    // Get the instance. Don't call this without calling init.
+    static MOLog& instance() { return *m_instance; }
+    // Initalize a logger to the file `logFile`.
+    static void init(fs::path logFile) { m_instance.reset(new MOLog(logFile)); }
+    //
+    MOLog(const MOLog&) = delete;
+    void operator=(const MOLog&) = delete;
+    MOLog(const MOLog&&) = delete;
+    void operator=(MOLog&&) = delete;
 
 private:
-    explicit LogBuffer(int messageCount, Log::Level minMsgType, fs::path logFile);
-    LogBuffer(const LogBuffer& reference);            // not implemented
-    LogBuffer& operator=(const LogBuffer& reference); // not implemented
-
-    void write() const;
-
-    static char msgTypeID(QtMsgType type);
+    using Log::Logger::Logger;
+    MOLog() = delete;
 
 private:
-    struct Message {
-        Log::Level type;
-        QTime time;
-        std::string message;
-        QString toString() const;
-    };
-
-private:
-    static std::unique_ptr<LogBuffer> s_Instance;
-    static QMutex s_Mutex;
-    static QtMessageHandler old_handler;
-
-    fs::path m_logFile;
-    bool m_ShutDown = false;
-    Log::Level m_MinMsgType;
-    size_t m_NumMessages = 0;
-    std::vector<Message> m_Messages;
-    std::unique_ptr<Log::Logger> m_log;
+    static std::unique_ptr<MOLog> m_instance;
 };
