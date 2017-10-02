@@ -19,6 +19,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/instancemanager.h"
 #include "MO/logging.h"
 #include "MO/moapplication.h"
+#include "MO/organizercore.h"
 #include "MO/singleinstance.h"
 
 #include <MO/Shared/appconfig.h>
@@ -272,13 +273,14 @@ static int runApplication(MOApplication& application, SingleInstance& instance, 
     fs::path settingsPath = dataPath / AppConfig::iniFileName();
     QSettings settings(QString::fromStdWString(settingsPath.native()), QSettings::IniFormat);
     moLog.info("Initializing Core");
+    // Bootstrap OrganizerCore
+    OrganizerCore organizer(settings);
+    if (!organizer.bootstrap()) {
+        MOBase::reportError("failed to set up data paths");
+        return 1;
+    }
 #if 0
     try {
-        OrganizerCore organizer(settings);
-        if (!organizer.bootstrap()) {
-            reportError("failed to set up data paths");
-            return 1;
-        }
         qDebug("initialize plugins");
         PluginContainer pluginContainer(&organizer);
         pluginContainer.loadPlugins();
