@@ -21,17 +21,21 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/moapplication.h"
 #include "MO/singleinstance.h"
 
+#include <MO/Shared/appconfig.h>
 #include <common/predef.h>
 #include <common/sane_windows.h>
 #include <common/stringutils.h>
 #include <common/util.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
+#include <uibase/report.h>
 
 #include <QDir>
+#include <QMainWindow>
 #include <QMessageBox>
 #include <QMessageLogContext>
 #include <QProcess>
+#include <QSplashScreen>
 #include <QSslSocket>
 #include <QString>
 #include <QStringList>
@@ -200,7 +204,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QS
 
 // Extend the PATH enviroment variable for this process to include the dlls subdirectory.
 // This way plugins don't need a manifest.
-void setupPath() {
+static void setupPath() {
     // TODO: Possibly use SetDllDirectory?
     // May need to turn it off when loading other processes?
     // FIXME: This doesnt seem to be working.
@@ -226,76 +230,149 @@ void setupPath() {
 }
 
 // Determines if the string `link` is a nexus link.
-bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
-
-#if 0
-#include "MO/Shared/appconfig.h"
-#include "MO/Shared/windows_error.h"
-#include "MO/helper.h"
-#include "MO/mainwindow.h"
-#include "MO/nxmaccessmanager.h"
-#include "MO/selectiondialog.h"
-
-#include <QDesktopServices>
-#include <QFileDialog>
-#include <QMessageBox>
-#include <QSplashScreen>
-#include <common/predef.h>
-#include <common/stringutils.h>
-#include <fmt/format.h>
-#include <uibase/report.h>
-#include <uibase/tutorialmanager.h>
-
-#include <DbgHelp.h>
-#include <ShellAPI.h>
-#include <array>
-#include <filesystem>
-#include <fstream>
-#include <sstream>
-#include <string>
-
-namespace fs = std::experimental::filesystem;
-
-using namespace MOBase;
-using namespace MOShared;
-
-// Debug output will be logged here as well as to the console.
-// This way it can be used in the Minidump.
-static thread_local std::stringstream errorLog;
-
-// Create directory and make sure it's writeable.
-static bool createAndMakeWritable(const fs::path& fullPath) {
-    if (!fs::exists(fullPath)) {
-        try {
-            fs::create_directories(fullPath);
-        } catch (const fs::filesystem_error&) {
-            return false;
-        }
-    }
-    return true;
-}
+static bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
 
 // Bootstraping code
-// Creates required directories, removes old files, verifies can start.
-static bool bootstrap() {
-    // remove the temporary backup directory in case we're restarting after an update
-    fs::path backupDirectory = qApp->applicationDirPath().toStdString() / fs::path("update_backup");
+// Creates required directories, removes old files, verifies we can start, etc.
+static bool bootstrap(fs::path dataPath) {
+    // Remove the temporary backup directory in case we're restarting after an update
+    fs::path backupDirectory = dataPath / "update_backup";
     if (fs::exists(backupDirectory)) {
         fs::remove_all(backupDirectory);
     }
-    fs::path dataPath = qApp->property("dataPath").toString().toStdString();
 
-    // Remove all logfiles matching ModOrganizer*.log, except for five. Sorted by name.
-    fs::path logPath = dataPath / AppConfig::logPath();
-    removeOldFiles(QString::fromStdString(logPath.string()), "usvfs*.log", 5, QDir::Name);
-
-    if (!createAndMakeWritable(logPath)) {
+    // Create required directories.
+    try {
+        fs::create_directories(dataPath / "Logs");
+    } catch (const fs::filesystem_error&) {
         return false;
     }
 
     return true;
 }
 
+// Run the bulk of the application.
+// application, a reference to our application.
+// instance, An instance
+// splashPath, the path to a image file used as a splash screen.
+// dataPath, the MO Application data path.
+static int runApplication(MOApplication& application, SingleInstance& instance, fs::path splashPath, fs::path dataPath,
+                          QStringList arguments) {
+    // Display splash screen
+    QPixmap pixmap(QString::fromStdWString(splashPath.native()));
+    QSplashScreen splash(pixmap);
+    // Run bootstrap code.
+    if (!bootstrap(dataPath)) {
+        MOBase::reportError("failed to set up data paths");
+        return 1;
+    }
+    moLog.info("Current Working Directory: '{}'", fs::current_path());
+    splash.show();
+    // Setup Settings
+    fs::path settingsPath = dataPath / AppConfig::iniFileName();
+    QSettings settings(QString::fromStdWString(settingsPath.native()), QSettings::IniFormat);
+    moLog.info("Initializing Core");
+#if 0
+    try {
+        OrganizerCore organizer(settings);
+        if (!organizer.bootstrap()) {
+            reportError("failed to set up data paths");
+            return 1;
+        }
+        qDebug("initialize plugins");
+        PluginContainer pluginContainer(&organizer);
+        pluginContainer.loadPlugins();
+        // Setup MO for game.
+        MOBase::IPluginGame* game = determineCurrentGame(application.applicationDirPath(), settings, pluginContainer);
+        if (game == nullptr) {
+            return 1;
+        }
+        if (splashPath.startsWith(':')) {
+            // currently using MO splash, see if the plugin contains one
+            QString pluginSplash = QString(":/%1/splash").arg(game->gameShortName());
+            QImage image(pluginSplash);
+            if (!image.isNull()) {
+                image.save(dataPath + "/splash.png");
+            } else {
+                qDebug("no plugin splash");
+            }
+        }
+        organizer.setManagedGame(game);
+        organizer.createDefaultProfile();
+        if (!settings.contains("game_edition")) {
+            QStringList editions = game->gameVariants();
+            if (editions.size() > 1) {
+                SelectionDialog selection(QObject::tr("Please select the game edition you have (MO can't start the "
+                                                      "game correctly if this is set incorrectly!)"),
+                                          nullptr);
+                int index = 0;
+                for (const QString& edition : editions) {
+                    selection.addChoice(edition, "", index++);
+                }
+                if (selection.exec() == QDialog::Rejected) {
+                    return 1;
+                } else {
+                    settings.setValue("game_edition", selection.getChoiceString());
+                }
+            }
+        }
+        game->setGameVariant(settings.value("game_edition").toString());
+        qDebug("managing game at %s", qPrintable(QDir::toNativeSeparators(game->gameDirectory().absolutePath())));
+        organizer.updateExecutablesList(settings);
+        QString selectedProfileName = determineProfile(arguments, settings);
+        organizer.setCurrentProfile(selectedProfileName);
+        // if we have a command line parameter, it is either a nxm link or
+        // a binary to start
+        if (arguments.size() > 1) {
+            if (isNxmLink(arguments.at(1))) {
+                qDebug("starting download from command line: %s", qUtf8Printable(arguments.at(1)));
+                organizer.externalMessage(arguments.at(1));
+            } else {
+                QString exeName = arguments.at(1);
+                qDebug("starting %s from command line", qPrintable(exeName));
+                arguments.removeFirst(); // remove application name (ModOrganizer.exe)
+                arguments.removeFirst(); // remove binary name
+                                         // pass the remaining parameters to the binary
+                try {
+                    organizer.startApplication(exeName, arguments, QString(), QString());
+                    return 0;
+                } catch (const std::exception& e) {
+                    reportError(QObject::tr("failed to start application: %1").arg(e.what()));
+                    return 1;
+                }
+            }
+        }
+        NexusInterface::instance()->getAccessManager()->startLoginCheck();
+        qDebug("initializing tutorials");
+        TutorialManager::init(
+            qApp->applicationDirPath() + "/" + QString::fromStdWString(AppConfig::tutorialsPath()) + "/", &organizer);
+        if (!application.setStyleFile(settings.value("Settings/style", "").toString())) {
+            // disable invalid stylesheet
+            settings.setValue("Settings/style", "");
+        }
+        int res = 1;
+        { // scope to control lifetime of mainwindow
+          // set up main window and its data structures
+            MainWindow mainWindow(settings, organizer, pluginContainer);
+
+            QObject::connect(&mainWindow, SIGNAL(styleChanged(QString)), &application, SLOT(setStyleFile(QString)));
+            QObject::connect(&instance, SIGNAL(messageSent(QString)), &organizer, SLOT(externalMessage(QString)));
+
+            mainWindow.readSettings();
+
+            qDebug("displaying main window");
+            mainWindow.show();
+            splash.finish(&mainWindow);
+            return application.exec();
+        }
+    } catch (const std::exception& e) {
+        reportError(e.what());
+        return 1;
+    }
+#endif
+}
+
+#if 0
 QString determineProfile(QStringList& arguments, const QSettings& settings) {
     QString selectedProfileName = QString::fromUtf8(settings.value("selected_profile", "").toByteArray());
     { // see if there is a profile on the command line
@@ -432,129 +509,6 @@ MOBase::IPluginGame* determineCurrentGame(QString const& moPath, QSettings& sett
 
     return nullptr;
 }
-
-int runApplication(MOApplication& application, SingleInstance& instance, const QString& splashPath) {
-    qDebug("start main application");
-    // Display splash screen
-    QPixmap pixmap(splashPath);
-    QSplashScreen splash(pixmap);
-    QString dataPath = application.property("dataPath").toString();
-    qDebug("data path: %s", qUtf8Printable(dataPath));
-    if (!bootstrap()) {
-        reportError("failed to set up data paths");
-        return 1;
-    }
-    QStringList arguments = application.arguments();
-    try {
-        qDebug("Working directory: %s", qUtf8Printable(QDir::toNativeSeparators(QDir::currentPath())));
-        splash.show();
-    } catch (const std::exception& e) {
-        reportError(e.what());
-        return 1;
-    }
-    try {
-        // Setup settings
-        fs::path settingsPath = fs::path(dataPath.toStdString()) / AppConfig::iniFileName();
-        QSettings settings(QString::fromStdString(settingsPath.string()), QSettings::IniFormat);
-        // Setup the Core application.
-        qDebug("initializing core");
-        OrganizerCore organizer(settings);
-        if (!organizer.bootstrap()) {
-            reportError("failed to set up data paths");
-            return 1;
-        }
-        qDebug("initialize plugins");
-        PluginContainer pluginContainer(&organizer);
-        pluginContainer.loadPlugins();
-        // Setup MO for game.
-        MOBase::IPluginGame* game = determineCurrentGame(application.applicationDirPath(), settings, pluginContainer);
-        if (game == nullptr) {
-            return 1;
-        }
-        if (splashPath.startsWith(':')) {
-            // currently using MO splash, see if the plugin contains one
-            QString pluginSplash = QString(":/%1/splash").arg(game->gameShortName());
-            QImage image(pluginSplash);
-            if (!image.isNull()) {
-                image.save(dataPath + "/splash.png");
-            } else {
-                qDebug("no plugin splash");
-            }
-        }
-        organizer.setManagedGame(game);
-        organizer.createDefaultProfile();
-        if (!settings.contains("game_edition")) {
-            QStringList editions = game->gameVariants();
-            if (editions.size() > 1) {
-                SelectionDialog selection(QObject::tr("Please select the game edition you have (MO can't start the "
-                                                      "game correctly if this is set incorrectly!)"),
-                                          nullptr);
-                int index = 0;
-                for (const QString& edition : editions) {
-                    selection.addChoice(edition, "", index++);
-                }
-                if (selection.exec() == QDialog::Rejected) {
-                    return 1;
-                } else {
-                    settings.setValue("game_edition", selection.getChoiceString());
-                }
-            }
-        }
-        game->setGameVariant(settings.value("game_edition").toString());
-        qDebug("managing game at %s", qPrintable(QDir::toNativeSeparators(game->gameDirectory().absolutePath())));
-        organizer.updateExecutablesList(settings);
-        QString selectedProfileName = determineProfile(arguments, settings);
-        organizer.setCurrentProfile(selectedProfileName);
-        // if we have a command line parameter, it is either a nxm link or
-        // a binary to start
-        if (arguments.size() > 1) {
-            if (isNxmLink(arguments.at(1))) {
-                qDebug("starting download from command line: %s", qUtf8Printable(arguments.at(1)));
-                organizer.externalMessage(arguments.at(1));
-            } else {
-                QString exeName = arguments.at(1);
-                qDebug("starting %s from command line", qPrintable(exeName));
-                arguments.removeFirst(); // remove application name (ModOrganizer.exe)
-                arguments.removeFirst(); // remove binary name
-                                         // pass the remaining parameters to the binary
-                try {
-                    organizer.startApplication(exeName, arguments, QString(), QString());
-                    return 0;
-                } catch (const std::exception& e) {
-                    reportError(QObject::tr("failed to start application: %1").arg(e.what()));
-                    return 1;
-                }
-            }
-        }
-        NexusInterface::instance()->getAccessManager()->startLoginCheck();
-        qDebug("initializing tutorials");
-        TutorialManager::init(
-            qApp->applicationDirPath() + "/" + QString::fromStdWString(AppConfig::tutorialsPath()) + "/", &organizer);
-        if (!application.setStyleFile(settings.value("Settings/style", "").toString())) {
-            // disable invalid stylesheet
-            settings.setValue("Settings/style", "");
-        }
-        int res = 1;
-        { // scope to control lifetime of mainwindow
-          // set up main window and its data structures
-            MainWindow mainWindow(settings, organizer, pluginContainer);
-
-            QObject::connect(&mainWindow, SIGNAL(styleChanged(QString)), &application, SLOT(setStyleFile(QString)));
-            QObject::connect(&instance, SIGNAL(messageSent(QString)), &organizer, SLOT(externalMessage(QString)));
-
-            mainWindow.readSettings();
-
-            qDebug("displaying main window");
-            mainWindow.show();
-            splash.finish(&mainWindow);
-            return application.exec();
-        }
-    } catch (const std::exception& e) {
-        reportError(e.what());
-        return 1;
-    }
-}
-
 #endif
 
 int main(int argc, char* argv[]) {
@@ -650,23 +604,21 @@ int main(int argc, char* argv[]) {
         moLog.info("Initalizing Application Log.");
         const fs::path logPath = dataPath / "Logs" / "mo_interface.log";
         MOLog::init(logPath);
+        // Display Splash Screen
+        fs::path splash = dataPath / "splash.png";
+        // If a splash image doesnt exist, use the MO Provided one as part of Qt Resources.
+        if (!fs::exists(splash)) {
+            splash = ":/MO/gui/splash";
+        }
+        // TESTING
+        moLog.info("Start Main Application.");
+        int result = runApplication(application, instance, splash, dataPath, arguments);
+        if (result != INT_MAX) {
+            return result;
+        }
     } catch (...) {
         moLog.error("Mod Organizer crashed...");
         moLog.flush();
         throw;
     }
-#if 0
-    do {
-        fs::path splash = dataPath / "splash.png";
-        if (!fs::exists(splash)) {
-            splash = ":/MO/gui/splash";
-        }
-
-        int result = runApplication(application, instance, QString::fromStdWString(splash.native()));
-        if (result != INT_MAX) {
-            return result;
-        }
-        argc = 1;
-    } while (true);
-#endif
 }
