@@ -37,11 +37,11 @@ static const int MAXPATH_UNICODE = 32767;
 
 class OriginConnection {
 
-  public:
+public:
     typedef int Index;
     static const int INVALID_INDEX = INT_MIN;
 
-  public:
+public:
     OriginConnection() : m_NextID(0) { LEAK_TRACE; }
 
     ~OriginConnection() { LEAK_UNTRACE; }
@@ -87,14 +87,15 @@ class OriginConnection {
             m_OriginsNameMap.erase(iter);
             m_OriginsNameMap[newName] = idx;
         } else {
-            log("failed to change name lookup from %ls to %ls", oldName.c_str(), newName.c_str());
+            // FIXME: This.
+            // log("failed to change name lookup from %ls to %ls", oldName.c_str(), newName.c_str());
         }
     }
 
-  private:
+private:
     Index createID() { return m_NextID++; }
 
-  private:
+private:
     Index m_NextID;
 
     std::map<Index, FilesOrigin> m_Origins;
@@ -549,12 +550,15 @@ void DirectoryEntry::removeFile(FileEntry::Index index) {
         if (iter != m_Files.end()) {
             m_Files.erase(iter);
         } else {
-            log("file \"%ls\" not in directory \"%ls\"", m_FileRegister->getFile(index)->getName().c_str(),
-                this->getName().c_str());
+            // FIXME: This.
+            // log("file \"%ls\" not in directory \"%ls\"", m_FileRegister->getFile(index)->getName().c_str(),
+            // this->getName().c_str());
         }
     } else {
-        log("file \"%ls\" not in directory \"%ls\", directory empty", m_FileRegister->getFile(index)->getName().c_str(),
-            this->getName().c_str());
+        // FIXME: This.
+        // log("file \"%ls\" not in directory \"%ls\", directory empty",
+        // m_FileRegister->getFile(index)->getName().c_str(),
+        // this->getName().c_str());
     }
 }
 
@@ -650,7 +654,8 @@ const FileEntry::Ptr DirectoryEntry::searchFile(const std::wstring& path, const 
         DirectoryEntry* temp = findSubDirectory(pathComponent);
         if (temp != nullptr) {
             if (len >= path.size()) {
-                log("unexpected end of path");
+                // FIXME: This.
+                // log("unexpected end of path");
                 return FileEntry::Ptr();
             }
             return temp->searchFile(path.substr(len + 1), directory);
@@ -769,7 +774,8 @@ bool FileRegister::removeFile(FileEntry::Index index) {
         m_Files.erase(index);
         return true;
     } else {
-        log("invalid file index for remove: %lu", index);
+        // FIXME: This.
+        // log("invalid file index for remove: %lu", index);
         return false;
     }
 }
@@ -782,7 +788,8 @@ void FileRegister::removeOrigin(FileEntry::Index index, int originID) {
             m_Files.erase(iter);
         }
     } else {
-        log("invalid file index for remove (for origin): %lu", index);
+        // FIXME: This.
+        // log("invalid file index for remove (for origin): %lu", index);
     }
 }
 

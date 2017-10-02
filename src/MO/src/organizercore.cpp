@@ -2,7 +2,7 @@
 #include "MO/Shared/appconfig.h"
 #include "MO/credentialsdialog.h"
 #include "MO/filedialogmemory.h"
-#include "MO/logbuffer.h"
+#include "MO/logging.h"
 #include "MO/messagedialog.h"
 #include "MO/modinfodialog.h"
 #include "MO/modlistsortproxy.h"
@@ -169,7 +169,8 @@ OrganizerCore::~OrganizerCore() {
     m_CurrentProfile = nullptr;
 
     ModInfo::clear();
-    LogBuffer::cleanQuit();
+    // FIXME: This.
+    // LogBuffer::cleanQuit();
     m_ModList.setProfile(nullptr);
     // NexusInterface::instance()->cleanup();
 

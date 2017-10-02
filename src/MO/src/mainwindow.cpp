@@ -31,7 +31,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/genericicondelegate.h"
 #include "MO/instancemanager.h"
 #include "MO/lockeddialog.h"
-#include "MO/logbuffer.h"
+#include "MO/logging.h"
 #include "MO/messagedialog.h"
 #include "MO/modflagicondelegate.h"
 #include "MO/modinfodialog.h"
@@ -107,7 +107,8 @@ MainWindow::MainWindow(QSettings& initSettings, OrganizerCore& organizerCore, Pl
 
     m_CategoryFactory.loadCategories();
 
-    ui->logList->setModel(LogBuffer::instance());
+    // FIXME: This.
+    // ui->logList->setModel(LogBuffer::instance());
     ui->logList->setColumnWidth(0, 100);
     ui->logList->setAutoScroll(true);
     ui->logList->scrollToBottom();
