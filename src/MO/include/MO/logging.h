@@ -42,8 +42,6 @@ namespace Log {
 using namespace std::string_literals;
 // Logging specific details
 namespace details {
-// Global log
-static std::stringstream errorLog;
 // Implementation for setting up logging file sink.
 // log_path is a required argument taking the path to the full path to the log file.
 spdlog::sink_ptr file_sink(fs::path log_path);

@@ -80,11 +80,6 @@ spdlog::sink_ptr Log::details::console_sink() {
     return tmp;
 }
 
-spdlog::sink_ptr Log::details::ostream_sink() {
-    static auto tmp = std::make_shared<spdlog::sinks::ostream_sink_mt>(errorLog);
-    return tmp;
-}
-
 Log::Logger::Logger(std::string filename, fs::path log_path, Log::Level l)
     : m_name(filename), m_logPath(log_path), m_level(l) {
     // Make the path canoical and immune to working directory changes.
@@ -95,8 +90,6 @@ Log::Logger::Logger(std::string filename, fs::path log_path, Log::Level l)
     std::vector<spdlog::sink_ptr> sinks;
     // Add file sink.
     sinks.push_back(details::file_sink(log_path / (filename + ".log")));
-    // Add global log sink.
-    sinks.push_back(details::ostream_sink());
     // If debug configuration, log to the console as well.
 #if COMMON_IS_DEBUG
     sinks.push_back(details::console_sink());
