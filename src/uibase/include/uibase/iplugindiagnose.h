@@ -26,19 +26,17 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 namespace MOBase {
 
-/**
- * brief A plugin that creates problem reports to be displayed in the UI.
- * This can be used to report problems related to the same plugin (which implements further
- * interfaces) or as a stand-alone diagnosis tool.
- * This does not derive from IPlugin to prevent multiple inheritance issues. For stand-alone
- * diagnosis plugins, derive from IPlugin and IPluginDiagnose
- */
+// brief A plugin that creates problem reports to be displayed in the UI.
+// This can be used to report problems related to the same plugin (which implements further
+// interfaces) or as a stand-alone diagnosis tool.
+// This does not derive from IPlugin to prevent multiple inheritance issues. For stand-alone
+// diagnosis plugins, derive from IPlugin and IPluginDiagnose
 class IPluginDiagnose {
-  public:
+public:
     /// signal to be emitted when the diagnosis information of the plugin is invalidated
     using SignalInvalidated = boost::signals2::signal<void(void)>;
 
-  public:
+public:
     /**
      * @return a list of keys of active problems
      * @note a plugin must be able to report problems even if it isn't active (i.e. it may want to
@@ -84,10 +82,10 @@ class IPluginDiagnose {
         return m_OnInvalidated.connect(callback);
     }
 
-  protected:
+protected:
     void invalidate() { m_OnInvalidated(); }
 
-  private:
+private:
     SignalInvalidated m_OnInvalidated;
 };
 

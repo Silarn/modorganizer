@@ -60,6 +60,7 @@ class IPluginGame;
 // TODO: Refactor all of this. This class is too big and does too much.
 
 // Core of Mod Organizer.
+// The bulk of the Mod Organizer code. The backend?
 class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
@@ -195,7 +196,6 @@ public: // IPluginDiagnose interface
     virtual void startGuidedFix(unsigned int key) const;
 
 public slots:
-
     void profileRefresh();
     void externalMessage(const QString& message);
 

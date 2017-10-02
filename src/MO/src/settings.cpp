@@ -46,7 +46,7 @@ using namespace MOBase;
 
 template <typename T>
 class QListWidgetItemEx : public QListWidgetItem {
-  public:
+public:
     QListWidgetItemEx(const QString& text, int sortRole = Qt::DisplayRole, QListWidget* parent = 0, int type = Type)
         : QListWidgetItem(text, parent, type), m_SortRole(sortRole) {}
 
@@ -54,7 +54,7 @@ class QListWidgetItemEx : public QListWidgetItem {
         return this->data(m_SortRole).value<T>() < other.data(m_SortRole).value<T>();
     }
 
-  private:
+private:
     int m_SortRole;
 };
 
@@ -64,17 +64,16 @@ static const unsigned char Key2[20] = {0x99, 0xb8, 0x76, 0x42, 0x3e, 0xc1, 0x60,
 Settings* Settings::s_Instance = nullptr;
 
 Settings::Settings(const QSettings& settingsSource) : m_Settings(settingsSource.fileName(), settingsSource.format()) {
-    if (s_Instance != nullptr) {
+    if (s_Instance) {
         throw std::runtime_error("second instance of \"Settings\" created");
-    } else {
-        s_Instance = this;
     }
+    s_Instance = this;
 }
 
 Settings::~Settings() { s_Instance = nullptr; }
 
 Settings& Settings::instance() {
-    if (s_Instance == nullptr) {
+    if (!s_Instance) {
         throw std::runtime_error("no instance of \"Settings\"");
     }
     return *s_Instance;

@@ -45,18 +45,13 @@ class IPluginGame;
 
 class SettingsDialog;
 
-/**
- * manages the settings for Mod Organizer. The settings are not cached
- * inside the class but read/written directly from/to disc
- **/
+// Singleton Class that manages the settings for Mod Organizer.
+// The settings are not cached inside the class but read/written directly from/to disc
 class Settings : public QObject {
-
     Q_OBJECT
-
-  public:
-    /**
-     * @brief constructor
-     **/
+public:
+    // Takes an already constructed QSettings object to use
+    // For settings.
     Settings(const QSettings& settingsSource);
 
     virtual ~Settings();
@@ -323,11 +318,11 @@ class Settings : public QObject {
      */
     void registerAsNXMHandler(bool force);
 
-  public slots:
+public slots:
 
     void managedGameChanged(MOBase::IPluginGame const* gamePlugin);
 
-  private:
+private:
     static QString obfuscate(const QString& password);
     static QString deObfuscate(const QString& password);
 
@@ -338,13 +333,13 @@ class Settings : public QObject {
     QString getConfigurablePath(const QString& key, const QString& def, bool resolve) const;
 
     class SettingsTab {
-      public:
+    public:
         SettingsTab(Settings* m_parent, SettingsDialog& m_dialog);
         virtual ~SettingsTab();
 
         virtual void update() = 0;
 
-      protected:
+    protected:
         Settings* m_parent;
         QSettings& m_Settings;
         SettingsDialog& m_dialog;
@@ -352,12 +347,12 @@ class Settings : public QObject {
 
     /** Display/store the configuration in the 'general' tab of the settings dialogue */
     class GeneralTab : public SettingsTab {
-      public:
+    public:
         GeneralTab(Settings* m_parent, SettingsDialog& m_dialog);
 
         void update();
 
-      private:
+    private:
         QComboBox* m_languageBox;
         QComboBox* m_styleBox;
         QComboBox* m_logLevelBox;
@@ -367,12 +362,12 @@ class Settings : public QObject {
     };
 
     class PathsTab : public SettingsTab {
-      public:
+    public:
         PathsTab(Settings* parent, SettingsDialog& dialog);
 
         void update();
 
-      private:
+    private:
         QLineEdit* m_baseDirEdit;
         QLineEdit* m_downloadDirEdit;
         QLineEdit* m_modDirEdit;
@@ -383,12 +378,12 @@ class Settings : public QObject {
 
     /** Display/store the configuration in the 'nexus' tab of the settings dialogue */
     class NexusTab : public SettingsTab {
-      public:
+    public:
         NexusTab(Settings* m_parent, SettingsDialog& m_dialog);
 
         void update();
 
-      private:
+    private:
         QCheckBox* m_loginCheckBox;
         QLineEdit* m_usernameEdit;
         QLineEdit* m_passwordEdit;
@@ -400,36 +395,36 @@ class Settings : public QObject {
 
     /** Display/store the configuration in the 'steam' tab of the settings dialogue */
     class SteamTab : public SettingsTab {
-      public:
+    public:
         SteamTab(Settings* m_parent, SettingsDialog& m_dialog);
 
         void update();
 
-      private:
+    private:
         QLineEdit* m_steamUserEdit;
         QLineEdit* m_steamPassEdit;
     };
 
     /** Display/store the configuration in the 'plugins' tab of the settings dialogue */
     class PluginsTab : public SettingsTab {
-      public:
+    public:
         PluginsTab(Settings* m_parent, SettingsDialog& m_dialog);
 
         void update();
 
-      private:
+    private:
         QListWidget* m_pluginsList;
         QListWidget* m_pluginBlacklistList;
     };
 
     /** Display/store the configuration in the 'workarounds' tab of the settings dialogue */
     class WorkaroundsTab : public SettingsTab {
-      public:
+    public:
         WorkaroundsTab(Settings* m_parent, SettingsDialog& m_dialog);
 
         void update();
 
-      private:
+    private:
         QLineEdit* m_appIDEdit;
         QComboBox* m_mechanismBox;
         QLineEdit* m_nmmVersionEdit;
@@ -438,16 +433,14 @@ class Settings : public QObject {
         QCheckBox* m_displayForeignBox;
     };
 
-  private slots:
-
+private slots:
     void resetDialogs();
 
-  signals:
-
+signals:
     void languageChanged(const QString& newLanguage);
     void styleChanged(const QString& newStyle);
 
-  private:
+private:
     static Settings* s_Instance;
 
     MOBase::IPluginGame const* m_GamePlugin;
