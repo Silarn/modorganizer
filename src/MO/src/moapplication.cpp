@@ -18,15 +18,27 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/moapplication.h"
 
-#include <MO/Shared/appconfig.h>
-#include <QFile>
-#include <QPainter>
-#include <QProxyStyle>
-#include <QStyleFactory>
-#include <QStyleOption>
+#include <MO/shared/appconfig.h>
 #include <uibase/report.h>
 
-using MOBase::reportError;
+#include <QApplication>
+#include <QBrush>
+#include <QColor>
+#include <QEvent>
+#include <QFile>
+#include <QObject>
+#include <QPainter>
+#include <QPen>
+#include <QPoint>
+#include <QProxyStyle>
+#include <QString>
+#include <QStringList>
+#include <QStyle>
+#include <QStyleFactory>
+#include <QStyleOption>
+#include <QWidget>
+
+#include <exception>
 
 class ProxyStyle : public QProxyStyle {
 public:
@@ -101,11 +113,11 @@ bool MOApplication::notify(QObject* receiver, QEvent* event) {
     } catch (const std::exception& e) {
         qCritical("uncaught exception in handler (object %s, eventtype %d): %s",
                   receiver->objectName().toUtf8().constData(), event->type(), e.what());
-        reportError(tr("an error occured: %1").arg(e.what()));
+        MOBase::reportError(tr("an error occured: %1").arg(e.what()));
     } catch (...) {
         qCritical("uncaught non-std exception in handler (object %s, eventtype %d)",
                   receiver->objectName().toUtf8().constData(), event->type());
-        reportError(tr("an error occured"));
+        MOBase::reportError(tr("an error occured"));
     }
     return false;
 }

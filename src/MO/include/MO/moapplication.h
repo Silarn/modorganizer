@@ -16,12 +16,14 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifndef MOAPPLICATION_H
 #define MOAPPLICATION_H
 
 #include <QApplication>
 #include <QFileSystemWatcher>
+// Fwds
+class QEvent;
+class QObject;
 
 // MO Application object.
 // Handles style changes for the UI.
