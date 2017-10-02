@@ -46,6 +46,11 @@ APPPARAM(const wchar_t*, localSavePlaceholder, L"__MOProfileSave__\\")
 APPPARAM(std::wstring, firstStepsTutorial, L"tutorial_firststeps_main.js")
 APPPARAM(int, numLogFiles, 5) // number of log files to keep
 
+APPPARAM(std::string, applicationExeName, "ModOrganizer.exe")
+
+// DLL Paths
+APPPARAM(std::string, archiveDll, "Dlls/archive.dll")
+
 #undef APPPARAM
 
 } // namespace AppConfig
