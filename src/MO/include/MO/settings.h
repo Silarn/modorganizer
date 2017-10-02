@@ -17,8 +17,8 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #pragma once
-
 #include "MO/loadmechanism.h"
+
 #include <QList>
 #include <QMap>
 #include <QObject>
@@ -27,6 +27,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QString>
 #include <QVariant>
 #include <QtGlobal> //for uint
+
 #include <map>
 #include <vector>
 
@@ -47,254 +48,174 @@ class SettingsDialog;
 
 // Singleton Class that manages the settings for Mod Organizer.
 // The settings are not cached inside the class but read/written directly from/to disc
+// For some reason it also controls the tabs from the Settings window in the main UI?
 class Settings : public QObject {
     Q_OBJECT
 public:
-    // Takes an already constructed QSettings object to use
-    // For settings.
+    // Takes an already constructed QSettings object to use for settings.
+    // This should only be called once.
     Settings(const QSettings& settingsSource);
 
     virtual ~Settings();
 
+    // Get the instance
     static Settings& instance();
 
-    /**
-     * unregister all plugins from settings
-     */
+    // unregister all plugins from settings
     void clearPlugins();
 
-    /**
-     * @brief register plugin to be configurable
-     * @param plugin the plugin to register
-     * @return true if the plugin may be registered, false if it is blacklisted
-     */
+    // @brief register plugin to be configurable
+    // @param plugin the plugin to register
+    // @return true if the plugin may be registered, false if it is blacklisted
     void registerPlugin(MOBase::IPlugin* plugin);
 
-    /**
-     * displays a SettingsDialog that allows the user to change settings. If the
-     * user accepts the changes, the settings are immediately written
-     **/
+    // displays a SettingsDialog that allows the user to change settings. If the
+    // user accepts the changes, the settings are immediately written
     void query(QWidget* parent);
 
-    /**
-     * set up the settings for the specified plugins
-     **/
-    void addPluginSettings(const std::vector<MOBase::IPlugin*>& plugins);
-
-    /**
-     * @return true if the user wants unchecked plugins (esp, esm) should be hidden from
-     *         the virtual dat adirectory
-     **/
+    // @return true if the user wants unchecked plugins (esp, esm) should be hidden from
+    //         the virtual dat adirectory
     bool hideUncheckedPlugins() const;
 
-    /**
-     * @return true if files of the core game are forced-enabled so the user can't accidentally disable them
-     */
+    // @return true if files of the core game are forced-enabled so the user can't accidentally disable them
     bool forceEnableCoreFiles() const;
 
-    /**
-     * @brief register download speed
-     * @param url complete download url
-     * @param bytesPerSecond download size in bytes per second
-     */
+    // @brief register download speed
+    // @param url complete download url
+    // @param bytesPerSecond download size in bytes per second
     void setDownloadSpeed(const QString& serverName, int bytesPerSecond);
 
-    /**
-     * the steam appid is assigned by the steam platform to each product sold there.
-     * The appid may differ between different versions of a game so it may be impossible
-     * for Mod Organizer to automatically recognize it, though usually it does
-     * @return the steam appid for the game
-     **/
+    // the steam appid is assigned by the steam platform to each product sold there.
+    // The appid may differ between different versions of a game so it may be impossible
+    // for Mod Organizer to automatically recognize it, though usually it does
+    // @return the steam appid for the game
     QString getSteamAppID() const;
 
-    /**
-     * retrieves the base directory under which the other directories usually
-     * reside
-     */
+    // retrieves the base directory under which the other directories usually reside
     QString getBaseDirectory() const;
 
-    /**
-     * retrieve the directory where downloads are stored (with native separators)
-     **/
+    // retrieve the directory where downloads are stored (with native separators)
     QString getDownloadDirectory(bool resolve = true) const;
 
-    /**
-     * retrieve a sorted list of preferred servers
-     */
+    // retrieve a sorted list of preferred servers
     std::map<QString, int> getPreferredServers();
 
-    /**
-     * retrieve the directory where mods are stored (with native separators)
-     **/
+    // retrieve the directory where mods are stored (with native separators)
     QString getModDirectory(bool resolve = true) const;
 
-    /**
-     * returns the version of nmm to impersonate when connecting to nexus
-     **/
+    // returns the version of nmm to impersonate when connecting to nexus
     QString getNMMVersion() const;
 
-    /**
-     * retrieve the directory where the web cache is stored (with native separators)
-     **/
+    // retrieve the directory where the web cache is stored (with native separators)
     QString getCacheDirectory(bool resolve = true) const;
 
-    /**
-     * retrieve the directory where profiles stored (with native separators)
-     **/
+    // retrieve the directory where profiles stored (with native separators)
     QString getProfileDirectory(bool resolve = true) const;
 
-    /**
-     * retrieve the directory were new files are stored that can't be assigned
-     * to a mod (with native separators)
-     */
+    // retrieve the directory were new files are stored that can't be assigned
+    // to a mod (with native separators)
     QString getOverwriteDirectory(bool resolve = true) const;
 
-    /**
-     * @return true if the user has set up automatic login to nexus
-     **/
+    // @return true if the user has set up automatic login to nexus
     bool automaticLoginEnabled() const;
 
-    /**
-     * @brief retrieve the login information for nexus
-     *
-     * @param username (out) receives the user name for nexus
-     * @param password (out) received the password for nexus
-     * @return true if automatic login is active, false otherwise
-     **/
+    // @brief retrieve the login information for nexus
+    //
+    // @param username (out) receives the user name for nexus
+    // @param password (out) received the password for nexus
+    // @return true if automatic login is active, false otherwise
     bool getNexusLogin(QString& username, QString& password) const;
 
-    /**
-     * @brief retrieve the login information for steam
-     *
-     * @param username (out) receives the user name for nexus
-     * @param password (out) received the password for nexus
-     * @return true if a username has been specified, false otherwise
-     **/
+    // @brief retrieve the login information for steam
+    //
+    // @param username (out) receives the user name for nexus
+    // @param password (out) received the password for nexus
+    // @return true if a username has been specified, false otherwise
     bool getSteamLogin(QString& username, QString& password) const;
 
-    /**
-     * @return true if the user disabled internet features
-     */
+    // @return true if the user disabled internet features
     bool offlineMode() const;
 
-    /**
-     * @return true if the user chose compact downloads
-     */
+    // @return true if the user chose compact downloads
     bool compactDownloads() const;
 
-    /**
-     * @return true if the user chose meta downloads
-     */
+    // @return true if the user chose meta downloads
     bool metaDownloads() const;
 
-    /**
-     * @return the configured log level
-     */
+    // @return the configured log level
     int logLevel() const;
 
-    /**
-     * @brief set the nexus login information
-     *
-     * @param username username
-     * @param password password
-     */
+    // @brief set the nexus login information
+    //
+    // @param username username
+    // @param password password
     void setNexusLogin(QString username, QString password);
 
-    /**
-     * @brief set the steam login information
-     *
-     * @param username username
-     * @param password password
-     */
+    // @brief set the steam login information
+    //
+    // @param username username
+    // @param password password
     void setSteamLogin(QString username, QString password);
 
-    /**
-     * @return the load mechanism to be used
-     **/
+    // @return the load mechanism to be used
     LoadMechanism::EMechanism getLoadMechanism() const;
 
-    /**
-     * @brief activate the load mechanism selected by the user
-     **/
+    // @brief activate the load mechanism selected by the user
     void setupLoadMechanism();
 
-    /**
-     * @return true if the user configured the use of a network proxy
-     */
+    // @return true if the user configured the use of a network proxy
     bool useProxy() const;
 
-    /**
-     * @return true if the user wants to see non-official plugins installed outside MO in his mod list
-     */
+    // @return true if the user wants to see non-official plugins installed outside MO in his mod list
     bool displayForeign() const;
 
-    /**
-     * @brief sets the new motd hash
-     **/
+    // @brief sets the new motd hash
     void setMotDHash(uint hash);
 
-    /**
-     * @return hash of the last displayed message of the day
-     **/
+    // @return hash of the last displayed message of the day
     uint getMotDHash() const;
 
-    /**
-     * @brief allows direct access to the wrapped QSettings object
-     * @return the wrapped QSettings object
-     */
+    // @brief allows direct access to the wrapped QSettings object
+    // @return the wrapped QSettings object
     QSettings& directInterface() { return m_Settings; }
 
-    /**
-     * @brief retrieve a setting for one of the installed plugins
-     * @param pluginName name of the plugin
-     * @param key name of the setting to retrieve
-     * @return the requested value as a QVariant
-     * @note an invalid QVariant is returned if the the plugin/setting is not declared
-     */
+    // @brief retrieve a setting for one of the installed plugins
+    // @param pluginName name of the plugin
+    // @param key name of the setting to retrieve
+    // @return the requested value as a QVariant
+    // @note an invalid QVariant is returned if the the plugin/setting is not declared
     QVariant pluginSetting(const QString& pluginName, const QString& key) const;
 
-    /**
-     * @brief set a setting for one of the installed mods
-     * @param pluginName name of the plugin
-     * @param key name of the setting to change
-     * @param value the new value to set
-     * @throw an exception is thrown if pluginName is invalid
-     */
+    // @brief set a setting for one of the installed mods
+    // @param pluginName name of the plugin
+    // @param key name of the setting to change
+    // @param value the new value to set
+    // @throw an exception is thrown if pluginName is invalid
     void setPluginSetting(const QString& pluginName, const QString& key, const QVariant& value);
 
-    /**
-     * @brief retrieve a persistent value for a plugin
-     * @param pluginName name of the plugin to store data for
-     * @param key id of the value to retrieve
-     * @param def default value to return if the value is not set
-     * @return the requested value
-     */
+    // @brief retrieve a persistent value for a plugin
+    // @param pluginName name of the plugin to store data for
+    // @param key id of the value to retrieve
+    // @param def default value to return if the value is not set
+    // @return the requested value
     QVariant pluginPersistent(const QString& pluginName, const QString& key, const QVariant& def) const;
 
-    /**
-     * @brief set a persistent value for a plugin
-     * @param pluginName name of the plugin to store data for
-     * @param key id of the value to retrieve
-     * @param value value to set
-     * @throw an exception is thrown if pluginName is invalid
-     */
+    // @brief set a persistent value for a plugin
+    // @param pluginName name of the plugin to store data for
+    // @param key id of the value to retrieve
+    // @param value value to set
+    // @throw an exception is thrown if pluginName is invalid
     void setPluginPersistent(const QString& pluginName, const QString& key, const QVariant& value, bool sync);
 
-    /**
-     * @return short code of the configured language (corresponding to the translation files)
-     */
+    // @return short code of the configured language (corresponding to the translation files)
     QString language();
 
-    /**
-     * @brief updates the list of known servers
-     * @param list of servers from a recent query
-     */
+    // @brief updates the list of known servers
+    // @param list of servers from a recent query
     void updateServers(const QList<ServerInfo>& servers);
 
-    /**
-     * @brief add a plugin that is to be blacklisted
-     * @param fileName name of the plugin to blacklist
-     */
+    // @brief add a plugin that is to be blacklisted
+    // @param fileName name of the plugin to blacklist
     void addBlacklistPlugin(const QString& fileName);
 
     /**
@@ -304,22 +225,17 @@ public:
      */
     bool pluginBlacklisted(const QString& fileName) const;
 
-    /**
-     * @return all loaded MO plugins
-     */
+    // @return all loaded MO plugins
     std::vector<MOBase::IPlugin*> plugins() const { return m_Plugins; }
 
     bool usePrereleases() const;
 
-    /**
-     * @brief register MO as the handler for nxm links
-     * @param force set to true to enforce the registration dialog to show up,
-     *              even if the user said earlier not to
-     */
+    // @brief register MO as the handler for nxm links
+    // @param force set to true to enforce the registration dialog to show up,
+    //              even if the user said earlier not to
     void registerAsNXMHandler(bool force);
 
 public slots:
-
     void managedGameChanged(MOBase::IPluginGame const* gamePlugin);
 
 private:
@@ -328,7 +244,6 @@ private:
 
     void addLanguages(QComboBox* languageBox);
     void addStyles(QComboBox* styleBox);
-    void readPluginBlacklist();
     void writePluginBlacklist();
     QString getConfigurablePath(const QString& key, const QString& def, bool resolve) const;
 
@@ -345,7 +260,7 @@ private:
         SettingsDialog& m_dialog;
     };
 
-    /** Display/store the configuration in the 'general' tab of the settings dialogue */
+    // Display/store the configuration in the 'general' tab of the settings dialogue
     class GeneralTab : public SettingsTab {
     public:
         GeneralTab(Settings* m_parent, SettingsDialog& m_dialog);
@@ -376,7 +291,7 @@ private:
         QLineEdit* m_overwriteDirEdit;
     };
 
-    /** Display/store the configuration in the 'nexus' tab of the settings dialogue */
+    // Display/store the configuration in the 'nexus' tab of the settings dialogue
     class NexusTab : public SettingsTab {
     public:
         NexusTab(Settings* m_parent, SettingsDialog& m_dialog);
@@ -393,7 +308,7 @@ private:
         QListWidget* m_preferredServersList;
     };
 
-    /** Display/store the configuration in the 'steam' tab of the settings dialogue */
+    // Display/store the configuration in the 'steam' tab of the settings dialogue
     class SteamTab : public SettingsTab {
     public:
         SteamTab(Settings* m_parent, SettingsDialog& m_dialog);
@@ -405,7 +320,7 @@ private:
         QLineEdit* m_steamPassEdit;
     };
 
-    /** Display/store the configuration in the 'plugins' tab of the settings dialogue */
+    // Display/store the configuration in the 'plugins' tab of the settings dialogue
     class PluginsTab : public SettingsTab {
     public:
         PluginsTab(Settings* m_parent, SettingsDialog& m_dialog);
@@ -417,7 +332,7 @@ private:
         QListWidget* m_pluginBlacklistList;
     };
 
-    /** Display/store the configuration in the 'workarounds' tab of the settings dialogue */
+    // Display/store the configuration in the 'workarounds' tab of the settings dialogue
     class WorkaroundsTab : public SettingsTab {
     public:
         WorkaroundsTab(Settings* m_parent, SettingsDialog& m_dialog);
