@@ -24,10 +24,9 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 namespace BBCode {
 
 class BBCodeMap {
+    using TagMap = std::map<QString, std::pair<QRegExp, QString>>;
 
-    typedef std::map<QString, std::pair<QRegExp, QString>> TagMap;
-
-  public:
+public:
     static BBCodeMap& instance() {
         static BBCodeMap s_Instance;
         return s_Instance;
@@ -111,7 +110,7 @@ class BBCodeMap {
         return QString();
     }
 
-  private:
+private:
     BBCodeMap() : m_TagNameExp("^[a-zA-Z*]*=?") {
         m_TagMap["b"] = std::make_pair(QRegExp("\\[b\\](.*)\\[/b\\]"), "<b>\\1</b>");
         m_TagMap["i"] = std::make_pair(QRegExp("\\[i\\](.*)\\[/i\\]"), "<i>\\1</i>");
@@ -187,7 +186,7 @@ class BBCodeMap {
         m_ColorMap.insert(std::make_pair<QString, QString>("peru", "CD853F"));
     }
 
-  private:
+private:
     QRegExp m_TagNameExp;
     TagMap m_TagMap;
     std::map<QString, QString> m_ColorMap;
