@@ -46,7 +46,6 @@ namespace details {
 // log_path is a required argument taking the path to the full path to the log file.
 spdlog::sink_ptr file_sink(fs::path log_path);
 spdlog::sink_ptr console_sink();
-spdlog::sink_ptr ostream_sink();
 } // namespace details
 
 enum class Level {
