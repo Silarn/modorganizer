@@ -38,8 +38,8 @@ APPPARAM(std::wstring, profileTweakIni, L"profile_tweaks.ini")
 APPPARAM(std::wstring, logFileName, L"ModOrganizer.log")
 APPPARAM(std::wstring, iniFileName, L"ModOrganizer.ini")
 APPPARAM(std::wstring, proxyDLLTarget, L"steam_api.dll")
-APPPARAM(std::wstring, proxyDLLOrig,
-         L"steam_api_orig.dll") // needs to be identical to the value used in proxydll-project
+// needs to be identical to the value used in proxydll-project
+APPPARAM(std::wstring, proxyDLLOrig, L"steam_api_orig.dll")
 APPPARAM(std::wstring, proxyDLLSource, L"proxy.dll")
 APPPARAM(const wchar_t*, localSavePlaceholder, L"__MOProfileSave__\\")
 
