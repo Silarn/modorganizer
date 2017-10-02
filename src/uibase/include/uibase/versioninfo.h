@@ -30,7 +30,6 @@ namespace MOBase {
  * this will try to parse machine-readable information from a string.
  **/
 class QDLLEXPORT VersionInfo {
-
     friend QDLLEXPORT bool operator<(const VersionInfo& LHS, const VersionInfo& RHS);
     friend QDLLEXPORT bool operator>(const VersionInfo& LHS, const VersionInfo& RHS);
     friend QDLLEXPORT bool operator<=(const VersionInfo& LHS, const VersionInfo& RHS);
@@ -38,7 +37,7 @@ class QDLLEXPORT VersionInfo {
     friend QDLLEXPORT bool operator!=(const VersionInfo& LHS, const VersionInfo& RHS);
     friend QDLLEXPORT bool operator==(const VersionInfo& LHS, const VersionInfo& RHS);
 
-  public:
+public:
     enum ReleaseType { RELEASE_PREALPHA, RELEASE_ALPHA, RELEASE_BETA, RELEASE_CANDIDATE, RELEASE_FINAL };
 
     enum VersionScheme {
@@ -51,7 +50,7 @@ class QDLLEXPORT VersionInfo {
         SCHEME_LITERAL            // use the version string as is, unmodified
     };
 
-  public:
+public:
     /**
      * @brief default constructor
      * constructs an invalid version
@@ -126,7 +125,7 @@ class QDLLEXPORT VersionInfo {
      */
     VersionScheme scheme() const { return m_Scheme; }
 
-  private:
+private:
     /**
      * @brief determine the release type
      * @param versionString the version string to parse
@@ -134,7 +133,7 @@ class QDLLEXPORT VersionInfo {
      **/
     QString parseReleaseType(QString versionString);
 
-  private:
+private:
     VersionScheme m_Scheme;
 
     bool m_Valid;
