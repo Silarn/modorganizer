@@ -1389,7 +1389,7 @@ Right now this has very limited functionality</string>
   </action>
   <action name="actionChange_Game">
    <property name="icon">
-    <iconset>
+    <iconset resource="resources.qrc">
      <normaloff>:/MO/gui/app_icon</normaloff>:/MO/gui/app_icon</iconset>
    </property>
    <property name="text">
