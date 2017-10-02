@@ -36,15 +36,12 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 class QSortFilterProxyModel;
 
-/**
- * Model presenting an overview of the installed mod
- * This is used in a view in the main window of MO. It combines general information about
- * the mods from ModInfo with status information from the Profile
- **/
+// Model presenting an overview of the installed mod
+// This is used in a view in the main window of MO. It combines general information about
+// the mods from ModInfo with status information from the Profile
 class ModList : public QAbstractItemModel, public MOBase::IModList {
     Q_OBJECT
-
-  public:
+public:
     enum EColumn {
         COL_NAME,
         COL_FLAGS,
@@ -61,34 +58,21 @@ class ModList : public QAbstractItemModel, public MOBase::IModList {
     using SignalModStateChanged = boost::signals2::signal<void(const QString&, ModStates)>;
     using SignalModMoved = boost::signals2::signal<void(const QString&, int, int)>;
 
-  public:
-    /**
-     * @brief constructor
-     * @todo ensure this view works without a profile set, otherwise there are intransparent dependencies on the
-     *initialisation order
-     **/
+public:
+    // @brief constructor
+    // @todo ensure this view works without a profile set, otherwise there are intransparent dependencies on the
+    // initialisation order
     ModList(QObject* parent = nullptr);
 
     ~ModList();
 
-    /**
-     * @brief set the profile used for status information
-     *
-     * @param profile the profile to use
-     **/
+    // @brief set the profile used for status information
+    //
+    // @param profile the profile to use
     void setProfile(Profile* profile);
 
-    /**
-     * @brief retrieve the current sorting mode
-     * @note this is used to store the sorting mode between sessions
-     * @return current sorting mode, encoded to be compatible to previous versions
-     **/
-    int getCurrentSortingMode() const;
-
-    /**
-     * @brief remove the specified mod without asking for confirmation
-     * @param row the row to remove
-     */
+    // @brief remove the specified mod without asking for confirmation
+    // @param row the row to remove
     void removeRowForce(int row, const QModelIndex& parent);
 
     void notifyChange(int rowStart, int rowEnd = -1);
@@ -105,32 +89,32 @@ class ModList : public QAbstractItemModel, public MOBase::IModList {
 
     int timeElapsedSinceLastChecked() const;
 
-  public:
-    /// \copydoc MOBase::IModList::displayName
+public:
+    // \copydoc MOBase::IModList::displayName
     virtual QString displayName(const QString& internalName) const override;
 
-    /// \copydoc MOBase::IModList::allMods
+    // \copydoc MOBase::IModList::allMods
     virtual QStringList allMods() const override;
 
-    /// \copydoc MOBase::IModList::state
+    // \copydoc MOBase::IModList::state
     virtual ModStates state(const QString& name) const override;
 
-    /// \copydoc MOBase::IModList::setActive
+    // \copydoc MOBase::IModList::setActive
     virtual bool setActive(const QString& name, bool active) override;
 
-    /// \copydoc MOBase::IModList::priority
+    // \copydoc MOBase::IModList::priority
     virtual int priority(const QString& name) const override;
 
-    /// \copydoc MOBase::IModList::setPriority
+    // \copydoc MOBase::IModList::setPriority
     virtual bool setPriority(const QString& name, int newPriority) override;
 
-    /// \copydoc MOBase::IModList::onModStateChanged
+    // \copydoc MOBase::IModList::onModStateChanged
     virtual bool onModStateChanged(const std::function<void(const QString&, ModStates)>& func) override;
 
-    /// \copydoc MOBase::IModList::onModMoved
+    // \copydoc MOBase::IModList::onModMoved
     virtual bool onModMoved(const std::function<void(const QString&, int, int)>& func) override;
 
-  public: // implementation of virtual functions of QAbstractItemModel
+public: // implementation of virtual functions of QAbstractItemModel
     virtual int rowCount(const QModelIndex& parent = QModelIndex()) const;
     virtual bool hasChildren(const QModelIndex& parent = QModelIndex()) const;
     virtual int columnCount(const QModelIndex& parent = QModelIndex()) const;
@@ -150,95 +134,71 @@ class ModList : public QAbstractItemModel, public MOBase::IModList {
 
     virtual QMap<int, QVariant> itemData(const QModelIndex& index) const;
 
-  public slots:
-
+public slots:
     void dropModeUpdate(bool dropOnItems);
 
-  signals:
-
-    /**
-     * @brief emitted whenever the sorting in the list was changed by the user
-     *
-     * the sorting of the list can only be manually changed if the list is sorted by priority
-     * in which case the move is intended to change the priority of a mod
-     **/
+signals:
+    //@brief emitted whenever the sorting in the list was changed by the user
+    //
+    // the sorting of the list can only be manually changed if the list is sorted by priority
+    // in which case the move is intended to change the priority of a mod
     void modorder_changed();
 
-    /**
-     * @brief emitted when the model wants a text to be displayed by the UI
-     *
-     * @param message the message to display
-     **/
+    // @brief emitted when the model wants a text to be displayed by the UI
+    //
+    // @param message the message to display
     void showMessage(const QString& message);
 
-    /**
-     * @brief signals change to the count of headers
-     */
+    // @brief signals change to the count of headers
     void resizeHeaders();
 
-    /**
-     * @brief requestColumnSelect is emitted whenever the user requested a menu to select visible columns
-     * @param pos the position to display the menu at
-     */
+    // @brief requestColumnSelect is emitted whenever the user requested a menu to select visible columns
+    // @param pos the position to display the menu at
     void requestColumnSelect(QPoint pos);
 
-    /**
-     * @brief emitted to remove a file origin
-     * @param name name of the orign to remove
-     */
+    // @brief emitted to remove a file origin
+    // @param name name of the orign to remove
     void removeOrigin(const QString& name);
 
-    /**
-     * @brief emitted after a mod has been renamed
-     * This signal MUST be used to fix the mod names in profiles (except the active one) and to invalidate/refresh other
-     * structures that may have become invalid with the rename
-     *
-     * @param oldName the old name of the mod
-     * @param newName new name of the mod
-     */
+    // @brief emitted after a mod has been renamed
+    // This signal MUST be used to fix the mod names in profiles (except the active one) and to invalidate/refresh other
+    // structures that may have become invalid with the rename
+    //
+    // @param oldName the old name of the mod
+    // @param newName new name of the mod
     void modRenamed(const QString& oldName, const QString& newName);
 
-    /**
-     * @brief emitted after a mod has been uninstalled
-     * @param fileName filename of the mod being uninstalled
-     */
+    //@brief emitted after a mod has been uninstalled
+    //@param fileName filename of the mod being uninstalled
     void modUninstalled(const QString& fileName);
 
-    /**
-     * @brief emitted whenever a row in the list has changed
-     *
-     * @param index the index of the changed field
-     * @param role role of the field that changed
-     * @note this signal must only be emitted if the row really did change.
-     *       Slots handling this signal therefore do not have to verify that a change has happened
-     * @note this signal is currently only used in tutorials
-     **/
+    // @brief emitted whenever a row in the list has changed
+    //
+    // @param index the index of the changed field
+    // @param role role of the field that changed
+    // @note this signal must only be emitted if the row really did change.
+    //       Slots handling this signal therefore do not have to verify that a change has happened
+    // @note this signal is currently only used in tutorials
     void modlist_changed(const QModelIndex& index, int role);
 
-    /**
-     * @brief emitted to have all selected mods deleted
-     */
+    // @brief emitted to have all selected mods deleted
     void removeSelectedMods();
 
-    /**
-     * @brief fileMoved emitted when a file is moved from one mod to another
-     * @param relativePath relative path of the file moved
-     * @param oldOriginName name of the origin that previously contained the file
-     * @param newOriginName name of the origin that now contains the file
-     */
+    // @brief fileMoved emitted when a file is moved from one mod to another
+    // @param relativePath relative path of the file moved
+    // @param oldOriginName name of the origin that previously contained the file
+    // @param newOriginName name of the origin that now contains the file
     void fileMoved(const QString& relativePath, const QString& oldOriginName, const QString& newOriginName);
 
     void aboutToChangeData();
 
     void postDataChanged();
 
-  protected:
+protected:
     // event filter, handles event from the header and the tree view itself
     bool eventFilter(QObject* obj, QEvent* event);
 
-  private:
-    bool testValid(const QString& modDir);
-
+private:
     void changeModPriority(std::vector<int> sourceIndices, int newPriority);
 
     QVariant getOverwriteData(int column, int role) const;
@@ -250,11 +210,6 @@ class ModList : public QAbstractItemModel, public MOBase::IModList {
     QVariantList contentsToIcons(const std::vector<ModInfo::EContent>& content) const;
 
     QString contentsToToolTip(const std::vector<ModInfo::EContent>& contents) const;
-
-    ModList::EColumn getEnabledColumn(int index) const;
-
-    QVariant categoryData(int categoryID, int column, int role) const;
-    QVariant modData(int modID, int modelColumn, int role) const;
 
     bool renameMod(int index, const QString& newName);
 
@@ -270,9 +225,7 @@ class ModList : public QAbstractItemModel, public MOBase::IModList {
 
     bool toggleSelection(QAbstractItemView* itemView);
 
-  private slots:
-
-  private:
+private:
     struct TModInfo {
         TModInfo(unsigned int index, ModInfo::Ptr modInfo)
             : modInfo(modInfo), nameOrder(index), priorityOrder(0), modIDOrder(0), categoryOrder(0) {}
@@ -288,17 +241,14 @@ class ModList : public QAbstractItemModel, public MOBase::IModList {
         QFlags<IModList::ModState> state;
     };
 
-  private:
-    Profile* m_Profile;
+private:
+    Profile* m_Profile = nullptr;
+    NexusInterface* m_NexusInterface = nullptr;
+    mutable bool m_Modified = false;
+    bool m_DropOnItems = false;
 
-    NexusInterface* m_NexusInterface;
     std::set<int> m_RequestIDs;
-
-    mutable bool m_Modified;
-
     QFontMetrics m_FontMetrics;
-
-    bool m_DropOnItems;
 
     std::set<unsigned int> m_Overwrite;
     std::set<unsigned int> m_Overwritten;

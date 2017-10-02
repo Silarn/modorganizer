@@ -33,9 +33,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 using namespace MOBase;
 
-ModList::ModList(QObject* parent)
-    : QAbstractItemModel(parent), m_Profile(nullptr), m_NexusInterface(nullptr), m_Modified(false),
-      m_FontMetrics(QFont()), m_DropOnItems(false) {
+ModList::ModList(QObject* parent) : QAbstractItemModel(parent), m_FontMetrics(QFont()) {
     m_ContentIcons[ModInfo::CONTENT_PLUGIN] = std::make_tuple(":/MO/gui/content/plugin", tr("Game plugins (esp/esm)"));
     m_ContentIcons[ModInfo::CONTENT_INTERFACE] = std::make_tuple(":/MO/gui/content/interface", tr("Interface"));
     m_ContentIcons[ModInfo::CONTENT_MESH] = std::make_tuple(":/MO/gui/content/mesh", tr("Meshes"));
