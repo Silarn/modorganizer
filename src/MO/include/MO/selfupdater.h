@@ -38,77 +38,59 @@ class IPluginGame;
 class QNetworkReply;
 class QProgressDialog;
 
-/**
- * @brief manages updates for Mod Organizer itself
- * This class is used to update the Mod Organizer
- * The process looks like this:
- * 1. call testForUpdate() to determine is available
- * 2. if the updateAvailable() signal is received, allow the user to start the update
- * 3. if the user start the update, call startUpdate()
- * 4. startUpdate() will first query a list of files, try to determine if there is an
- *    incremental update. If not, the user will have to confirm the download of a full download.
- *    Once the correct file is selected, it is downloaded.
- * 5. before the downloaded file is extracted, existing files that are going to be replaced are
- *    moved to "update_backup" on because files that are currently open can't be replaced.
- * 6. the update is extracted and then deleted
- * 7. finally, a restart is requested via signal.
- * 8. at restart, Mod Organizer will remove the update_backup directory since none of the files
- *    should now be open
- *
- * @todo use NexusBridge
- **/
+// @brief manages updates for Mod Organizer itself
+// This class is used to update the Mod Organizer
+// The process looks like this:
+// 1. call testForUpdate() to determine is available
+// 2. if the updateAvailable() signal is received, allow the user to start the update
+// 3. if the user start the update, call startUpdate()
+// 4. startUpdate() will first query a list of files, try to determine if there is an
+//    incremental update. If not, the user will have to confirm the download of a full download.
+//    Once the correct file is selected, it is downloaded.
+// 5. before the downloaded file is extracted, existing files that are going to be replaced are
+//    moved to "update_backup" on because files that are currently open can't be replaced.
+// 6. the update is extracted and then deleted
+// 7. finally, a restart is requested via signal.
+// 8. at restart, Mod Organizer will remove the update_backup directory since none of the files
+//    should now be open
+//
+// @todo use NexusBridge
 class SelfUpdater : public QObject {
     Q_OBJECT
-  public:
-    /**
-     * @brief constructor
-     *
-     * @param nexusInterface interface to query information from nexus
-     * @param parent parent widget
-     * @todo passing the nexus interface is unneccessary
-     **/
+public:
+    // @brief constructor
+    //
+    // @param nexusInterface interface to query information from nexus
+    // @param parent parent widget
+    // @todo passing the nexus interface is unneccessary
     explicit SelfUpdater(NexusInterface* nexusInterface);
 
     virtual ~SelfUpdater();
 
     void setUserInterface(QWidget* widget);
 
-    /**
-     * @brief start the update process
-     * @note this should not be called if there is no update available
-     **/
+    // @brief start the update process
+    // @note this should not be called if there is no update available
     void startUpdate();
 
-    /**
-     * @return current version of Mod Organizer
-     **/
+    // @return current version of Mod Organizer
     MOBase::VersionInfo getVersion() const { return m_MOVersion; }
 
-  public slots:
-
-    /**
-     * @brief request information about the current version
-     **/
+public slots:
+    // @brief request information about the current version
     void testForUpdate();
 
-  signals:
-
-    /**
-     * @brief emitted if a restart of the client is necessary to complete the update
-     **/
+signals:
+    // @brief emitted if a restart of the client is necessary to complete the update
     void restart();
 
-    /**
-     * @brief emitted if an update is available
-     **/
+    // @brief emitted if an update is available
     void updateAvailable();
 
-    /**
-     * @brief emitted if a message of the day was received
-     **/
+    // @brief emitted if a message of the day was received
     void motdAvailable(const QString& motd);
 
-  private:
+private:
     void openOutputFile(const QString& fileName);
     void download(const QString& downloadLink);
     void installUpdate();
@@ -116,24 +98,24 @@ class SelfUpdater : public QObject {
     void showProgress();
     void closeProgress();
 
-  private slots:
-
+private slots:
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void downloadReadyRead();
     void downloadFinished();
     void downloadCancel();
 
-  private:
-    QWidget* m_Parent;
-    MOBase::VersionInfo m_MOVersion;
-    NexusInterface* m_Interface;
-    QFile m_UpdateFile;
-    QNetworkReply* m_Reply;
-    QProgressDialog* m_Progress{nullptr};
-    bool m_Canceled;
-    int m_Attempts;
+private:
+    QWidget* m_Parent = nullptr;
+    NexusInterface* m_Interface = nullptr;
+    QNetworkReply* m_Reply = nullptr;
+    QProgressDialog* m_Progress = nullptr;
+    bool m_Canceled = false;
+    int m_Attempts = 3;
 
-    Archive* m_ArchiveHandler;
+    Archive* m_ArchiveHandler = nullptr;
+
+    QFile m_UpdateFile;
+    MOBase::VersionInfo m_MOVersion;
 
     GitHub m_GitHub;
     QJsonObject m_UpdateCandidate;
