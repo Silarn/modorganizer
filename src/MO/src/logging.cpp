@@ -18,13 +18,11 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/logging.h"
 
-#include <QFile>
-#include <QIcon>
-#include <common/sane_windows.h>
-#include <uibase/report.h>
-#include <uibase/scopeguard.h>
+#include <QtGlobal>
+#include <common/predef.h>
 
 #include <iostream>
+#include <vector>
 
 std::unique_ptr<MOLog> MOLog::m_instance;
 

@@ -20,22 +20,19 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 // Spdlog optimizations
 #define SPDLOG_NO_THREAD_ID      // We don't use thread id.
 #define SPDLOG_NO_REGISTRY_MUTEX // We don't use the registry.
+
+#include <fmt/format.h>
+#include <fmt/ostream.h>
 #include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/spdlog.h>
 
-#include <common/predef.h>
-#include <fmt/format.h>
-#include <fmt/ostream.h>
-
-#include <QAbstractItemModel>
-#include <QMutex>
-#include <QTime>
-
+#include <assert.h>
+#include <exception>
 #include <filesystem>
 #include <memory>
-#include <sstream>
 #include <string>
-#include <vector>
+#include <utility>
+
 namespace fs = std::experimental::filesystem;
 
 namespace Log {
