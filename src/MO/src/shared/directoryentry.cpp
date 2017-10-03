@@ -18,7 +18,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/shared/directoryentry.h"
 #include "MO/shared/error_report.h"
-#include "MO/shared/leaktrace.h"
 #include "MO/shared/windows_error.h"
 
 #include <bsatk/bsatk.h>
@@ -42,9 +41,9 @@ public:
     static const int INVALID_INDEX = INT_MIN;
 
 public:
-    OriginConnection() : m_NextID(0) { LEAK_TRACE; }
+    OriginConnection() : m_NextID(0) {}
 
-    ~OriginConnection() { LEAK_UNTRACE; }
+    ~OriginConnection() {}
 
     FilesOrigin& createOrigin(const std::wstring& originName, const std::wstring& directory, int priority,
                               std::shared_ptr<FileRegister> fileRegister,
@@ -131,24 +130,20 @@ static std::wstring tail(const std::wstring& source, const size_t count) {
     return source.substr(source.length() - count);
 }
 
-FilesOrigin::FilesOrigin() : m_ID(0), m_Disabled(false), m_Name(), m_Path(), m_Priority(0) { LEAK_TRACE; }
+FilesOrigin::FilesOrigin() : m_ID(0), m_Disabled(false), m_Name(), m_Path(), m_Priority(0) {}
 
 FilesOrigin::FilesOrigin(const FilesOrigin& reference)
     : m_ID(reference.m_ID), m_Disabled(reference.m_Disabled), m_Name(reference.m_Name), m_Path(reference.m_Path),
       m_Priority(reference.m_Priority), m_FileRegister(reference.m_FileRegister),
-      m_OriginConnection(reference.m_OriginConnection) {
-    LEAK_TRACE;
-}
+      m_OriginConnection(reference.m_OriginConnection) {}
 
 FilesOrigin::FilesOrigin(int ID, const std::wstring& name, const std::wstring& path, int priority,
                          std::shared_ptr<MOShared::FileRegister> fileRegister,
                          std::shared_ptr<MOShared::OriginConnection> originConnection)
     : m_ID(ID), m_Disabled(false), m_Name(name), m_Path(path), m_Priority(priority), m_FileRegister(fileRegister),
-      m_OriginConnection(originConnection) {
-    LEAK_TRACE;
-}
+      m_OriginConnection(originConnection) {}
 
-FilesOrigin::~FilesOrigin() { LEAK_UNTRACE; }
+FilesOrigin::~FilesOrigin() {}
 
 void FilesOrigin::setPriority(int priority) {
     m_OriginConnection.lock()->changePriorityLookup(m_Priority, priority);
@@ -273,16 +268,12 @@ static bool ByOriginPriority(DirectoryEntry* entry, int LHS, int RHS) {
     return l < r;
 }
 
-FileEntry::FileEntry() : m_Index(UINT_MAX), m_Name(), m_Origin(-1), m_Parent(nullptr), m_LastAccessed(time(nullptr)) {
-    LEAK_TRACE;
-}
+FileEntry::FileEntry() : m_Index(UINT_MAX), m_Name(), m_Origin(-1), m_Parent(nullptr), m_LastAccessed(time(nullptr)) {}
 
 FileEntry::FileEntry(Index index, const std::wstring& name, DirectoryEntry* parent)
-    : m_Index(index), m_Name(name), m_Origin(-1), m_Archive(L""), m_Parent(parent), m_LastAccessed(time(nullptr)) {
-    LEAK_TRACE;
-}
+    : m_Index(index), m_Name(name), m_Origin(-1), m_Archive(L""), m_Parent(parent), m_LastAccessed(time(nullptr)) {}
 
-FileEntry::~FileEntry() { LEAK_UNTRACE; }
+FileEntry::~FileEntry() {}
 
 void FileEntry::sortOrigins() {
     m_Alternatives.push_back(m_Origin);
@@ -325,7 +316,6 @@ DirectoryEntry::DirectoryEntry(const std::wstring& name, DirectoryEntry* parent,
     : m_OriginConnection(new OriginConnection), m_Name(name), m_Parent(parent), m_Populated(false), m_TopLevel(true) {
     m_FileRegister.reset(new FileRegister(m_OriginConnection));
     m_Origins.insert(originID);
-    LEAK_TRACE;
 }
 
 DirectoryEntry::DirectoryEntry(const std::wstring& name, DirectoryEntry* parent, int originID,
@@ -333,14 +323,10 @@ DirectoryEntry::DirectoryEntry(const std::wstring& name, DirectoryEntry* parent,
                                std::shared_ptr<OriginConnection> originConnection)
     : m_FileRegister(fileRegister), m_OriginConnection(originConnection), m_Name(name), m_Parent(parent),
       m_Populated(false), m_TopLevel(false) {
-    LEAK_TRACE;
     m_Origins.insert(originID);
 }
 
-DirectoryEntry::~DirectoryEntry() {
-    LEAK_UNTRACE;
-    clear();
-}
+DirectoryEntry::~DirectoryEntry() { clear(); }
 
 const std::wstring& DirectoryEntry::getName() const { return m_Name; }
 
@@ -720,14 +706,9 @@ DirectoryEntry* DirectoryEntry::getSubDirectoryRecursive(const std::wstring& pat
     }
 }
 
-FileRegister::FileRegister(std::shared_ptr<OriginConnection> originConnection) : m_OriginConnection(originConnection) {
-    LEAK_TRACE;
-}
+FileRegister::FileRegister(std::shared_ptr<OriginConnection> originConnection) : m_OriginConnection(originConnection) {}
 
-FileRegister::~FileRegister() {
-    LEAK_UNTRACE;
-    m_Files.clear();
-}
+FileRegister::~FileRegister() { m_Files.clear(); }
 
 FileEntry::Index FileRegister::generateIndex() {
     static std::atomic<FileEntry::Index> sIndex(0);
