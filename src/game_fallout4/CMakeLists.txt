@@ -48,12 +48,14 @@ target_include_directories(${library_name} PUBLIC
     PRIVATE src
 )
 # Dependencies
-target_link_libraries(${library_name} PUBLIC common uibase gamefeatures game_gamebryo Qt5::Widgets lz4
-)
+target_link_libraries(${library_name} PUBLIC common uibase gamefeatures game_gamebryo Qt5::Widgets lz4)
 add_custom_command(TARGET ${library_name} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E make_directory $<TARGET_FILE_DIR:${library_name}>/plugins
     COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE_DIR:${library_name}>/${library_name}.dll
-        $<TARGET_FILE_DIR:${library_name}>/plugins/${library_name}.dll
+        $<TARGET_FILE_DIR:${library_name}>/plugins/${library_name}.dll	
+    
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE_DIR:lz4>/liblz4.dll
+        $<TARGET_FILE_DIR:${library_name}>/dlls/liblz4.dll
 )
 # Install Targets
 install(TARGETS ${library_name} EXPORT ${library_name}Config
