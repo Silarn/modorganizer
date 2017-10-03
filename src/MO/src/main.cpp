@@ -20,6 +20,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/logging.h"
 #include "MO/moapplication.h"
 #include "MO/organizercore.h"
+#include "MO/plugincontainer.h"
 #include "MO/singleinstance.h"
 
 #include <MO/Shared/appconfig.h>
@@ -279,13 +280,13 @@ static int runApplication(MOApplication& /*application*/, SingleInstance& /*inst
         MOBase::reportError("failed to set up data paths");
         return 1;
     }
+    moLog.info("Initialize plugins");
+    PluginContainer pluginContainer(&organizer);
+    pluginContainer.loadPlugins();
     // TMP
     return 0;
 #if 0
     try {
-        qDebug("initialize plugins");
-        PluginContainer pluginContainer(&organizer);
-        pluginContainer.loadPlugins();
         // Setup MO for game.
         MOBase::IPluginGame* game = determineCurrentGame(application.applicationDirPath(), settings, pluginContainer);
         if (game == nullptr) {
