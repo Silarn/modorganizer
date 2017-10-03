@@ -16,9 +16,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-
 #ifndef DOWNLOADMANAGER_H
 #define DOWNLOADMANAGER_H
+#include <uibase/idownloadmanager.h>
+#include <uibase/modrepositoryfileinfo.h>
 
 #include <QFile>
 #include <QFileSystemWatcher>
@@ -31,8 +32,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QTime>
 #include <QUrl>
 #include <QVector>
-#include <uibase/idownloadmanager.h>
-#include <uibase/modrepositoryfileinfo.h>
+
+#include <memory>
 #include <set>
 
 namespace MOBase {
@@ -41,13 +42,10 @@ class IPluginGame;
 
 class NexusInterface;
 
-/*!
- * \brief manages downloading of files and provides progress information for gui elements
- **/
+// \brief manages downloading of files and provides progress information for gui elements
 class DownloadManager : public MOBase::IDownloadManager {
     Q_OBJECT
-
-  public:
+public:
     enum DownloadState {
         STATE_STARTED = 0,
         STATE_DOWNLOADING,
@@ -64,31 +62,29 @@ class DownloadManager : public MOBase::IDownloadManager {
         STATE_UNINSTALLED
     };
 
-  private:
+private:
     struct DownloadInfo {
-        ~DownloadInfo() { delete m_FileInfo; }
-        unsigned int m_DownloadID;
+        unsigned int m_DownloadID = 0;
+        qint64 m_ResumePos = 0;
+        qint64 m_TotalSize = 0;
+        qint64 m_PreResumeSize = 0;
+        int m_CurrentUrl = 0;
+        int m_Progress = 0;
+        int m_Tries = 0;
+        bool m_ReQueried = false;
+        quint32 m_TaskProgressId = 0;
+        bool m_Hidden = false;
+
         QString m_FileName;
         QFile m_Output;
         QNetworkReply* m_Reply;
         QTime m_StartTime;
-        qint64 m_PreResumeSize;
-        int m_Progress;
+
         DownloadState m_State;
-        int m_CurrentUrl;
         QStringList m_Urls;
-        qint64 m_ResumePos;
-        qint64 m_TotalSize;
         QDateTime m_Created; // used as a cache in DownloadManager::getFileTime, may not be valid elsewhere
 
-        int m_Tries;
-        bool m_ReQueried;
-
-        quint32 m_TaskProgressId;
-
-        MOBase::ModRepositoryFileInfo* m_FileInfo{nullptr};
-
-        bool m_Hidden;
+        std::unique_ptr<MOBase::ModRepositoryFileInfo> m_FileInfo;
 
         static DownloadInfo* createNew(const MOBase::ModRepositoryFileInfo* fileInfo, const QStringList& URLs);
         static DownloadInfo* createFromMeta(const QString& filePath, bool showHidden);
@@ -109,21 +105,21 @@ class DownloadManager : public MOBase::IDownloadManager {
 
         QString currentURL();
 
-      private:
+    private:
         static unsigned int s_NextDownloadID;
 
-      private:
-        DownloadInfo() : m_TotalSize(0), m_ReQueried(false), m_Hidden(false) {}
+    private:
+        DownloadInfo() = default;
     };
 
-  public:
+public:
     /**
      * @brief constructor
      *
      * @param nexusInterface interface to use to retrieve information from the relevant nexus page
      * @param parent parent object
      **/
-    explicit DownloadManager(NexusInterface* nexusInterface, QObject* parent);
+    explicit DownloadManager(QObject* parent);
 
     ~DownloadManager();
 
@@ -349,7 +345,7 @@ class DownloadManager : public MOBase::IDownloadManager {
 
     void pauseAll();
 
-  signals:
+signals:
 
     void aboutToUpdate();
 
@@ -384,7 +380,7 @@ class DownloadManager : public MOBase::IDownloadManager {
      */
     void downloadAdded();
 
-  public slots:
+public slots:
 
     /**
      * @brief removes the specified download
@@ -425,7 +421,7 @@ class DownloadManager : public MOBase::IDownloadManager {
 
     void managedGameChanged(MOBase::IPluginGame const* gamePlugin);
 
-  private slots:
+private slots:
 
     void downloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void downloadReadyRead();
@@ -434,10 +430,10 @@ class DownloadManager : public MOBase::IDownloadManager {
     void metaDataChanged();
     void directoryChanged(const QString& dirctory);
 
-  private:
+private:
     void createMetaFile(DownloadInfo* info);
 
-  public:
+public:
     /** Get a unique filename for a download.
      *
      * This allows you multiple versions of download files, useful if the file
@@ -449,7 +445,7 @@ class DownloadManager : public MOBase::IDownloadManager {
      */
     QString getDownloadFileName(const QString& baseName) const;
 
-  private:
+private:
     void startDownload(QNetworkReply* reply, DownloadInfo* newDownload, bool resume);
     void resumeDownloadInt(int index);
 
@@ -485,11 +481,13 @@ class DownloadManager : public MOBase::IDownloadManager {
 
     static QString getFileTypeString(int fileType);
 
-  private:
+private:
     static const int AUTOMATIC_RETRIES = 3;
 
-  private:
-    NexusInterface* m_NexusInterface;
+private:
+    NexusInterface* m_NexusInterface = nullptr;
+    bool m_ShowHidden = false;
+    MOBase::IPluginGame const* m_ManagedGame = nullptr;
 
     QVector<std::pair<int, int>> m_PendingDownloads;
 
@@ -505,11 +503,7 @@ class DownloadManager : public MOBase::IDownloadManager {
 
     std::map<QString, int> m_DownloadFails;
 
-    bool m_ShowHidden;
-
     QRegExp m_DateExpression;
-
-    MOBase::IPluginGame const* m_ManagedGame;
 };
 
 #endif // DOWNLOADMANAGER_H

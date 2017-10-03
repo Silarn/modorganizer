@@ -43,15 +43,11 @@ unsigned int DownloadManager::DownloadInfo::s_NextDownloadID = 1U;
 
 DownloadManager::DownloadInfo* DownloadManager::DownloadInfo::createNew(const ModRepositoryFileInfo* fileInfo,
                                                                         const QStringList& URLs) {
-    DownloadInfo* info = new DownloadInfo;
+    DownloadInfo* info = new DownloadInfo();
     info->m_DownloadID = s_NextDownloadID++;
     info->m_StartTime.start();
-    info->m_PreResumeSize = 0LL;
-    info->m_Progress = 0;
-    info->m_ResumePos = 0;
-    info->m_FileInfo = new ModRepositoryFileInfo(*fileInfo);
+    info->m_FileInfo.reset(new ModRepositoryFileInfo(*fileInfo));
     info->m_Urls = URLs;
-    info->m_CurrentUrl = 0;
     info->m_Tries = AUTOMATIC_RETRIES;
     info->m_State = STATE_STARTED;
     info->m_TaskProgressId = TaskProgressManager::instance().getId();
@@ -60,7 +56,7 @@ DownloadManager::DownloadInfo* DownloadManager::DownloadInfo::createNew(const Mo
 }
 
 DownloadManager::DownloadInfo* DownloadManager::DownloadInfo::createFromMeta(const QString& filePath, bool showHidden) {
-    DownloadInfo* info = new DownloadInfo;
+    DownloadInfo* info = new DownloadInfo();
 
     QString metaFileName = filePath + ".meta";
     QSettings metaFile(metaFileName, QSettings::IniFormat);
@@ -93,13 +89,11 @@ DownloadManager::DownloadInfo* DownloadManager::DownloadInfo::createFromMeta(con
     info->m_Output.setFileName(filePath);
     info->m_TotalSize = QFileInfo(filePath).size();
     info->m_PreResumeSize = info->m_TotalSize;
-    info->m_CurrentUrl = 0;
     info->m_Urls = metaFile.value("url", "").toString().split(";");
-    info->m_Tries = 0;
     info->m_TaskProgressId = TaskProgressManager::instance().getId();
     int modID = metaFile.value("modID", 0).toInt();
     int fileID = metaFile.value("fileID", 0).toInt();
-    info->m_FileInfo = new ModRepositoryFileInfo(modID, fileID);
+    info->m_FileInfo.reset(new ModRepositoryFileInfo(modID, fileID));
     info->m_FileInfo->name = metaFile.value("name", "").toString();
     if (info->m_FileInfo->name == "0") {
         // bug in earlier version
@@ -146,9 +140,8 @@ bool DownloadManager::DownloadInfo::isPausedState() { return m_State == STATE_PA
 
 QString DownloadManager::DownloadInfo::currentURL() { return m_Urls[m_CurrentUrl]; }
 
-DownloadManager::DownloadManager(NexusInterface* nexusInterface, QObject* parent)
-    : IDownloadManager(parent), m_NexusInterface(nexusInterface), m_DirWatcher(), m_ShowHidden(false),
-      m_DateExpression("/Date\\((\\d+)\\)/") {
+DownloadManager::DownloadManager(QObject* parent)
+    : IDownloadManager(parent), m_NexusInterface(NexusInterface::instance()), m_DateExpression("/Date\\((\\d+)\\)/") {
     connect(&m_DirWatcher, SIGNAL(directoryChanged(QString)), this, SLOT(directoryChanged(QString)));
 }
 
@@ -462,13 +455,13 @@ void DownloadManager::removeFile(int index, bool deleteFile) {
 }
 
 class LessThanWrapper {
-  public:
+public:
     LessThanWrapper(DownloadManager* manager) : m_Manager(manager) {}
     bool operator()(int LHS, int RHS) {
         return m_Manager->getFileName(LHS).compare(m_Manager->getFileName(RHS), Qt::CaseInsensitive) < 0;
     }
 
-  private:
+private:
     DownloadManager* m_Manager;
 };
 
@@ -778,7 +771,7 @@ const ModRepositoryFileInfo* DownloadManager::getFileInfo(int index) const {
         throw MyException(tr("file info: invalid download index %1").arg(index));
     }
 
-    return m_ActiveDownloads.at(index)->m_FileInfo;
+    return m_ActiveDownloads.at(index)->m_FileInfo.get();
 }
 
 void DownloadManager::markInstalled(int index) {
