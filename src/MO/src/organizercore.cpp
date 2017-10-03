@@ -112,9 +112,8 @@ QStringList toStringList(InputIterator current, InputIterator end) {
 
 OrganizerCore::OrganizerCore(const QSettings& initSettings)
     : m_Settings(initSettings), m_ModList(this), m_PluginList(this),
-      m_DirectoryStructure(new DirectoryEntry(L"data", nullptr, 0)),
-      m_DownloadManager(NexusInterface::instance(), this), m_InstallationManager(), m_RefresherThread(),
-      m_PluginListsWriter(std::bind(&OrganizerCore::savePluginList, this)) {
+      m_DirectoryStructure(new DirectoryEntry(L"data", nullptr, 0)), m_DownloadManager(this), m_InstallationManager(),
+      m_RefresherThread(), m_PluginListsWriter(std::bind(&OrganizerCore::savePluginList, this)) {
     // Setup download manager.
     m_DownloadManager.setOutputDirectory(m_Settings.getDownloadDirectory());
     m_DownloadManager.setPreferredServers(m_Settings.getPreferredServers());
