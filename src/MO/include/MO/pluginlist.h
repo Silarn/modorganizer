@@ -37,7 +37,7 @@ class IPluginGame;
 
 template <class C>
 class ChangeBracket {
-  public:
+public:
     ChangeBracket(C* model) : m_Model(nullptr) {
         QVariant var = model->property("__aboutToChange");
         bool aboutToChange = var.isValid() && var.toBool();
@@ -57,7 +57,7 @@ class ChangeBracket {
         }
     }
 
-  private:
+private:
     C* m_Model;
 };
 
@@ -68,7 +68,7 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
     Q_OBJECT
     friend class ChangeBracket<PluginList>;
 
-  public:
+public:
     enum EColumn {
         COL_NAME,
         COL_FLAGS,
@@ -82,7 +82,7 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
     using SignalPluginMoved = boost::signals2::signal<void(const QString&, int, int)>;
     using SignalPluginStateChanged = boost::signals2::signal<void(const QString&, PluginStates)>;
 
-  public:
+public:
     /**
      * @brief constructor
      *
@@ -190,7 +190,7 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
 
     void disconnectSlots();
 
-  public:
+public:
     virtual QStringList pluginNames() const override;
     virtual PluginStates state(const QString& name) const;
     virtual void setState(const QString& name, PluginStates state) override;
@@ -204,7 +204,7 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
     virtual bool onPluginMoved(const std::function<void(const QString&, int, int)>& func);
     virtual bool onPluginStateChanged(const std::function<void(const QString&, PluginStates)>& func) override;
 
-  public: // implementation of the QAbstractTableModel interface
+public: // implementation of the QAbstractTableModel interface
     virtual int rowCount(const QModelIndex& parent = QModelIndex()) const;
     virtual int columnCount(const QModelIndex& parent = QModelIndex()) const;
     virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const;
@@ -217,7 +217,7 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
     virtual QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const;
     virtual QModelIndex parent(const QModelIndex& child) const;
 
-  public slots:
+public slots:
 
     /**
      * @brief enables ALL plugins
@@ -235,7 +235,7 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
      */
     void managedGameChanged(MOBase::IPluginGame const* gamePlugin);
 
-  signals:
+signals:
 
     /**
      * @brief emitted when the plugin list changed, i.e. the load order was modified or a plugin was checked/unchecked
@@ -246,7 +246,7 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
 
     void writePluginsList();
 
-  private:
+private:
     struct ESPInfo {
 
         ESPInfo(const QString& name, bool enabled, const QString& originName, const QString& fullPath, bool hasIni);
@@ -274,7 +274,7 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
     friend bool ByDate(const ESPInfo& LHS, const ESPInfo& RHS);
     friend bool ByPriority(const ESPInfo& LHS, const ESPInfo& RHS);
 
-  private:
+private:
     void syncLoadOrder();
     void updateIndices();
 
@@ -287,7 +287,7 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
     void testMasters();
     void fixPriorities();
 
-  private:
+private:
     std::vector<ESPInfo> m_ESPs;
     mutable std::map<QString, QByteArray> m_LastSaveHash;
 
@@ -307,7 +307,7 @@ class PluginList : public QAbstractItemModel, public MOBase::IPluginList {
 
     QTemporaryFile m_TempFile;
 
-    const MOBase::IPluginGame* m_GamePlugin;
+    const MOBase::IPluginGame* m_GamePlugin = nullptr;
 };
 
 #endif // PLUGINLIST_H
