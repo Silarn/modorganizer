@@ -18,25 +18,36 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #ifndef MODLIST_H
 #define MODLIST_H
-#include "MO/categories.h"
 #include "MO/modinfo.h"
-#include "MO/nexusinterface.h"
-#include "MO/profile.h"
 
 #include <uibase/imodlist.h>
 
-#include <QFile>
-#include <QListWidget>
-#include <QNetworkAccessManager>
-#include <QNetworkReply>
-#include <QVector>
+#include <QAbstractItemModel>
+#include <QFlags>
+#include <QFontMetrics>
+#include <QMap>
+#include <QModelIndex>
+#include <QObject>
+#include <QPoint>
+#include <QString>
+#include <QStringList>
+#include <QTime>
+#include <QVariant>
+#include <QVariantList>
+#include <Qt>
 
 #include <boost/signals2.hpp>
 
+#include <functional>
+#include <map>
 #include <set>
 #include <vector>
 
-class QSortFilterProxyModel;
+class Profile;
+class NexusInterface;
+class QMimeData;
+class QEvent;
+class QAbstractItemView;
 
 // Model presenting an overview of the installed mod
 // This is used in a view in the main window of MO. It combines general information about

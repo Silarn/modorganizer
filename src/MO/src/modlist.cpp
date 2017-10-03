@@ -17,21 +17,54 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/modlist.h"
+#include "MO/categories.h"
 #include "MO/messagedialog.h"
-#include "MO/modlistsortproxy.h"
+#include "MO/modinfo.h"
+#include "MO/nexusinterface.h"
+#include "MO/profile.h"
 #include "MO/qtgroupingproxy.h"
 #include "MO/viewmarkingscrollbar.h"
 
-#include <MO/Shared/appconfig.h>
+#include <MO/shared/appconfig.h>
+#include <uibase/imodlist.h>
+#include <uibase/report.h>
+#include <uibase/utility.h>
+#include <uibase/versioninfo.h>
+
+#include <QAbstractItemModel>
+#include <QAbstractItemView>
+#include <QAbstractProxyModel>
 #include <QApplication>
+#include <QBrush>
+#include <QColor>
 #include <QContextMenuEvent>
+#include <QEvent>
+#include <QFont>
+#include <QIcon>
+#include <QItemSelectionModel>
+#include <QKeyEvent>
 #include <QMessageBox>
 #include <QMimeData>
-#include <uibase/report.h>
+#include <QModelIndex>
+#include <QModelIndexList>
+#include <QObject>
+#include <QSize>
+#include <QSortFilterProxyModel>
+#include <QString>
+#include <QStringList>
+#include <QVariant>
+#include <QVariantList>
+#include <QWidget>
+#include <Qt>
+#include <QtGlobal>
 
+#include <algorithm>
+#include <exception>
+#include <functional>
+#include <set>
 #include <sstream>
-
-using namespace MOBase;
+#include <tuple>
+#include <vector>
 
 ModList::ModList(QObject* parent) : QAbstractItemModel(parent), m_FontMetrics(QFont()) {
     m_ContentIcons[ModInfo::CONTENT_PLUGIN] = std::make_tuple(":/MO/gui/content/plugin", tr("Game plugins (esp/esm)"));
@@ -95,8 +128,8 @@ QVariant ModList::getOverwriteData(int column, int role) const {
     case Qt::ForegroundRole:
         return QBrush(Qt::red);
     case Qt::ToolTipRole:
-        return tr("This entry contains files that have been created inside the virtual data tree (i.e. by the "
-                  "construction kit)");
+        return QObject::tr("This entry contains files that have been created inside the virtual data tree (i.e. by the "
+                           "construction kit)");
     default:
         return QVariant();
     }
@@ -169,7 +202,7 @@ QVariant ModList::data(const QModelIndex& modelIndex, int role) const {
         } else if (column == COL_NAME) {
             return modInfo->name();
         } else if (column == COL_VERSION) {
-            VersionInfo verInfo = modInfo->getVersion();
+            MOBase::VersionInfo verInfo = modInfo->getVersion();
             QString version = verInfo.displayString();
             if (role != Qt::EditRole) {
                 if (version.isEmpty() && modInfo->canBeUpdated()) {
@@ -303,7 +336,7 @@ QVariant ModList::data(const QModelIndex& modelIndex, int role) const {
                 return QIcon(":/MO/gui/update_available");
             } else if (modInfo->downgradeAvailable()) {
                 return QIcon(":/MO/gui/warning");
-            } else if (modInfo->getVersion().scheme() == VersionInfo::SCHEME_DATE) {
+            } else if (modInfo->getVersion().scheme() == MOBase::VersionInfo::SCHEME_DATE) {
                 return QIcon(":/MO/gui/version_date");
             }
         }
@@ -368,24 +401,24 @@ QVariant ModList::data(const QModelIndex& modelIndex, int role) const {
         } else if (column == COL_CATEGORY) {
             const std::set<int>& categories = modInfo->getCategories();
             std::wostringstream categoryString;
-            categoryString << ToWString(tr("Categories: <br>"));
+            categoryString << QObject::tr("Categories: <br>").toStdWString();
             CategoryFactory& categoryFactory = CategoryFactory::instance();
             for (std::set<int>::const_iterator catIter = categories.begin(); catIter != categories.end(); ++catIter) {
                 if (catIter != categories.begin()) {
                     categoryString << " , ";
                 }
                 try {
-                    categoryString << "<span style=\"white-space: nowrap;\"><i>"
-                                   << ToWString(
-                                          categoryFactory.getCategoryName(categoryFactory.getCategoryIndex(*catIter)))
-                                   << "</font></span>";
+                    categoryString
+                        << "<span style=\"white-space: nowrap;\"><i>"
+                        << categoryFactory.getCategoryName(categoryFactory.getCategoryIndex(*catIter)).toStdWString()
+                        << "</font></span>";
                 } catch (const std::exception& e) {
                     qCritical("failed to generate tooltip: %s", e.what());
                     return QString();
                 }
             }
 
-            return ToQString(categoryString.str());
+            return QString::fromStdWString(categoryString.str());
         } else {
             return QVariant();
         }
@@ -396,7 +429,7 @@ QVariant ModList::data(const QModelIndex& modelIndex, int role) const {
 
 bool ModList::renameMod(int index, const QString& newName) {
     QString nameFixed = newName;
-    if (!fixDirectoryName(nameFixed) || nameFixed.isEmpty()) {
+    if (!MOBase::fixDirectoryName(nameFixed) || nameFixed.isEmpty()) {
         MessageDialog::showMessage(tr("Invalid name"), nullptr);
         return false;
     }
@@ -473,8 +506,8 @@ bool ModList::setData(const QModelIndex& index, const QVariant& value, int role)
             }
         } break;
         case COL_VERSION: {
-            VersionInfo::VersionScheme scheme = info->getVersion().scheme();
-            VersionInfo version(value.toString(), scheme, true);
+            MOBase::VersionInfo::VersionScheme scheme = info->getVersion().scheme();
+            MOBase::VersionInfo version(value.toString(), scheme, true);
             if (version.isValid()) {
                 info->setVersion(version);
                 result = true;
@@ -645,7 +678,7 @@ void ModList::disconnectSlots() {
 
 int ModList::timeElapsedSinceLastChecked() const { return m_LastCheck.elapsed(); }
 
-IModList::ModStates ModList::state(unsigned int modIndex) const {
+MOBase::IModList::ModStates ModList::state(unsigned int modIndex) const {
     IModList::ModStates result;
     if (modIndex != UINT_MAX) {
         result |= IModList::STATE_EXISTS;
@@ -688,7 +721,7 @@ QStringList ModList::allMods() const {
     return result;
 }
 
-IModList::ModStates ModList::state(const QString& name) const {
+MOBase::IModList::ModStates ModList::state(const QString& name) const {
     unsigned int modIndex = ModInfo::getIndex(name);
 
     return state(modIndex);
@@ -776,7 +809,7 @@ bool ModList::dropURLs(const QMimeData* mimeData, int row, const QModelIndex& pa
     }
 
     if (source.count() != 0) {
-        shellMove(source, target);
+        MOBase::shellMove(source, target);
     }
 
     return true;
@@ -819,7 +852,7 @@ bool ModList::dropMod(const QMimeData* mimeData, int row, const QModelIndex& par
         }
         changeModPriority(sourceRows, newPriority);
     } catch (const std::exception& e) {
-        reportError(tr("drag&drop failed: %1").arg(e.what()));
+        MOBase::reportError(tr("drag&drop failed: %1").arg(e.what()));
     }
 
     return false;
