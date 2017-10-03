@@ -36,24 +36,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 using namespace MOBase;
 using namespace MOShared;
 
-bool ByName(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo& RHS) {
-    return LHS.m_Name.toUpper() < RHS.m_Name.toUpper();
-}
-
-bool ByPriority(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo& RHS) {
-    if (LHS.m_IsMaster && !RHS.m_IsMaster) {
-        return true;
-    } else if (!LHS.m_IsMaster && RHS.m_IsMaster) {
-        return false;
-    } else {
-        return LHS.m_Priority < RHS.m_Priority;
-    }
-}
-
-bool ByDate(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo& RHS) {
-    return QFileInfo(LHS.m_FullPath).lastModified() < QFileInfo(RHS.m_FullPath).lastModified();
-}
-
 PluginList::PluginList(QObject* parent) : QAbstractItemModel(parent), m_FontMetrics(QFont()) {}
 
 PluginList::~PluginList() {
