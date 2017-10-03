@@ -21,9 +21,6 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #pragma once
 #include <common/sane_windows.h>
 
-#pragma warning(push)
-#pragma warning(disable : 4201)
-
 typedef LONG NTSTATUS;
 
 typedef struct _IO_STATUS_BLOCK {
@@ -296,5 +293,3 @@ extern ObQueryNameString_type ObQueryNameString;
 extern ObDereferenceObject_type ObDereferenceObject;
 extern RtlInitUnicodeString_type RtlInitUnicodeString;
 */
-
-#pragma warning(pop)

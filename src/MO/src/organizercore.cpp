@@ -259,7 +259,7 @@ void OrganizerCore::storeSettings() {
 bool OrganizerCore::testForSteam() {
     size_t currentSize = 1024;
     std::unique_ptr<DWORD[]> processIDs;
-    DWORD bytesReturned;
+    DWORD bytesReturned = 0;
     bool success = false;
     while (!success) {
         processIDs.reset(new DWORD[currentSize]);
@@ -786,13 +786,13 @@ OrganizerCore::findFileInfos(const QString& path,
     DirectoryEntry* dir = m_DirectoryStructure->findSubDirectoryRecursive(ToWString(path));
     if (dir != nullptr) {
         std::vector<FileEntry::Ptr> files = dir->getFiles();
-        foreach (FileEntry::Ptr file, files) {
+        for (FileEntry::Ptr file : files) {
             IOrganizer::FileInfo info;
             info.filePath = ToQString(file->getFullPath());
             bool fromArchive = false;
             info.origins.append(ToQString(m_DirectoryStructure->getOriginByID(file->getOrigin(fromArchive)).getName()));
             info.archive = fromArchive ? ToQString(file->getArchive()) : "";
-            foreach (int idx, file->getAlternatives()) {
+            for (int idx : file->getAlternatives()) {
                 info.origins.append(ToQString(m_DirectoryStructure->getOriginByID(idx).getName()));
             }
 
@@ -1330,11 +1330,11 @@ void OrganizerCore::modStatusChanged(unsigned int index) {
         modInfo->clearCaches();
 
         for (unsigned int i = 0; i < m_CurrentProfile->numMods(); ++i) {
-            ModInfo::Ptr modInfo = ModInfo::getByIndex(i);
+            ModInfo::Ptr modInfo_ = ModInfo::getByIndex(i);
             int priority = m_CurrentProfile->getModPriority(i);
-            if (m_DirectoryStructure->originExists(ToWString(modInfo->name()))) {
+            if (m_DirectoryStructure->originExists(ToWString(modInfo_->name()))) {
                 // priorities in the directory structure are one higher because data is 0
-                m_DirectoryStructure->getOriginByName(ToWString(modInfo->name())).setPriority(priority + 1);
+                m_DirectoryStructure->getOriginByName(ToWString(modInfo_->name())).setPriority(priority + 1);
             }
         }
         m_DirectoryStructure->getFileRegister()->sortOrigins();

@@ -36,11 +36,11 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 using namespace MOBase;
 using namespace MOShared;
 
-static bool ByName(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo& RHS) {
+bool ByName(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo& RHS) {
     return LHS.m_Name.toUpper() < RHS.m_Name.toUpper();
 }
 
-static bool ByPriority(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo& RHS) {
+bool ByPriority(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo& RHS) {
     if (LHS.m_IsMaster && !RHS.m_IsMaster) {
         return true;
     } else if (!LHS.m_IsMaster && RHS.m_IsMaster) {
@@ -50,7 +50,7 @@ static bool ByPriority(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo
     }
 }
 
-static bool ByDate(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo& RHS) {
+bool ByDate(const PluginList::ESPInfo& LHS, const PluginList::ESPInfo& RHS) {
     return QFileInfo(LHS.m_FullPath).lastModified() < QFileInfo(RHS.m_FullPath).lastModified();
 }
 

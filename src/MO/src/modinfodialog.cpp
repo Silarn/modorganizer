@@ -37,17 +37,15 @@ using namespace MOShared;
 class ModFileListWidget : public QListWidgetItem {
     friend bool operator<(const ModFileListWidget& LHS, const ModFileListWidget& RHS);
 
-  public:
+public:
     ModFileListWidget(const QString& text, int sortValue, QListWidget* parent = 0)
         : QListWidgetItem(text, parent, QListWidgetItem::UserType + 1), m_SortValue(sortValue) {}
 
-  private:
+private:
     int m_SortValue;
 };
 
-static bool operator<(const ModFileListWidget& LHS, const ModFileListWidget& RHS) {
-    return LHS.m_SortValue < RHS.m_SortValue;
-}
+bool operator<(const ModFileListWidget& LHS, const ModFileListWidget& RHS) { return LHS.m_SortValue < RHS.m_SortValue; }
 
 ModInfoDialog::ModInfoDialog(ModInfo::Ptr modInfo, const DirectoryEntry* directory, bool unmanaged, QWidget* parent)
     : TutorableDialog("ModInfoDialog", parent), ui(new Ui::ModInfoDialog), m_ModInfo(modInfo), m_ThumbnailMapper(this),
@@ -514,8 +512,8 @@ void ModInfoDialog::saveCurrentTextFile() {
         txtFile.open(QIODevice::WriteOnly);
         txtFile.resize(0);
         QTextCodec* codec = QTextCodec::codecForName(encodingVar.toString().toUtf8());
-        QString data = ui->textFileView->toPlainText().replace("\n", "\r\n");
-        txtFile.write(codec->fromUnicode(data));
+        QString data_ = ui->textFileView->toPlainText().replace("\n", "\r\n");
+        txtFile.write(codec->fromUnicode(data_));
     } else {
         reportError("no file selected");
     }
@@ -532,8 +530,8 @@ void ModInfoDialog::saveCurrentIniFile() {
         txtFile.open(QIODevice::WriteOnly);
         txtFile.resize(0);
         QTextCodec* codec = QTextCodec::codecForName(encodingVar.toString().toUtf8());
-        QString data = ui->iniFileView->toPlainText().replace("\n", "\r\n");
-        txtFile.write(codec->fromUnicode(data));
+        QString data_ = ui->iniFileView->toPlainText().replace("\n", "\r\n");
+        txtFile.write(codec->fromUnicode(data_));
     } else {
         reportError("no file selected");
     }
@@ -900,7 +898,13 @@ void ModInfoDialog::openFile(const QModelIndex& index) {
     QString fileName = m_FileSystemModel->filePath(index);
 
     HINSTANCE res = ::ShellExecuteW(nullptr, L"open", ToWString(fileName).c_str(), nullptr, nullptr, SW_SHOW);
-    if ((int)res <= 32) {
+    // As per
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+    // res is not a true HINSTANCE and should be cast to int.
+    // Ugly, i know.
+#pragma warning(suppress : 4311)
+#pragma warning(suppress : 4302)
+    if (reinterpret_cast<int>(res) <= 32) {
         qCritical("failed to invoke %s: %d", fileName.toUtf8().constData(), res);
     }
 }

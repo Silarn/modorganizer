@@ -30,7 +30,7 @@ SelectionDialog::SelectionDialog(const QString& description, QWidget* parent, co
 
 SelectionDialog::~SelectionDialog() { delete ui; }
 
-void SelectionDialog::addChoice(const QString& buttonText, const QString& description, const QVariant& data,
+void SelectionDialog::addChoice(const QString& buttonText, const QString& description, const QVariant& data_,
                                 const QIcon& icon) {
     QAbstractButton* button = new QCommandLinkButton(buttonText, description, ui->buttonBox);
     if (m_IconSize.isValid()) {
@@ -39,9 +39,9 @@ void SelectionDialog::addChoice(const QString& buttonText, const QString& descri
     if (!icon.isNull()) {
         button->setIcon(icon);
     }
-    button->setProperty("data", data);
+    button->setProperty("data", data_);
     ui->buttonBox->addButton(button, QDialogButtonBox::AcceptRole);
-    if (data.isValid()) {
+    if (data_.isValid()) {
         m_ValidateByData = true;
     }
 }

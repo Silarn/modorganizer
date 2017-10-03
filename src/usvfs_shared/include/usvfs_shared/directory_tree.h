@@ -645,15 +645,15 @@ class TreeContainer {
 
     template <typename T>
     TreeT* createSubNode(const VoidAllocatorT& allocator, const std::string& name, unsigned long flags, const T& data) {
-        SharedMemoryT::segment_manager* manager = allocator.get_segment_manager();
+        SharedMemoryT::segment_manager* mger = allocator.get_segment_manager();
 
-        return manager->construct<TreeT>(bi::anonymous_instance)(name, flags, TreeT::NodePtrT(),
-                                                                 createData<TreeT::DataT, T>(data, allocator), manager);
+        return mger->construct<TreeT>(bi::anonymous_instance)(name, flags, TreeT::NodePtrT(),
+                                                                 createData<TreeT::DataT, T>(data, allocator), mger);
     }
 
     typename TreeT::NodePtrT createSubPtr(TreeT* subNode) {
-        SharedMemoryT::segment_manager* manager = m_SHM->get_segment_manager();
-        return TreeT::NodePtrT(subNode, allocator(), TreeT::DeleterT(manager));
+        SharedMemoryT::segment_manager* mger = m_SHM->get_segment_manager();
+        return TreeT::NodePtrT(subNode, allocator(), TreeT::DeleterT(mger));
     }
 
     template <typename T>

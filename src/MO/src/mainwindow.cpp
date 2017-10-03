@@ -90,8 +90,6 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "modeltest.h"
 #endif // TEST_MODELS
 
-#pragma warning(disable : 4428)
-
 using namespace MOBase;
 using namespace MOShared;
 
@@ -1174,11 +1172,6 @@ void MainWindow::refreshSaveList() {
     }
 }
 
-static bool BySortValue(const std::pair<UINT32, QTreeWidgetItem*>& LHS,
-                        const std::pair<UINT32, QTreeWidgetItem*>& RHS) {
-    return LHS.first < RHS.first;
-}
-
 template <typename InputIterator>
 static QStringList toStringList(InputIterator current, InputIterator end) {
     QStringList result;
@@ -2066,12 +2059,10 @@ void MainWindow::displayModInformation(ModInfo::Ptr modInfo, unsigned int index,
     }
 
     if (m_OrganizerCore.currentProfile()->modEnabled(index) && !modInfo->hasFlag(ModInfo::FLAG_FOREIGN)) {
-        FilesOrigin& origin = m_OrganizerCore.directoryStructure()->getOriginByName(ToWString(modInfo->name()));
-        origin.enable(false);
+        m_OrganizerCore.directoryStructure()->getOriginByName(ToWString(modInfo->name())).enable(false);
 
         if (m_OrganizerCore.directoryStructure()->originExists(ToWString(modInfo->name()))) {
-            FilesOrigin& origin = m_OrganizerCore.directoryStructure()->getOriginByName(ToWString(modInfo->name()));
-            origin.enable(false);
+            m_OrganizerCore.directoryStructure()->getOriginByName(ToWString(modInfo->name())).enable(false);
 
             m_OrganizerCore.directoryRefresher()->addModToStructure(
                 m_OrganizerCore.directoryStructure(), modInfo->name(),
@@ -2715,8 +2706,8 @@ void MainWindow::on_modList_customContextMenuRequested(const QPoint& pos) {
                     }
                 }
 
-                std::vector<ModInfo::EFlag> flags = info->getFlags();
-                if (std::find(flags.begin(), flags.end(), ModInfo::FLAG_INVALID) != flags.end()) {
+                std::vector<ModInfo::EFlag> flags_ = info->getFlags();
+                if (std::find(flags_.begin(), flags_.end(), ModInfo::FLAG_INVALID) != flags_.end()) {
                     menu->addAction(tr("Ignore missing data"), this, SLOT(ignoreMissingData_clicked()));
                 }
 
@@ -3409,12 +3400,12 @@ void MainWindow::nxmUpdatesAvailable(const std::vector<int>& modIDs, QVariant us
             }
         } else {
             std::vector<ModInfo::Ptr> info = ModInfo::getByModID(result["id"].toInt());
-            for (auto iter = info.begin(); iter != info.end(); ++iter) {
-                (*iter)->setNewestVersion(result["version"].toString());
-                (*iter)->setNexusDescription(result["description"].toString());
+            for (const auto& modinfo : info) {
+                modinfo->setNewestVersion(result["version"].toString());
+                modinfo->setNexusDescription(result["description"].toString());
                 if (NexusInterface::instance()->getAccessManager()->loggedIn() && result.contains("voted_by_user")) {
                     // don't use endorsement info if we're not logged in or if the response doesn't contain it
-                    (*iter)->setIsEndorsed(result["voted_by_user"].toBool());
+                    modinfo->setIsEndorsed(result["voted_by_user"].toBool());
                 }
             }
         }
@@ -3899,7 +3890,7 @@ void MainWindow::on_bossButton_clicked() {
 
         if (loot != INVALID_HANDLE_VALUE) {
             bool isJobHandle = true;
-            ULONG lastProcessID;
+            ULONG lastProcessID = 0;
             DWORD res = ::MsgWaitForMultipleObjects(1, &loot, false, 100, QS_KEY | QS_MOUSE);
             while ((res != WAIT_FAILED) && (res != WAIT_OBJECT_0)) {
                 if (isJobHandle) {
@@ -4138,14 +4129,14 @@ void MainWindow::dragEnterEvent(QDragEnterEvent* event) {
         // If I read the documentation right, this won't work under a motif windows
         // manager and the check needs to be done at the drop. However, that means
         // the user might be allowed to drop things which we can't sanely process
-        QMimeData const* data = event->mimeData();
+        QMimeData const* data_ = event->mimeData();
 
-        if (data->hasUrls()) {
+        if (data_->hasUrls()) {
             QStringList extensions = m_OrganizerCore.installationManager()->getSupportedExtensions();
 
             // This is probably OK - scan to see if these are moderately sane archive
             // types
-            QList<QUrl> urls = data->urls();
+            QList<QUrl> urls = data_->urls();
             bool ok = true;
             for (const QUrl& url : urls) {
                 if (url.isLocalFile()) {
@@ -4217,17 +4208,17 @@ bool MainWindow::registerWidgetState(const QString& name, QHeaderView* view, con
     QSettings& settings = m_OrganizerCore.settings().directInterface();
 
     QString key = QString("geometry/%1").arg(name);
-    QByteArray data;
+    QByteArray data_;
 
     if ((oldSettingName != nullptr) && settings.contains(oldSettingName)) {
-        data = settings.value(oldSettingName).toByteArray();
+        data_ = settings.value(oldSettingName).toByteArray();
         settings.remove(oldSettingName);
     } else if (settings.contains(key)) {
-        data = settings.value(key).toByteArray();
+        data_ = settings.value(key).toByteArray();
     }
 
-    if (!data.isEmpty()) {
-        view->restoreState(data);
+    if (!data_.isEmpty()) {
+        view->restoreState(data_);
         return true;
     } else {
         return false;

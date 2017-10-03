@@ -23,7 +23,7 @@ fs::path get_exe_dir() {
     // So we have to allocate more memory until then.
     do {
         path.resize(path.size() + MAX_PATH);
-        bufLen = GetModuleFileNameW(NULL, path.data(), path.size());
+        bufLen = GetModuleFileNameW(NULL, path.data(), static_cast<DWORD>(path.size()));
         // Assert we're getting the expected errors.
         assert((GetLastError() == ERROR_INSUFFICIENT_BUFFER) || GetLastError() == 0);
         // Reset error state.

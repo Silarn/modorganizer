@@ -56,7 +56,7 @@ static bool helperExec(LPCWSTR moDirectory, LPCWSTR commandLine) {
     return exitCode == NOERROR;
 }
 
-bool init(const std::wstring& moPath, const std::wstring& dataPath) {
+bool init(const std::wstring&, const std::wstring& dataPath) {
     DWORD userNameLen = UNLEN + 1;
     wchar_t userName[UNLEN + 1];
 

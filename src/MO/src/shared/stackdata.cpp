@@ -74,8 +74,6 @@ void StackData::load_modules(HANDLE process, DWORD processID) {
     CloseHandle(snap);
 }
 
-#pragma warning(disable : 4748)
-
 void StackData::initTrace() {
 #ifdef _X86_
     load_modules(::GetCurrentProcess(), ::GetCurrentProcessId());

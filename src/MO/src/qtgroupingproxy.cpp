@@ -95,19 +95,19 @@ QList<RowData> QtGroupingProxy::belongsTo(const QModelIndex& idx) {
         if (variant.type() == QVariant::List) {
             // a list of variants get's expanded to multiple rows
             QVariantList list = variant.toList();
-            for (int i = 0; i < list.length(); i++) {
+            for (int ii = 0; ii < list.length(); ii++) {
                 // take an existing row data or create a new one
-                RowData rowData = (rowDataList.count() > i) ? rowDataList.takeAt(i) : RowData();
+                RowData rowData = (rowDataList.count() > ii) ? rowDataList.takeAt(ii) : RowData();
 
                 // we only gather data for the first column
                 ItemData indexData = rowData.contains(0) ? rowData.take(0) : ItemData();
-                indexData.insert(role, list.value(i));
+                indexData.insert(role, list.value(ii));
                 rowData.insert(0, indexData);
                 // for the grouped column the data should not be gathered from the children
                 // this will allow filtering on the content of this column with a
                 // QSortFilterProxyModel
                 rowData.insert(m_groupedColumn, indexData);
-                rowDataList.insert(i, rowData);
+                rowDataList.insert(ii, rowData);
             }
             break;
         } else if (!variant.isNull()) {
@@ -200,13 +200,13 @@ QList<int> QtGroupingProxy::addSourceRow(const QModelIndex& idx) {
     }
 
     // an item can be in multiple groups
-    foreach (RowData data, groupData) {
+    for (RowData data : groupData) {
         int updatedGroup = -1;
         if (!data.isEmpty()) {
             //            qDebug() << QString("index %1 belongs to group %2").arg( row )
             //                         .arg( data[0][Qt::DisplayRole].toString() );
 
-            foreach (const RowData& cachedData, m_groupMaps) {
+            for (const RowData& cachedData : m_groupMaps) {
                 // when this matches the index belongs to an existing group
                 if (data[0][Qt::DisplayRole] == cachedData[0][Qt::DisplayRole]) {
                     data = cachedData;
@@ -772,8 +772,8 @@ bool QtGroupingProxy::dropMimeData(const QMimeData* data, Qt::DropAction action,
         if (row == -1) {
             return sourceModel()->dropMimeData(data, action, -1, -1, mapToSource(parent));
         } else {
-            QModelIndex idx = mapToSource(index(row, column, parent));
-            return sourceModel()->dropMimeData(data, action, idx.row(), idx.column(), idx.parent());
+            QModelIndex idx_ = mapToSource(index(row, column, parent));
+            return sourceModel()->dropMimeData(data, action, idx_.row(), idx_.column(), idx_.parent());
         }
     }
 }

@@ -29,11 +29,11 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include <string>
 
-CArchiveExtractCallback::CArchiveExtractCallback(ProgressCallback* progressCallback,
+CArchiveExtractCallback::CArchiveExtractCallback(ProgressCallback* /*progressCallback*/,
                                                  FileChangeCallback* fileChangeCallback, ErrorCallback* errorCallback,
-                                                 PasswordCallback* passwordCallback, void* archiveHandler,
-                                                 const QString& directoryPath, FileData* const* fileData,
-                                                 QString* password)
+                                                 PasswordCallback* passwordCallback, void*,
+                                                 const QString& directoryPath, FileData* const* /*fileData*/,
+                                                 QString* /*password*/)
     : m_DirectoryPath(directoryPath), m_Extracting(false), m_Canceled(false),
       // m_ProcessedFileInfo //not sure how to initialise this!
       // m_OutFileStream(), m_FileData(fileData), m_Password(password), m_ProgressCallback(progressCallback),

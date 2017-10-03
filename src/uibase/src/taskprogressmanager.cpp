@@ -82,7 +82,7 @@ bool TaskProgressManager::tryCreateTaskbar() {
         }
     }
 
-    HRESULT result;
+    HRESULT result{};
     if (m_WinId) {
         result = CoCreateInstance(CLSID_TaskbarList, 0, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_Taskbar));
         if (result == S_OK) {

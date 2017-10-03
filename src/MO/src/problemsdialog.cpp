@@ -21,9 +21,9 @@ ProblemsDialog::~ProblemsDialog() { delete ui; }
 
 void ProblemsDialog::runDiagnosis() {
     ui->problemsWidget->clear();
-    foreach (IPluginDiagnose* diagnose, m_DiagnosePlugins) {
+    for (IPluginDiagnose* diagnose : m_DiagnosePlugins) {
         std::vector<unsigned int> activeProblems = diagnose->activeProblems();
-        foreach (unsigned int key, activeProblems) {
+        for (unsigned int key : activeProblems) {
             QTreeWidgetItem* newItem = new QTreeWidgetItem();
             newItem->setText(0, diagnose->shortDescription(key));
             newItem->setData(0, Qt::UserRole, diagnose->fullDescription(key));

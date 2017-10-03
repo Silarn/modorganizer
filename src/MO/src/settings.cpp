@@ -100,7 +100,13 @@ void Settings::registerAsNXMHandler(bool force) {
     std::wstring mode = force ? L"forcereg" : L"reg";
     std::wstring parameters = mode + L" " + m_GamePlugin->gameShortName().toStdWString() + L" \"" + executable + L"\"";
     HINSTANCE res = ::ShellExecuteW(nullptr, L"open", nxmPath.c_str(), parameters.c_str(), nullptr, SW_SHOWNORMAL);
-    if ((int)res <= 32) {
+    // As per
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+    // res is not a true HINSTANCE and should be cast to int.
+    // Ugly, i know.
+#pragma warning(suppress : 4311)
+#pragma warning(suppress : 4302)
+    if (reinterpret_cast<int>(res) <= 32) {
         QMessageBox::critical(nullptr, tr("Failed"), tr("Sorry, failed to start the nxmhandler application"));
     }
 }

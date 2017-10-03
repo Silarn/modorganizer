@@ -30,7 +30,7 @@ using namespace MOBase;
 
 class MyFileSystemModel : public QFileSystemModel {
 
-  public:
+public:
     MyFileSystemModel(QObject* parent) : QFileSystemModel(parent), m_RegularColumnCount(0) {}
 
     virtual int columnCount(const QModelIndex& parent) const {
@@ -62,7 +62,7 @@ class MyFileSystemModel : public QFileSystemModel {
         }
     }
 
-  private:
+private:
     mutable int m_RegularColumnCount;
 };
 
@@ -165,7 +165,13 @@ void OverwriteInfoDialog::openFile(const QModelIndex& index) {
     QString fileName = m_FileSystemModel->filePath(index);
 
     HINSTANCE res = ::ShellExecuteW(nullptr, L"open", ToWString(fileName).c_str(), nullptr, nullptr, SW_SHOW);
-    if ((int)res <= 32) {
+    // As per
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+    // res is not a true HINSTANCE and should be cast to int.
+    // Ugly, i know.
+#pragma warning(suppress : 4311)
+#pragma warning(suppress : 4302)
+    if (reinterpret_cast<int>(res) <= 32) {
         qCritical("failed to invoke %s: %d", fileName.toUtf8().constData(), res);
     }
 }

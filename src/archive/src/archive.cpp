@@ -50,7 +50,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 class FileDataImpl : public FileData {
     friend class Archive;
 
-  public:
+public:
     FileDataImpl(const QString& fileName, unsigned long long crc, bool isDirectory);
 
     virtual QString getFileName() const;
@@ -59,7 +59,7 @@ class FileDataImpl : public FileData {
     virtual bool isDirectory() const { return m_IsDirectory; }
     virtual uint64_t getCRC() const;
 
-  private:
+private:
     QString m_FileName;
     unsigned long long m_CRC;
     std::vector<QString> m_OutputFileNames;
@@ -84,7 +84,7 @@ FileDataImpl::FileDataImpl(const QString& fileName, unsigned long long crc, bool
 /// represents the connection to one archive and provides common functionality
 class ArchiveImpl : public Archive {
 
-  public:
+public:
     ArchiveImpl();
     virtual ~ArchiveImpl();
 
@@ -102,7 +102,7 @@ class ArchiveImpl : public Archive {
 
     void operator delete(void* ptr) { ::operator delete(ptr); }
 
-  private:
+private:
     virtual void destroy() { delete this; }
 
     void clearFileList();
@@ -110,7 +110,7 @@ class ArchiveImpl : public Archive {
 
     HRESULT loadFormats();
 
-  private:
+private:
     typedef UINT32(WINAPI* CreateObjectFunc)(const GUID* clsID, const GUID* interfaceID, void** outObject);
     CreateObjectFunc m_CreateObjectFunc;
 
@@ -439,8 +439,8 @@ bool ArchiveImpl::getFileList(FileData* const*& data, size_t& size) {
     return true;
 }
 
-bool ArchiveImpl::extract(const QString& outputDirectory, ProgressCallback* progressCallback,
-                          FileChangeCallback* fileChangeCallback, ErrorCallback* errorCallback) {
+bool ArchiveImpl::extract(const QString& /*outputDirectory*/, ProgressCallback* /*progressCallback*/,
+                          FileChangeCallback* /*fileChangeCallback*/, ErrorCallback* /*errorCallback*/) {
     // m_ExtractCallback =
     //    new CArchiveExtractCallback(progressCallback, fileChangeCallback, errorCallback, m_PasswordCallback,
     //                                m_ArchivePtr, outputDirectory, &m_FileList[0], &m_Password);

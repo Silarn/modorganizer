@@ -61,7 +61,7 @@ static Log::Logger moLog("mo_init", common::get_exe_dir() / "Logs");
 //
 #pragma region "Error / external log handling."
 // Callback to filter information from the Minidump.
-static BOOL CALLBACK MyMiniDumpCallback(PVOID pParam, const PMINIDUMP_CALLBACK_INPUT pInput,
+static BOOL CALLBACK MyMiniDumpCallback(PVOID, const PMINIDUMP_CALLBACK_INPUT pInput,
                                         PMINIDUMP_CALLBACK_OUTPUT pOutput) {
     BOOL bRet = FALSE;
     // Check parameters
@@ -170,8 +170,8 @@ static LONG WINAPI MyUnhandledExceptionFilter(struct _EXCEPTION_POINTERS* except
     if (createDump) {
         std::string errorMsg = CreateMiniDump(dumpFile, exceptionPtrs);
         if (!errorMsg.empty()) {
-            auto msg = fmt::format("Unfortunately I was not able to write the diagnostic file: {0:s}", errorMsg);
-            MessageBoxA(nullptr, msg.data(), "Mod Organzier has crashed!", MB_OK | MB_ICONERROR);
+            auto tmp = fmt::format("Unfortunately I was not able to write the diagnostic file: {0:s}", errorMsg);
+            MessageBoxA(nullptr, tmp.data(), "Mod Organzier has crashed!", MB_OK | MB_ICONERROR);
         }
     }
     return result;
@@ -217,7 +217,7 @@ static void setupPath() {
     auto bufsize = ::GetEnvironmentVariableW(L"PATH", NULL, 0);
     std::wstring path;
     path.resize(bufsize);
-    ::GetEnvironmentVariableW(L"PATH", path.data(), path.size());
+    ::GetEnvironmentVariableW(L"PATH", path.data(), static_cast<DWORD>(path.size()));
     moLog.debug("Old PATH: {}", common::toString(path));
     path[path.size() - 1] = ';';
     path += appDirPath / "dlls";
@@ -257,8 +257,8 @@ static bool bootstrap(fs::path dataPath) {
 // instance, An instance
 // splashPath, the path to a image file used as a splash screen.
 // dataPath, the MO Application data path.
-static int runApplication(MOApplication& application, SingleInstance& instance, fs::path splashPath, fs::path dataPath,
-                          QStringList arguments) {
+static int runApplication(MOApplication& /*application*/, SingleInstance& /*instance*/, fs::path splashPath,
+                          fs::path dataPath, QStringList arguments) {
     // Display splash screen
     QPixmap pixmap(QString::fromStdWString(splashPath.native()));
     QSplashScreen splash(pixmap);
@@ -279,6 +279,8 @@ static int runApplication(MOApplication& application, SingleInstance& instance, 
         MOBase::reportError("failed to set up data paths");
         return 1;
     }
+    // TMP
+    return 0;
 #if 0
     try {
         qDebug("initialize plugins");

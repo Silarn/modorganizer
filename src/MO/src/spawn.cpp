@@ -34,8 +34,8 @@ using namespace MOShared;
 
 static const int BUFSIZE = 4096;
 
-static bool spawn(LPCWSTR binary, LPCWSTR arguments, LPCWSTR currentDirectory, bool suspended, bool hooked,
-                  HANDLE stdOut, HANDLE stdErr, HANDLE& processHandle, HANDLE& threadHandle) {
+static bool spawn(LPCWSTR binary, LPCWSTR arguments, LPCWSTR currentDirectory, bool, bool hooked, HANDLE stdOut,
+                  HANDLE stdErr, HANDLE& processHandle, HANDLE& threadHandle) {
     BOOL inheritHandles = FALSE;
     STARTUPINFO si;
     ::ZeroMemory(&si, sizeof(si));

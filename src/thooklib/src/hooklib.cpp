@@ -70,7 +70,7 @@ static HOOKHANDLE GenerateHandle() {
     return ++NextHandle;
 }
 
-HOOKHANDLE applyHook(THookInfo info, HookError* error) {
+HOOKHANDLE applyHook(THookInfo info, HookError*) {
     MH_CreateHook(info.originalFunction, info.replacementFunction, &info.trampoline);
     MH_EnableHook(info.originalFunction);
 

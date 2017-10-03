@@ -135,7 +135,7 @@ void SelfUpdater::startUpdate() {
 
     query.button(QMessageBox::Yes)->setText(QObject::tr("Install"));
 
-    int res = query.exec();
+    query.exec();
 
     if (query.result() == QMessageBox::Yes) {
         bool found = false;
@@ -268,10 +268,17 @@ void SelfUpdater::installUpdate() {
     HINSTANCE res =
         ::ShellExecuteW(nullptr, L"open", m_UpdateFile.fileName().toStdWString().c_str(), nullptr, nullptr, SW_SHOW);
 
-    if (res > (HINSTANCE)32) {
+    // As per
+    // https://msdn.microsoft.com/en-us/library/windows/desktop/bb762153%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+    // res is not a true HINSTANCE and should be cast to int.
+    // Ugly, i know.
+#pragma warning(suppress : 4311)
+#pragma warning(suppress : 4302)
+    int ires = reinterpret_cast<int>(res);
+    if (ires > 32) {
         QCoreApplication::quit();
     } else {
-        MOBase::reportError(tr("Failed to start %1: %2").arg(m_UpdateFile.fileName()).arg((int)res));
+        MOBase::reportError(tr("Failed to start %1: %2").arg(m_UpdateFile.fileName()).arg(ires));
     }
 
     m_UpdateFile.remove();

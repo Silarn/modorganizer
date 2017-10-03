@@ -30,10 +30,10 @@ MessageDialog::MessageDialog(const QString& text, QWidget* reference) : QDialog(
     QFontMetrics metrics(ui->message->font());
     QString restrictedText;
     QStringList lines = text.split("\n");
-    foreach (const QString& line, lines) {
+    for (const QString& line : lines) {
         QString newLine;
         QStringList words = line.split(" ");
-        foreach (const QString& word, words) {
+        for (const QString& word : words) {
             if (word.length() > 10) {
                 newLine += "<span style=\"nobreak\">" +
                            metrics.elidedText(word, Qt::ElideMiddle, ui->message->maximumWidth()) + "</span>";

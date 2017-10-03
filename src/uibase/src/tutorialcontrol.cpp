@@ -115,7 +115,7 @@ void TutorialControl::startTutorial(const QString& tutorial) {
     }
 }
 
-void TutorialControl::lockUI(bool locked) {
+void TutorialControl::lockUI(bool /*locked*/) {
     // FIXME: This
     // m_TutorialView->setAttribute(Qt::WA_TransparentForMouseEvents, !locked);
 

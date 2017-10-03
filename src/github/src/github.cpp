@@ -11,7 +11,7 @@
 static const QString GITHUB_URL("https://api.github.com");
 static const QString USER_AGENT("GitHubPP");
 
-GitHub::GitHub(const char* clientId) : m_AccessManager(new QNetworkAccessManager(this)) {
+GitHub::GitHub(const char*) : m_AccessManager(new QNetworkAccessManager(this)) {
     if (m_AccessManager->networkAccessible() == QNetworkAccessManager::UnknownAccessibility) {
         m_AccessManager->setNetworkAccessible(QNetworkAccessManager::Accessible);
     }

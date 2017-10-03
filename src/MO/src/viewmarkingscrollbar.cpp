@@ -27,9 +27,9 @@ void ViewMarkingScrollBar::paintEvent(QPaintEvent* event) {
     qreal scale = static_cast<qreal>(innerRect.height() - 3) / static_cast<qreal>(m_Model->rowCount());
 
     for (int i = 0; i < m_Model->rowCount(); ++i) {
-        QVariant data = m_Model->data(m_Model->index(i, 0), m_Role);
-        if (data.isValid()) {
-            QColor col = data.value<QColor>();
+        QVariant data_ = m_Model->data(m_Model->index(i, 0), m_Role);
+        if (data_.isValid()) {
+            QColor col = data_.value<QColor>();
             painter.setPen(col);
             painter.setBrush(col);
             painter.drawRect(QRect(2, i * scale - 2, handleRect.width() - 5, 3));
