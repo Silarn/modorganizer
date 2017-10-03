@@ -18,9 +18,13 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/instancemanager.h"
 #include "MO/logging.h"
+#include "MO/mainwindow.h"
 #include "MO/moapplication.h"
+#include "MO/nexusinterface.h"
+#include "MO/nxmaccessmanager.h"
 #include "MO/organizercore.h"
 #include "MO/plugincontainer.h"
+#include "MO/selectiondialog.h"
 #include "MO/singleinstance.h"
 
 #include <MO/Shared/appconfig.h>
@@ -30,9 +34,13 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <common/util.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
+#include <uibase/iplugingame.h>
 #include <uibase/report.h>
+#include <uibase/tutorialmanager.h>
 
 #include <QDir>
+#include <QFileDialog>
+#include <QIcon>
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QMessageLogContext>
@@ -41,6 +49,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSslSocket>
 #include <QString>
 #include <QStringList>
+#include <QVariant>
 #include <QtGlobal>
 
 #include <DbgHelp.h>
@@ -253,132 +262,125 @@ static bool bootstrap(fs::path dataPath) {
     return true;
 }
 
-// Run the bulk of the application.
-// application, a reference to our application.
-// instance, An instance
-// splashPath, the path to a image file used as a splash screen.
-// dataPath, the MO Application data path.
-static int runApplication(MOApplication& /*application*/, SingleInstance& /*instance*/, fs::path splashPath,
-                          fs::path dataPath, QStringList arguments) {
-    // Display splash screen
-    QPixmap pixmap(QString::fromStdWString(splashPath.native()));
-    QSplashScreen splash(pixmap);
-    // Run bootstrap code.
-    if (!bootstrap(dataPath)) {
-        MOBase::reportError("failed to set up data paths");
-        return 1;
+static MOBase::IPluginGame* selectGame(QSettings& settings, QDir const& gamePath, MOBase::IPluginGame* game) {
+    settings.setValue("gameName", game->gameName());
+    // Sadly, hookdll needs gamePath in order to run. So following code block is
+    // commented out
+    /*if (gamePath == game->gameDirectory()) {
+    settings.remove("gamePath");
+    } else*/ {
+        QString gameDir = gamePath.absolutePath();
+        game->setGamePath(gameDir);
+        settings.setValue("gamePath", QDir::toNativeSeparators(gameDir).toUtf8().constData());
     }
-    moLog.info("Current Working Directory: '{}'", fs::current_path());
-    splash.show();
-    // Setup Settings
-    fs::path settingsPath = dataPath / AppConfig::iniFileName();
-    QSettings settings(QString::fromStdWString(settingsPath.native()), QSettings::IniFormat);
-    moLog.info("Initializing Core");
-    // Bootstrap OrganizerCore
-    OrganizerCore organizer(settings);
-    if (!organizer.bootstrap()) {
-        MOBase::reportError("failed to set up data paths");
-        return 1;
-    }
-    moLog.info("Initialize plugins");
-    PluginContainer pluginContainer(&organizer);
-    pluginContainer.loadPlugins();
-    // TMP
-    return 0;
-#if 0
-    try {
-        // Setup MO for game.
-        MOBase::IPluginGame* game = determineCurrentGame(application.applicationDirPath(), settings, pluginContainer);
-        if (game == nullptr) {
-            return 1;
-        }
-        if (splashPath.startsWith(':')) {
-            // currently using MO splash, see if the plugin contains one
-            QString pluginSplash = QString(":/%1/splash").arg(game->gameShortName());
-            QImage image(pluginSplash);
-            if (!image.isNull()) {
-                image.save(dataPath + "/splash.png");
-            } else {
-                qDebug("no plugin splash");
-            }
-        }
-        organizer.setManagedGame(game);
-        organizer.createDefaultProfile();
-        if (!settings.contains("game_edition")) {
-            QStringList editions = game->gameVariants();
-            if (editions.size() > 1) {
-                SelectionDialog selection(QObject::tr("Please select the game edition you have (MO can't start the "
-                                                      "game correctly if this is set incorrectly!)"),
-                                          nullptr);
-                int index = 0;
-                for (const QString& edition : editions) {
-                    selection.addChoice(edition, "", index++);
-                }
-                if (selection.exec() == QDialog::Rejected) {
-                    return 1;
-                } else {
-                    settings.setValue("game_edition", selection.getChoiceString());
-                }
-            }
-        }
-        game->setGameVariant(settings.value("game_edition").toString());
-        qDebug("managing game at %s", qPrintable(QDir::toNativeSeparators(game->gameDirectory().absolutePath())));
-        organizer.updateExecutablesList(settings);
-        QString selectedProfileName = determineProfile(arguments, settings);
-        organizer.setCurrentProfile(selectedProfileName);
-        // if we have a command line parameter, it is either a nxm link or
-        // a binary to start
-        if (arguments.size() > 1) {
-            if (isNxmLink(arguments.at(1))) {
-                qDebug("starting download from command line: %s", qUtf8Printable(arguments.at(1)));
-                organizer.externalMessage(arguments.at(1));
-            } else {
-                QString exeName = arguments.at(1);
-                qDebug("starting %s from command line", qPrintable(exeName));
-                arguments.removeFirst(); // remove application name (ModOrganizer.exe)
-                arguments.removeFirst(); // remove binary name
-                                         // pass the remaining parameters to the binary
-                try {
-                    organizer.startApplication(exeName, arguments, QString(), QString());
-                    return 0;
-                } catch (const std::exception& e) {
-                    reportError(QObject::tr("failed to start application: %1").arg(e.what()));
-                    return 1;
-                }
-            }
-        }
-        NexusInterface::instance()->getAccessManager()->startLoginCheck();
-        qDebug("initializing tutorials");
-        TutorialManager::init(
-            qApp->applicationDirPath() + "/" + QString::fromStdWString(AppConfig::tutorialsPath()) + "/", &organizer);
-        if (!application.setStyleFile(settings.value("Settings/style", "").toString())) {
-            // disable invalid stylesheet
-            settings.setValue("Settings/style", "");
-        }
-        int res = 1;
-        { // scope to control lifetime of mainwindow
-          // set up main window and its data structures
-            MainWindow mainWindow(settings, organizer, pluginContainer);
-
-            QObject::connect(&mainWindow, SIGNAL(styleChanged(QString)), &application, SLOT(setStyleFile(QString)));
-            QObject::connect(&instance, SIGNAL(messageSent(QString)), &organizer, SLOT(externalMessage(QString)));
-
-            mainWindow.readSettings();
-
-            qDebug("displaying main window");
-            mainWindow.show();
-            splash.finish(&mainWindow);
-            return application.exec();
-        }
-    } catch (const std::exception& e) {
-        reportError(e.what());
-        return 1;
-    }
-#endif
+    return game; // Woot
 }
 
-#if 0
-QString determineProfile(QStringList& arguments, const QSettings& settings) {
+// Determine what game we are running where. Be very paranoid in case the
+// user has done something odd.
+// If the game name has been set up, use that.
+static MOBase::IPluginGame* determineCurrentGame(QString const& moPath, QSettings& settings,
+                                                 PluginContainer const& plugins) {
+    QString gameName = settings.value("gameName", "").toString();
+    if (!gameName.isEmpty()) {
+        MOBase::IPluginGame* game = plugins.managedGame(gameName);
+        if (game == nullptr) {
+            MOBase::reportError(QObject::tr("Plugin to handle %1 no longer installed").arg(gameName));
+            return nullptr;
+        }
+        QString gamePath = QString::fromUtf8(settings.value("gamePath", "").toByteArray());
+        if (gamePath == "") {
+            gamePath = game->gameDirectory().absolutePath();
+        }
+        QDir gameDir(gamePath);
+        if (game->looksValid(gameDir)) {
+            return selectGame(settings, gameDir, game);
+        }
+    }
+
+    // gameName wasn't set, or otherwise can't be found. Try looking through all
+    // the plugins using the gamePath
+    QString gamePath = QString::fromUtf8(settings.value("gamePath", "").toByteArray());
+    if (!gamePath.isEmpty()) {
+        QDir gameDir(gamePath);
+        // Look to see if one of the installed games binary file exists in the current
+        // game directory.
+        for (MOBase::IPluginGame* const game : plugins.plugins<MOBase::IPluginGame>()) {
+            if (game->looksValid(gameDir)) {
+                return selectGame(settings, gameDir, game);
+            }
+        }
+    }
+
+    // OK, we are in a new setup or existing info is useless.
+    // See if MO has been installed inside a game directory
+    for (MOBase::IPluginGame* const game : plugins.plugins<MOBase::IPluginGame>()) {
+        if (game->isInstalled() && moPath.startsWith(game->gameDirectory().absolutePath())) {
+            // Found it.
+            return selectGame(settings, game->gameDirectory(), game);
+        }
+    }
+
+    // Try walking up the directory tree to see if MO has been installed inside a game
+    {
+        QDir gameDir(moPath);
+        do {
+            // Look to see if one of the installed games binary file exists in the current
+            // directory.
+            for (MOBase::IPluginGame* const game : plugins.plugins<MOBase::IPluginGame>()) {
+                if (game->looksValid(gameDir)) {
+                    return selectGame(settings, gameDir, game);
+                }
+            }
+            // OK, chop off the last directory and try again
+        } while (gameDir.cdUp());
+    }
+
+    // Then try a selection dialogue.
+    if (!gamePath.isEmpty() || !gameName.isEmpty()) {
+        MOBase::reportError(QObject::tr("Could not use configuration settings for game \"%1\", path \"%2\".")
+                                .arg(gameName)
+                                .arg(gamePath));
+    }
+
+    SelectionDialog selection(QObject::tr("Please select the game to manage"), nullptr, QSize(32, 32));
+
+    for (MOBase::IPluginGame* game : plugins.plugins<MOBase::IPluginGame>()) {
+        if (game->isInstalled()) {
+            QString path = game->gameDirectory().absolutePath();
+            selection.addChoice(game->gameName(), path, QVariant::fromValue(game), game->gameIcon());
+        }
+    }
+
+    selection.addChoice(QString("Browse..."), QString(),
+                        QVariant::fromValue(static_cast<MOBase::IPluginGame*>(nullptr)));
+
+    while (selection.exec() != QDialog::Rejected) {
+        MOBase::IPluginGame* game = selection.getChoiceData().value<MOBase::IPluginGame*>();
+        if (game != nullptr) {
+            return selectGame(settings, game->gameDirectory(), game);
+        }
+
+        gamePath = QFileDialog::getExistingDirectory(nullptr, QObject::tr("Please select the game to manage"),
+                                                     QString(), QFileDialog::ShowDirsOnly);
+
+        if (!gamePath.isEmpty()) {
+            QDir gameDir(gamePath);
+            for (MOBase::IPluginGame* const game : plugins.plugins<MOBase::IPluginGame>()) {
+                if (game->looksValid(gameDir)) {
+                    return selectGame(settings, gameDir, game);
+                }
+            }
+            MOBase::reportError(QObject::tr("No game identified in \"%1\". The directory is required to contain "
+                                            "the game binary and its launcher.")
+                                    .arg(gamePath));
+        }
+    }
+
+    return nullptr;
+}
+
+static QString determineProfile(QStringList& arguments, const QSettings& settings) {
     QString selectedProfileName = QString::fromUtf8(settings.value("selected_profile", "").toByteArray());
     { // see if there is a profile on the command line
         int profileIndex = arguments.indexOf("-p", 1);
@@ -399,122 +401,124 @@ QString determineProfile(QStringList& arguments, const QSettings& settings) {
     return selectedProfileName;
 }
 
-MOBase::IPluginGame* selectGame(QSettings& settings, QDir const& gamePath, MOBase::IPluginGame* game) {
-    settings.setValue("gameName", game->gameName());
-    // Sadly, hookdll needs gamePath in order to run. So following code block is
-    // commented out
-    /*if (gamePath == game->gameDirectory()) {
-    settings.remove("gamePath");
-  } else*/ {
-        QString gameDir = gamePath.absolutePath();
-        game->setGamePath(gameDir);
-        settings.setValue("gamePath", QDir::toNativeSeparators(gameDir).toUtf8().constData());
+// Run the bulk of the application.
+// application, a reference to our application.
+// instance, An instance
+// splashPath, the path to a image file used as a splash screen.
+// dataPath, the MO Application data path.
+static int runApplication(MOApplication& application, SingleInstance& instance, fs::path splashPath, fs::path dataPath,
+                          QStringList arguments) {
+    // Display splash screen
+    QPixmap pixmap(QString::fromStdWString(splashPath.native()));
+    QSplashScreen splash(pixmap);
+    // Run bootstrap code.
+    if (!bootstrap(dataPath)) {
+        MOBase::reportError("failed to set up data paths");
+        return 1;
     }
-    return game; // Woot
+    moLog.info("Current Working Directory: '{}'", fs::current_path());
+    splash.show();
+    // Setup Settings
+    fs::path settingsPath = dataPath / AppConfig::iniFileName();
+    QSettings settings(QString::fromStdWString(settingsPath.native()), QSettings::IniFormat);
+    moLog.info("Initializing Core");
+    // WIP BELOW
+    // Bootstrap OrganizerCore
+    OrganizerCore organizer(settings);
+    if (!organizer.bootstrap()) {
+        MOBase::reportError("failed to set up data paths");
+        return 1;
+    }
+    moLog.info("Initialize plugins");
+    PluginContainer pluginContainer(&organizer);
+    pluginContainer.loadPlugins();
+    // Setup MO for game.
+    MOBase::IPluginGame* game = determineCurrentGame(application.applicationDirPath(), settings, pluginContainer);
+    if (game == nullptr) {
+        return 1;
+    }
+    if (splashPath.string()[0] == ':') {
+        // currently using MO splash, see if the plugin contains one
+        QString pluginSplash = QString(":/%1/splash").arg(game->gameShortName());
+        QImage image(pluginSplash);
+        if (!image.isNull()) {
+            image.save(QString::fromStdWString(dataPath / "splash.png"));
+        } else {
+            moLog.info("No Plugin Splash");
+        }
+    }
+    organizer.setManagedGame(game);
+    organizer.createDefaultProfile();
+    if (!settings.contains("game_edition")) {
+        QStringList editions = game->gameVariants();
+        if (editions.size() > 1) {
+            SelectionDialog selection(QObject::tr("Please select the game edition you have (MO can't start the "
+                                                  "game correctly if this is set incorrectly!)"),
+                                      nullptr);
+            int index = 0;
+            for (const QString& edition : editions) {
+                selection.addChoice(edition, "", index++);
+            }
+            if (selection.exec() == QDialog::Rejected) {
+                return 1;
+            } else {
+                settings.setValue("game_edition", selection.getChoiceString());
+            }
+        }
+    }
+    game->setGameVariant(settings.value("game_edition").toString());
+    moLog.info("Managed game at: {}", game->gameDirectory().absolutePath().toStdString());
+    organizer.updateExecutablesList(settings);
+    QString selectedProfileName = determineProfile(arguments, settings);
+    organizer.setCurrentProfile(selectedProfileName);
+    // if we have a command line parameter, it is either a nxm link or
+    // a binary to start
+    if (arguments.size() > 1) {
+        auto arg1 = arguments.at(1);
+        if (isNxmLink(arg1)) {
+            moLog.info("Starting download from command line: {}", arg1.toStdString());
+            organizer.externalMessage(arg1);
+        } else {
+            QString exeName = arg1;
+            moLog.info("Starting {} from command line", arg1.toStdString());
+            arguments.removeFirst(); // remove application name (ModOrganizer.exe)
+            arguments.removeFirst(); // remove binary name
+                                     // pass the remaining parameters to the binary
+            try {
+                organizer.startApplication(exeName, arguments, QString(), QString());
+                return 0;
+            } catch (const std::exception& e) {
+                MOBase::reportError(QObject::tr("failed to start application: %1").arg(e.what()));
+                return 1;
+            }
+        }
+    }
+    NexusInterface::instance()->getAccessManager()->startLoginCheck();
+    moLog.info("Initializing tutorials");
+    MOBase::TutorialManager::init(
+        qApp->applicationDirPath() + "/" + QString::fromStdWString(AppConfig::tutorialsPath()) + "/", &organizer);
+    if (!application.setStyleFile(settings.value("Settings/style", "").toString())) {
+        // disable invalid stylesheet
+        settings.setValue("Settings/style", "");
+    }
+    int res = 1;
+    { // scope to control lifetime of mainwindow
+      // set up main window and its data structures
+        MainWindow mainWindow(settings, organizer, pluginContainer);
+
+        QObject::connect(&mainWindow, SIGNAL(styleChanged(QString)), &application, SLOT(setStyleFile(QString)));
+        QObject::connect(&instance, SIGNAL(messageSent(QString)), &organizer, SLOT(externalMessage(QString)));
+
+        mainWindow.readSettings();
+
+        moLog.info("Displaying Main Window");
+        mainWindow.show();
+        splash.finish(&mainWindow);
+        return application.exec();
+    }
+    // TMP
+    return 1;
 }
-
-// Determine what game we are running where. Be very paranoid in case the
-// user has done something odd.
-// If the game name has been set up, use that.
-MOBase::IPluginGame* determineCurrentGame(QString const& moPath, QSettings& settings, PluginContainer const& plugins) {
-    QString gameName = settings.value("gameName", "").toString();
-    if (!gameName.isEmpty()) {
-        MOBase::IPluginGame* game = plugins.managedGame(gameName);
-        if (game == nullptr) {
-            reportError(QObject::tr("Plugin to handle %1 no longer installed").arg(gameName));
-            return nullptr;
-        }
-        QString gamePath = QString::fromUtf8(settings.value("gamePath", "").toByteArray());
-        if (gamePath == "") {
-            gamePath = game->gameDirectory().absolutePath();
-        }
-        QDir gameDir(gamePath);
-        if (game->looksValid(gameDir)) {
-            return selectGame(settings, gameDir, game);
-        }
-    }
-
-    // gameName wasn't set, or otherwise can't be found. Try looking through all
-    // the plugins using the gamePath
-    QString gamePath = QString::fromUtf8(settings.value("gamePath", "").toByteArray());
-    if (!gamePath.isEmpty()) {
-        QDir gameDir(gamePath);
-        // Look to see if one of the installed games binary file exists in the current
-        // game directory.
-        for (IPluginGame* const game : plugins.plugins<IPluginGame>()) {
-            if (game->looksValid(gameDir)) {
-                return selectGame(settings, gameDir, game);
-            }
-        }
-    }
-
-    // OK, we are in a new setup or existing info is useless.
-    // See if MO has been installed inside a game directory
-    for (IPluginGame* const game : plugins.plugins<IPluginGame>()) {
-        if (game->isInstalled() && moPath.startsWith(game->gameDirectory().absolutePath())) {
-            // Found it.
-            return selectGame(settings, game->gameDirectory(), game);
-        }
-    }
-
-    // Try walking up the directory tree to see if MO has been installed inside a game
-    {
-        QDir gameDir(moPath);
-        do {
-            // Look to see if one of the installed games binary file exists in the current
-            // directory.
-            for (IPluginGame* const game : plugins.plugins<IPluginGame>()) {
-                if (game->looksValid(gameDir)) {
-                    return selectGame(settings, gameDir, game);
-                }
-            }
-            // OK, chop off the last directory and try again
-        } while (gameDir.cdUp());
-    }
-
-    // Then try a selection dialogue.
-    if (!gamePath.isEmpty() || !gameName.isEmpty()) {
-        reportError(QObject::tr("Could not use configuration settings for game \"%1\", path \"%2\".")
-                        .arg(gameName)
-                        .arg(gamePath));
-    }
-
-    SelectionDialog selection(QObject::tr("Please select the game to manage"), nullptr, QSize(32, 32));
-
-    for (IPluginGame* game : plugins.plugins<IPluginGame>()) {
-        if (game->isInstalled()) {
-            QString path = game->gameDirectory().absolutePath();
-            selection.addChoice(game->gameIcon(), game->gameName(), path, QVariant::fromValue(game));
-        }
-    }
-
-    selection.addChoice(QString("Browse..."), QString(), QVariant::fromValue(static_cast<IPluginGame*>(nullptr)));
-
-    while (selection.exec() != QDialog::Rejected) {
-        IPluginGame* game = selection.getChoiceData().value<IPluginGame*>();
-        if (game != nullptr) {
-            return selectGame(settings, game->gameDirectory(), game);
-        }
-
-        gamePath = QFileDialog::getExistingDirectory(nullptr, QObject::tr("Please select the game to manage"),
-                                                     QString(), QFileDialog::ShowDirsOnly);
-
-        if (!gamePath.isEmpty()) {
-            QDir gameDir(gamePath);
-            for (IPluginGame* const game : plugins.plugins<IPluginGame>()) {
-                if (game->looksValid(gameDir)) {
-                    return selectGame(settings, gameDir, game);
-                }
-            }
-            reportError(QObject::tr("No game identified in \"%1\". The directory is required to contain "
-                                    "the game binary and its launcher.")
-                            .arg(gamePath));
-        }
-    }
-
-    return nullptr;
-}
-#endif
 
 int main(int argc, char* argv[]) {
     // This try...catch allows proper cleanup before rethrowing the
@@ -621,6 +625,11 @@ int main(int argc, char* argv[]) {
         if (result != INT_MAX) {
             return result;
         }
+    } catch (const std::exception& e) {
+        moLog.error("Mod Organizer crashed...");
+        auto msg = e.what();
+        moLog.error(msg);
+        MOBase::reportError(msg);
     } catch (...) {
         moLog.error("Mod Organizer crashed...");
         moLog.flush();
