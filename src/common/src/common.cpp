@@ -36,7 +36,7 @@ fs::path get_exe_dir() {
 }
 
 bool is_writeable(fs::path dir) {
-    if (!fs::exists(dir) || fs::is_directory(dir)) {
+    if (!fs::exists(dir) || !fs::is_directory(dir)) {
         return false;
     }
     auto perms = fs::status(dir).permissions();
