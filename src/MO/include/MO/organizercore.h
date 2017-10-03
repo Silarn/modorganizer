@@ -69,6 +69,7 @@ class IPluginGame;
 //  Virtual Data Direcyory.
 //  Download and Install manager.
 //  Writing Plugins.txt?
+//  NexusMods interface.
 class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
