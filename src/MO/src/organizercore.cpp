@@ -6,9 +6,11 @@
 #include "MO/messagedialog.h"
 #include "MO/modinfodialog.h"
 #include "MO/modlistsortproxy.h"
+#include "MO/nexusinterface.h"
 #include "MO/nxmaccessmanager.h"
 #include "MO/plugincontainer.h"
 #include "MO/pluginlistsortproxy.h"
+#include "MO/profile.h"
 #include "MO/spawn.h"
 #include "MO/syncoverwritedialog.h"
 

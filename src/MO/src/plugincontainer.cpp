@@ -119,8 +119,8 @@ bool PluginContainer::registerPlugin(QObject* plugin, const QString& fileName) {
         IPluginProxy* proxy = qobject_cast<IPluginProxy*>(plugin);
         if (verifyPlugin(proxy)) {
             this->plugins<IPluginProxy>().push_back(proxy);
-            QStringList pluginNames =
-                proxy->pluginList(QCoreApplication::applicationDirPath() + "/" + ToQString(AppConfig::pluginPath()));
+            QStringList pluginNames = proxy->pluginList(QCoreApplication::applicationDirPath() + "/" +
+                                                        QString::fromStdWString(AppConfig::pluginPath()));
             for (const QString& pluginName : pluginNames) {
                 try {
                     QObject* proxiedPlugin = proxy->instantiate(pluginName);
@@ -231,7 +231,7 @@ void PluginContainer::loadPlugins() {
 
     loadCheck.open(QIODevice::WriteOnly);
 
-    QString pluginPath = qApp->applicationDirPath() + "/" + ToQString(AppConfig::pluginPath());
+    QString pluginPath = qApp->applicationDirPath() + "/" + QString::fromStdWString(AppConfig::pluginPath());
     qDebug("looking for plugins in %s", QDir::toNativeSeparators(pluginPath).toUtf8().constData());
     QDirIterator iter(pluginPath, QDir::Files | QDir::NoDotAndDotDot);
 

@@ -17,7 +17,9 @@ You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "MO/modlistsortproxy.h"
+#include "MO/categories.h"
 #include "MO/messagedialog.h"
+#include "MO/profile.h"
 #include "MO/qtgroupingproxy.h"
 
 #include <QApplication>

@@ -1,5 +1,7 @@
 #include "MO/organizerproxy.h"
+#include "MO/nexusinterface.h"
 #include "MO/organizercore.h"
+#include "MO/profile.h"
 
 #include <MO/Shared/appconfig.h>
 #include <QApplication>
