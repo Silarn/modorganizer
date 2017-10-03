@@ -569,7 +569,7 @@ int main(int argc, char* argv[]) {
 #if !defined(QT_NO_SSL)
         moLog.info("Qt supports SSL: {}", QSslSocket::supportsSsl());
 #else
-        moLog.info("Qt does not supports SSL.");
+        moLog.info("Qt does not support SSL.");
 #endif
         moLog.info("Enforcing Single Instance");
         // Enforce a single Instance of MO.
