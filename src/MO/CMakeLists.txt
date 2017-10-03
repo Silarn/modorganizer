@@ -11,7 +11,6 @@ set(SHARED_HDRS
     include/${library_name}/shared/directoryentry.h
     include/${library_name}/shared/util.h
     include/${library_name}/shared/appconfig.h
-    include/${library_name}/shared/stackdata.h
 )
 SET(HDRS
     include/${library_name}/transfersavesdialog.h
@@ -97,7 +96,6 @@ set(SHARED_SRCS
     src/shared/error_report.cpp
     src/shared/directoryentry.cpp
     src/shared/util.cpp
-    src/shared/stackdata.cpp
 )
 SET(SRCS
     src/transfersavesdialog.cpp
