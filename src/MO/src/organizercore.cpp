@@ -113,7 +113,7 @@ QStringList toStringList(InputIterator current, InputIterator end) {
 OrganizerCore::OrganizerCore(const QSettings& initSettings)
     : m_Settings(initSettings), m_ModList(this), m_PluginList(this),
       m_DirectoryStructure(new DirectoryEntry(L"data", nullptr, 0)), m_DownloadManager(this), m_InstallationManager(),
-      m_RefresherThread(), m_PluginListsWriter(std::bind(&OrganizerCore::savePluginList, this)) {
+      m_PluginListsWriter(std::bind(&OrganizerCore::savePluginList, this)) {
     // Setup download manager.
     m_DownloadManager.setOutputDirectory(m_Settings.getDownloadDirectory());
     m_DownloadManager.setPreferredServers(m_Settings.getPreferredServers());
@@ -166,12 +166,9 @@ OrganizerCore::~OrganizerCore() {
     prepareStart();
 
     // profile has to be cleaned up before the modinfo-buffer is cleared
-    delete m_CurrentProfile;
-    m_CurrentProfile = nullptr;
+    m_CurrentProfile.reset();
 
     ModInfo::clear();
-    // FIXME: This.
-    // LogBuffer::cleanQuit();
     m_ModList.setProfile(nullptr);
     // NexusInterface::instance()->cleanup();
 
@@ -534,8 +531,7 @@ void OrganizerCore::setCurrentProfile(const QString& profileName) {
     }
     Profile* newProfile = new Profile(QDir(profileDir), managedGame());
 
-    delete m_CurrentProfile;
-    m_CurrentProfile = newProfile;
+    m_CurrentProfile.reset(newProfile);
     m_ModList.setProfile(newProfile);
 
     if (m_CurrentProfile->invalidationActive(nullptr)) {
@@ -544,7 +540,7 @@ void OrganizerCore::setCurrentProfile(const QString& profileName) {
         m_CurrentProfile->deactivateInvalidation();
     }
 
-    connect(m_CurrentProfile, SIGNAL(modStatusChanged(uint)), this, SLOT(modStatusChanged(uint)));
+    connect(m_CurrentProfile.get(), SIGNAL(modStatusChanged(uint)), this, SLOT(modStatusChanged(uint)));
     refreshDirectoryStructure();
 }
 
@@ -1128,7 +1124,7 @@ void OrganizerCore::refreshBSAList() {
         // found (which might
         // happen if ini files are missing) use hard-coded defaults (preferrably the
         // same the game would use)
-        m_DefaultArchives = archives->archives(m_CurrentProfile);
+        m_DefaultArchives = archives->archives(m_CurrentProfile.get());
         if (m_DefaultArchives.length() == 0) {
             m_DefaultArchives = archives->vanillaArchives();
         }
@@ -1242,7 +1238,7 @@ void OrganizerCore::requestDownload(const QUrl& url, QNetworkReply* reply) {
 }
 
 ModListSortProxy* OrganizerCore::createModListProxyModel() {
-    ModListSortProxy* result = new ModListSortProxy(m_CurrentProfile, this);
+    ModListSortProxy* result = new ModListSortProxy(m_CurrentProfile.get(), this);
     result->setSourceModel(&m_ModList);
     return result;
 }

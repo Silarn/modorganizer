@@ -49,6 +49,7 @@ using DWORD = unsigned long;
 using LPDWORD = DWORD*;
 
 #include <functional>
+#include <memory>
 #include <vector>
 
 class PluginContainer;
@@ -65,6 +66,9 @@ class IPluginGame;
 //  Settings
 //  The Mod List
 //  The Plugins List
+//  Virtual Data Direcyory.
+//  Download and Install manager.
+//  Writing Plugins.txt?
 class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
@@ -111,7 +115,7 @@ public:
     ExecutablesList* executablesList() { return &m_ExecutablesList; }
     void setExecutablesList(const ExecutablesList& executablesList) { m_ExecutablesList = executablesList; }
 
-    Profile* currentProfile() const { return m_CurrentProfile; }
+    Profile* currentProfile() const { return m_CurrentProfile.get(); }
     void setCurrentProfile(const QString& profileName);
 
     std::vector<QString> enabledArchives();
@@ -273,7 +277,7 @@ private:
     QString m_GameName;
     MOBase::IPluginGame* m_GamePlugin;
 
-    Profile* m_CurrentProfile = nullptr;
+    std::unique_ptr<Profile> m_CurrentProfile;
 
     Settings m_Settings;
 
