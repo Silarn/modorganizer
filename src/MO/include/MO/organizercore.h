@@ -61,6 +61,10 @@ class IPluginGame;
 
 // Core of Mod Organizer.
 // The bulk of the Mod Organizer code. The backend?
+// Responsible for:
+//  Settings
+//  The Mod List
+//  The Plugins List
 class OrganizerCore : public QObject, public MOBase::IPluginDiagnose {
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
