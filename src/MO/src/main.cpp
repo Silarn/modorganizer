@@ -600,6 +600,9 @@ int main(int argc, char* argv[]) {
         // Now it can be any location the User desires.
         // This handles the user choosing whether to use portable mode or a custom location or what.
         moLog.info("Getting MO Data Path");
+        // INFO: For testing purposes.
+        InstanceManager::instance().clearCurrentInstance();
+        //
         fs::path dataPath;
         try {
             dataPath = InstanceManager::instance().determineDataPath();
