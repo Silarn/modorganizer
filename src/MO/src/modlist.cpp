@@ -816,7 +816,6 @@ bool ModList::dropURLs(const QMimeData* mimeData, int row, const QModelIndex& pa
 }
 
 bool ModList::dropMod(const QMimeData* mimeData, int row, const QModelIndex& parent) {
-
     try {
         QByteArray encoded = mimeData->data("application/x-qabstractitemmodeldatalist");
         QDataStream stream(&encoded, QIODevice::ReadOnly);
