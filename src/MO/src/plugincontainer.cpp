@@ -15,7 +15,6 @@ using namespace MOShared;
 PluginContainer::PluginContainer(OrganizerCore* organizer) : m_Organizer(organizer) {}
 
 void PluginContainer::setUserInterface(IUserInterface* userInterface, QWidget* widget) {
-    // FIXME: This.
     for (IPluginProxy* proxy : this->plugins<IPluginProxy>()) {
         proxy->setParentWidget(widget);
     }

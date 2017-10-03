@@ -25,7 +25,7 @@
 class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
     Q_OBJECT
     Q_INTERFACES(MOBase::IPluginDiagnose)
-  private:
+private:
     using PluginMap = std::tuple<std::vector<MOBase::IPlugin*>, std::vector<MOBase::IPluginDiagnose*>,
                                  std::vector<MOBase::IPluginGame*>, std::vector<MOBase::IPluginInstaller*>,
                                  std::vector<MOBase::IPluginModPage*>, std::vector<MOBase::IPluginPreview*>,
@@ -34,7 +34,7 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
 
     static const unsigned int PROBLEM_PLUGINSNOTLOADED = 1;
 
-  public:
+public:
     PluginContainer(OrganizerCore* organizer);
 
     void setUserInterface(IUserInterface* userInterface, QWidget* widget);
@@ -60,17 +60,17 @@ class PluginContainer : public QObject, public MOBase::IPluginDiagnose {
 
     QStringList pluginFileNames() const;
 
-  public: // IPluginDiagnose interface
+public: // IPluginDiagnose interface
     virtual std::vector<unsigned int> activeProblems() const;
     virtual QString shortDescription(unsigned int key) const;
     virtual QString fullDescription(unsigned int key) const;
     virtual bool hasGuidedFix(unsigned int key) const;
     virtual void startGuidedFix(unsigned int key) const;
 
-  signals:
+signals:
     void diagnosisUpdate();
 
-  private:
+private:
     bool verifyPlugin(MOBase::IPlugin* plugin);
     void registerGame(MOBase::IPluginGame* game);
     // Registers plugins?
