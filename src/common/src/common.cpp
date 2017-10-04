@@ -1,8 +1,11 @@
 // Definition point for functions defined in various headers.
-#include "common/sane_windows.h"
 #include "common/util.h"
 
+#include "common/sane_windows.h"
+#include "common/stringutils.h"
+
 #include <assert.h>
+#include <shellapi.h>
 #include <string>
 #include <vector>
 namespace common {
@@ -42,5 +45,9 @@ bool is_writeable(fs::path dir) {
     auto perms = fs::status(dir).permissions();
     return (perms & fs::perms::owner_write) != fs::perms::none;
 }
+
+void open_url(std::string url) { ::ShellExecuteA(nullptr, "open", url.data(), nullptr, nullptr, SW_SHOWNORMAL); }
+
+void open_url(std::wstring url) { ::ShellExecuteW(nullptr, L"open", url.data(), nullptr, nullptr, SW_SHOWNORMAL); }
 
 } // namespace common
