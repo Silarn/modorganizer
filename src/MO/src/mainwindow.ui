@@ -1330,6 +1330,9 @@ p, li { white-space: pre-wrap; }
    <property name="toolTip">
     <string>Mod Organizer is up-to-date</string>
    </property>
+   <property name="whatsThis">
+    <string>Check if Mod Organizer is up-to-date.</string>
+   </property>
   </action>
   <action name="actionProblems">
    <property name="enabled">
@@ -1356,6 +1359,9 @@ Right now this has very limited functionality</string>
    </property>
    <property name="text">
     <string>Help</string>
+   </property>
+   <property name="whatsThis">
+    <string>Display the Help menu and allow you to do things like this.</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+H</string>
