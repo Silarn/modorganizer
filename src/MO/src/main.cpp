@@ -419,6 +419,8 @@ public:
     MyMainWindow() : QMainWindow(nullptr), ui(new Ui::MainWindow) {
         // Setup UI
         ui->setupUi(this);
+        // Update the window title to match game, version, and nexus user.
+        updateWindowTitle();
         // Hide status bar
         statusBar()->clearMessage();
         statusBar()->hide();
@@ -427,10 +429,23 @@ public:
         // Update the Problems UI and Toolbar
         updateProblemsButton();
         updateToolBar();
+        // Setup signals and slots.
+        // connect(ui->actionHelp, SIGNAL(triggered(bool)), this, SLOT(helpTriggered()));
     }
     ~MyMainWindow() {}
 
 private:
+    void updateWindowTitle(std::string accountName = {}) {
+        // m_OrganizerCore.managedGame()->gameName(), m_OrganizerCore.getVersion().displayString()
+        std::string title = fmt::format("{} Mod Organizer v{}", "[game]", 2);
+
+        if (accountName.empty()) {
+            title.append(fmt::format(" ({})", accountName));
+        }
+
+        this->setWindowTitle(QString::fromStdString(title));
+    }
+
     // Check for problems.
     size_t checkForProblems() {
         size_t numProblems = 0;
@@ -439,6 +454,7 @@ private:
         //}
         return numProblems;
     }
+
     // Update the Problems button with new problems.
     void updateProblemsButton() {
         size_t numProblems = checkForProblems();
@@ -476,15 +492,13 @@ private:
     // Create the Help widget.
     void createHelpWidget() {
         QToolButton* toolBtn = qobject_cast<QToolButton*>(ui->toolBar->widgetForAction(ui->actionHelp));
-        QMenu* buttonMenu = ui->actionHelp->menu();
-        if (!buttonMenu) {
-            buttonMenu = toolBtn->menu();
-        }
+        QMenu* buttonMenu = toolBtn->menu();
         assert(buttonMenu);
 
         // Add actions to the Help Menu.
         QAction* helpAction = new QAction(tr("Help on UI"), buttonMenu);
         connect(helpAction, SIGNAL(triggered()), this, SLOT(helpTriggered()));
+        helpAction->setShortcut(Qt::Key_F1);
         buttonMenu->addAction(helpAction);
 
         QAction* wikiAction = new QAction(tr("Documentation Wiki"), buttonMenu);
@@ -585,12 +599,6 @@ private:
     }
 
 private slots:
-    // void on_actionHelp_triggered() {
-    //    ui->actionHelp->setChecked(true);
-    //    QWidget* w = ui->toolBar->widgetForAction(ui->actionHelp);
-    //    ui->actionHelp->menu()->popup(w->mapToGlobal(QPoint(0, w->height())));
-    //}
-
     // Show the About MO window.
     void about() {
         // AboutDialog dialog(m_OrganizerCore.getVersion().displayString(), this);
