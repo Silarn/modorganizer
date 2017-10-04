@@ -109,16 +109,18 @@ MainWindow::MainWindow(QSettings& initSettings, OrganizerCore& organizerCore, Pl
 
     // FIXME: This.
     // ui->logList->setModel(LogBuffer::instance());
-    ui->logList->setColumnWidth(0, 100);
-    ui->logList->setAutoScroll(true);
-    ui->logList->scrollToBottom();
-    ui->logList->addAction(ui->actionCopy_Log_to_Clipboard);
-    int splitterSize =
-        this->size().height(); // actually total window size, but the splitter doesn't seem to return the true value
+    // ui->logList->setColumnWidth(0, 100);
+    // ui->logList->setAutoScroll(true);
+    // ui->logList->scrollToBottom();
+    // ui->logList->addAction(ui->actionCopy_Log_to_Clipboard);
+    // connect(ui->logList->model(), SIGNAL(rowsInserted(const QModelIndex&, int, int)), ui->logList,
+    //    SLOT(scrollToBottom()));
+    // connect(ui->logList->model(), SIGNAL(dataChanged(QModelIndex, QModelIndex)), ui->logList,
+    // SLOT(scrollToBottom()));
+
+    // actually total window size, but the splitter doesn't seem to return the true value
+    int splitterSize = this->size().height();
     ui->topLevelSplitter->setSizes(QList<int>() << splitterSize - 100 << 100);
-    connect(ui->logList->model(), SIGNAL(rowsInserted(const QModelIndex&, int, int)), ui->logList,
-            SLOT(scrollToBottom()));
-    connect(ui->logList->model(), SIGNAL(dataChanged(QModelIndex, QModelIndex)), ui->logList, SLOT(scrollToBottom()));
 
     m_RefreshProgress = new QProgressBar(statusBar());
     m_RefreshProgress->setTextVisible(true);
@@ -731,7 +733,7 @@ void MainWindow::closeEvent(QCloseEvent* event) {
     setCursor(Qt::WaitCursor);
 }
 void MainWindow::cleanup() {
-    if (ui->logList->model() != nullptr) {
+    if (ui->logList->model()) {
         disconnect(ui->logList->model(), nullptr, nullptr, nullptr);
         ui->logList->setModel(nullptr);
     }
@@ -4092,18 +4094,6 @@ void MainWindow::on_restoreModsButton_clicked() {
         }
         m_OrganizerCore.refreshModList(false);
     }
-}
-
-void MainWindow::on_actionCopy_Log_to_Clipboard_triggered() {
-    QStringList lines;
-    QAbstractItemModel* model = ui->logList->model();
-    for (int i = 0; i < model->rowCount(); ++i) {
-        lines.append(QString("%1 [%2] %3")
-                         .arg(model->index(i, 0).data().toString())
-                         .arg(model->index(i, 1).data(Qt::UserRole).toString())
-                         .arg(model->index(i, 1).data().toString()));
-    }
-    QApplication::clipboard()->setText(lines.join("\n"));
 }
 
 void MainWindow::on_categoriesAndBtn_toggled(bool checked) {

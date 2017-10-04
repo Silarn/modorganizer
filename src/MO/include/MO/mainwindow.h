@@ -546,7 +546,6 @@ class MainWindow : public QMainWindow, public IUserInterface {
     void on_restoreButton_clicked();
     void on_restoreModsButton_clicked();
     void on_saveModsButton_clicked();
-    void on_actionCopy_Log_to_Clipboard_triggered();
     void on_categoriesAndBtn_toggled(bool checked);
     void on_categoriesOrBtn_toggled(bool checked);
 };
