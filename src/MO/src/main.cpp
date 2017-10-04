@@ -401,6 +401,26 @@ static QString determineProfile(QStringList& arguments, const QSettings& setting
     return selectedProfileName;
 }
 
+#pragma region WIP
+namespace Ui {
+class MainWindow;
+}
+#include "ui_mainwindow.h"
+class MyOrganizerCore {
+    //
+};
+class MyMainWindow : public QMainWindow {
+    Q_OBJECT
+public:
+    MyMainWindow() : QMainWindow(nullptr), ui(new Ui::MainWindow) { ui->setupUi(this); }
+    ~MyMainWindow() {}
+
+private:
+    Ui::MainWindow* ui;
+};
+#include "main.moc"
+#pragma endregion
+
 // Run the bulk of the application.
 // application, a reference to our application.
 // instance, An instance
@@ -423,6 +443,13 @@ static int runApplication(MOApplication& application, SingleInstance& instance, 
     QSettings settings(QString::fromStdWString(settingsPath.native()), QSettings::IniFormat);
     moLog.info("Initializing Core");
     // WIP BELOW
+    MyOrganizerCore organizer;
+    MyMainWindow mainWindow;
+    moLog.info("Displaying Main Window");
+    mainWindow.show();
+    splash.finish(&mainWindow);
+    return application.exec();
+#if 0
     // Bootstrap OrganizerCore
     OrganizerCore organizer(settings);
     moLog.info("Initialize plugins");
@@ -512,6 +539,7 @@ static int runApplication(MOApplication& application, SingleInstance& instance, 
         splash.finish(&mainWindow);
         return application.exec();
     }
+#endif
     // TMP
     return 1;
 }
