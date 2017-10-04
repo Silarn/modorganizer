@@ -1170,9 +1170,6 @@ p, li { white-space: pre-wrap; }
    </layout>
   </widget>
   <widget class="QToolBar" name="toolBar">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
    <property name="contextMenuPolicy">
     <enum>Qt::CustomContextMenu</enum>
    </property>
@@ -1358,9 +1355,6 @@ Right now this has very limited functionality</string>
      <normaloff>:/MO/gui/help</normaloff>:/MO/gui/help</iconset>
    </property>
    <property name="text">
-    <string>Help</string>
-   </property>
-   <property name="toolTip">
     <string>Help</string>
    </property>
    <property name="shortcut">
