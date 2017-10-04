@@ -416,7 +416,7 @@ class MyOrganizerCore {
 class MyMainWindow : public QMainWindow {
     Q_OBJECT
 public:
-    MyMainWindow() : QMainWindow(nullptr), ui(new Ui::MainWindow) {
+    MyMainWindow(MyOrganizerCore& o) : QMainWindow(nullptr), ui(new Ui::MainWindow), m_organizer(o) {
         // Setup UI
         ui->setupUi(this);
         // Update the window title to match game, version, and nexus user.
@@ -631,6 +631,7 @@ private slots:
 private:
     Ui::MainWindow* ui;
     // PluginContainer& m_pluginContainer;
+    MyOrganizerCore& m_organizer;
 };
 #include "main.moc"
 #pragma endregion
@@ -658,7 +659,7 @@ static int runApplication(MOApplication& application, SingleInstance& instance, 
     moLog.info("Initializing Core");
     // WIP BELOW
     MyOrganizerCore organizer;
-    MyMainWindow mainWindow;
+    MyMainWindow mainWindow(organizer);
     moLog.info("Displaying Main Window");
     mainWindow.show();
     splash.finish(&mainWindow);
