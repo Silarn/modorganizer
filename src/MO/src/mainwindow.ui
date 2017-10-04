@@ -196,12 +196,7 @@
                  <string>Pick a module collection</string>
                 </property>
                 <property name="whatsThis">
-                 <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Create profiles here. Each profile contains its own list of active mods and esps. This way you can quickly switch between setups for different play throughs.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Please note that right now your esp load order is not kept seperate for different profiles.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Create profiles here. Each profile contains its own list of active mods and esps. This way you can quickly switch between setups for different play throughs.&lt;/p&gt;&lt;p&gt;Please note that right now your esp load order is not kept seperate for different profiles.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                </widget>
               </item>
@@ -230,7 +225,7 @@ p, li { white-space: pre-wrap; }
                  <string>Open list options...</string>
                 </property>
                 <property name="whatsThis">
-                 <string>Refresh list. This is usually not necessary unless you modified data outside the program.</string>
+                 <string>Refresh list. This is usually not necessary unless you have modified data outside of the program.</string>
                 </property>
                 <property name="text">
                  <string/>
@@ -252,6 +247,9 @@ p, li { white-space: pre-wrap; }
                 <property name="toolTip">
                  <string>Restore Backup...</string>
                 </property>
+                <property name="whatsThis">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Restore a previously created backup of your Mod List.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                </property>
                 <property name="text">
                  <string notr="true"/>
                 </property>
@@ -265,6 +263,9 @@ p, li { white-space: pre-wrap; }
                <widget class="QPushButton" name="saveModsButton">
                 <property name="toolTip">
                  <string>Create Backup</string>
+                </property>
+                <property name="whatsThis">
+                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Create a backup of your Mod List, as it appears right now.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                 </property>
                 <property name="text">
                  <string notr="true"/>
@@ -383,7 +384,9 @@ p, li { white-space: pre-wrap; }
                <string>List of available mods.</string>
               </property>
               <property name="whatsThis">
-               <string>This is a list of installed mods. Use the checkboxes to activate/deactivate mods and drag &amp; drop mods to change their &quot;installation&quot; orders.</string>
+               <string>This is a list of installed mods.
+
+Use the checkboxes to activate/deactivate mods and drag &amp; drop mods to change their &quot;installation&quot; orders.</string>
               </property>
               <property name="styleSheet">
                <string notr="true"/>
@@ -490,6 +493,9 @@ p, li { white-space: pre-wrap; }
                 <property name="focusPolicy">
                  <enum>Qt::ClickFocus</enum>
                 </property>
+                <property name="whatsThis">
+                 <string>Set how the Mods above should be grouped.</string>
+                </property>
                 <item>
                  <property name="text">
                   <string>No groups</string>
@@ -548,12 +554,7 @@ p, li { white-space: pre-wrap; }
                   <string>Pick a program to run.</string>
                  </property>
                  <property name="whatsThis">
-                  <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Choose the program to run. Once you start using ModOrganizer, you should always run your game and tools from here or through shortcuts created here, otherwise mods installed through MO will not be visible.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;You can add new Tools to this list, but I can't promise tools I haven't tested will work.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Choose the program to run. Once you start using ModOrganizer, you should always run your game and tools from here or through shortcuts created here, otherwise mods installed through MO will not be visible.&lt;/p&gt;&lt;p&gt;You can add new Tools to this list, but they may not always work correctly. If you find a Tool that does not work correctly, please report it as a Mod Organizer bug.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="iconSize">
                   <size>
@@ -599,11 +600,7 @@ p, li { white-space: pre-wrap; }
                     <string>Run program</string>
                    </property>
                    <property name="whatsThis">
-                    <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Run the selected program with ModOrganizer enabled.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Run the selected program with ModOrganizer enabled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="locale">
                     <locale language="English" country="UnitedStates"/>
@@ -653,11 +650,7 @@ p, li { white-space: pre-wrap; }
                     <string>Create a shortcut in your start menu or on the desktop to the specified program</string>
                    </property>
                    <property name="whatsThis">
-                    <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;This creates a start menu shortcut that directly starts the selected program with the MO active.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This creates a Shortcut at the specfied location that directly starts the selected program as if through Mod Organizer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                    </property>
                    <property name="text">
                     <string>Shortcut</string>
@@ -732,6 +725,9 @@ p, li { white-space: pre-wrap; }
                     <property name="visible">
                      <bool>true</bool>
                     </property>
+                    <property name="whatsThis">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Sort your Load Order using LOOT&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string>Sort</string>
                     </property>
@@ -759,6 +755,9 @@ p, li { white-space: pre-wrap; }
                     <property name="toolTip">
                      <string>Restore Backup...</string>
                     </property>
+                    <property name="whatsThis">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Restore a previously created backup of your Load Order&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string notr="true"/>
                     </property>
@@ -778,6 +777,9 @@ p, li { white-space: pre-wrap; }
                    <widget class="QPushButton" name="saveButton">
                     <property name="toolTip">
                      <string>Create Backup</string>
+                    </property>
+                    <property name="whatsThis">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Create a Backup of your Load Order, as it appears right now.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="text">
                      <string notr="true"/>
@@ -842,11 +844,7 @@ p, li { white-space: pre-wrap; }
                    <string>List of available esp/esm files</string>
                   </property>
                   <property name="whatsThis">
-                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;This list contains the esps and esms contained in the active mods. These require their own load order. Use drag&amp;amp;drop to modify this load order. Please note that MO will only save the load order for mods that are active/checked.&lt;br /&gt;There is a great tool named &amp;quot;BOSS&amp;quot; to automatically sort these files.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This list contains the esps and esms contained in the active mods.&lt;/p&gt;&lt;p&gt;These require their own load order. Use drag&amp;amp;drop to modify this load order. Please note that MO will only save the load order for mods that are active/checked.&lt;/p&gt;&lt;p&gt;There is a great tool named &amp;quot;LOOT&amp;quot; to automatically sort these files.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="dragEnabled">
                    <bool>true</bool>
@@ -890,6 +888,9 @@ p, li { white-space: pre-wrap; }
                  <layout class="QHBoxLayout" name="horizontalLayout_3">
                   <item>
                    <widget class="MOBase::LineEditClear" name="espFilterEdit">
+                    <property name="whatsThis">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter the displayed plugins by name&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string/>
                     </property>
@@ -944,7 +945,7 @@ p, li { white-space: pre-wrap; }
                      <enum>Qt::CustomContextMenu</enum>
                     </property>
                     <property name="whatsThis">
-                     <string>This is an overview of your data directory as visible to the game (and tools). </string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is an overview of your data directory as visible to the game (and tools).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="animated">
                      <bool>true</bool>
@@ -972,7 +973,7 @@ p, li { white-space: pre-wrap; }
                    <string>Filter the above list so that only conflicts are displayed.</string>
                   </property>
                   <property name="whatsThis">
-                   <string>Filter the above list so that only conflicts are displayed.</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter the above list so that only conflicting files are displayed.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="text">
                    <string>Show only conflicts</string>
@@ -1007,13 +1008,7 @@ p, li { white-space: pre-wrap; }
                    <string notr="true"/>
                   </property>
                   <property name="whatsThis">
-                   <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
-&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
-p, li { white-space: pre-wrap; }
-&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;This is a list of all savegames for this game. Hover over a list entry to get detailed information about the save including a list of esps/esms that were used at the time this save was created but aren't active now.&lt;/span&gt;&lt;/p&gt;
-&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;&quot;&gt;&lt;/p&gt;
-&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;If you click &amp;quot;Fix Mods...&amp;quot; in the context menu, MO will try to activate all mods and esps to fix those missing esps. It will not disable anything!&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                   <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is a list of all savegames for this game. Hover over a list entry to get detailed information about the save including a list of esps/esms that were used at the time this save was created but aren't active now.&lt;/p&gt;&lt;p&gt;If you click &amp;quot;Fix Mods...&amp;quot; in the context menu, MO will try to activate all mods and esps to fix those missing esps. It will not disable anything!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                   </property>
                   <property name="selectionMode">
                    <enum>QAbstractItemView::ExtendedSelection</enum>
@@ -1062,7 +1057,7 @@ p, li { white-space: pre-wrap; }
                      <string/>
                     </property>
                     <property name="whatsThis">
-                     <string>This is a list of mods you downloaded from Nexus. Double click one to install it. You can also drag an archive into here.</string>
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is a list of mods you have downloaded from the Nexus. Double click one to install it. You can also drag an archive into here.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                     </property>
                     <property name="verticalScrollBarPolicy">
                      <enum>Qt::ScrollBarAlwaysOn</enum>
@@ -1114,6 +1109,9 @@ p, li { white-space: pre-wrap; }
                  <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0,2">
                   <item>
                    <widget class="QCheckBox" name="showHiddenBox">
+                    <property name="whatsThis">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Show downloads previously marked as Hidden.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="text">
                      <string>Show Hidden</string>
                     </property>
@@ -1134,6 +1132,9 @@ p, li { white-space: pre-wrap; }
                   </item>
                   <item>
                    <widget class="MOBase::LineEditClear" name="downloadFilterEdit">
+                    <property name="whatsThis">
+                     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Filter the displayed downloads by name&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                    </property>
                     <property name="placeholderText">
                      <string>Namefilter</string>
                     </property>
@@ -1154,6 +1155,11 @@ p, li { white-space: pre-wrap; }
       <widget class="QTreeView" name="logList">
        <property name="contextMenuPolicy">
         <enum>Qt::ActionsContextMenu</enum>
+       </property>
+       <property name="whatsThis">
+        <string>Real time display of the Mod Organizer log.
+
+WIP Currently empty space.</string>
        </property>
        <property name="selectionMode">
         <enum>QAbstractItemView::NoSelection</enum>
@@ -1297,6 +1303,9 @@ p, li { white-space: pre-wrap; }
    <property name="toolTip">
     <string>Configure settings and workarounds</string>
    </property>
+   <property name="whatsThis">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Settings for Mod Organizer.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
    </property>
@@ -1346,10 +1355,7 @@ p, li { white-space: pre-wrap; }
     <string>No Problems</string>
    </property>
    <property name="whatsThis">
-    <string>This button will be highlighted if MO discovered potential problems in your setup and provide tips on how to fix them.
-
-!Work in progress!
-Right now this has very limited functionality</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This button will be highlighted if MO discovered potential problems in your setup and provide tips on how to fix them.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;!!! Work in progress !!!&lt;/p&gt;&lt;p&gt;Right now this has very limited functionality.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionHelp">
@@ -1362,9 +1368,6 @@ Right now this has very limited functionality</string>
    </property>
    <property name="whatsThis">
     <string>Display the Help menu and allow you to do things like this.</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+H</string>
    </property>
   </action>
   <action name="actionEndorseMO">
