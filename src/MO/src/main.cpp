@@ -463,30 +463,6 @@ private:
         }
     }
 
-    // Replace an Action with an identical Tool Button
-    void actionToToolButton(QAction*& sourceAction) {
-        // Create the new tool button, from the Action.
-        QToolButton* button = new QToolButton(ui->toolBar);
-        button->setObjectName(sourceAction->objectName());
-        button->setIcon(sourceAction->icon());
-        button->setText(sourceAction->text());
-        button->setPopupMode(QToolButton::InstantPopup);
-        button->setToolButtonStyle(ui->toolBar->toolButtonStyle());
-        button->setToolTip(sourceAction->toolTip());
-        button->setShortcut(sourceAction->shortcut());
-        QMenu* buttonMenu = new QMenu(sourceAction->text(), button);
-        button->setMenu(buttonMenu);
-        QAction* newAction = ui->toolBar->insertWidget(sourceAction, button);
-        newAction->setObjectName(sourceAction->objectName());
-        newAction->setIcon(sourceAction->icon());
-        newAction->setText(sourceAction->text());
-        newAction->setToolTip(sourceAction->toolTip());
-        newAction->setShortcut(sourceAction->shortcut());
-        ui->toolBar->removeAction(sourceAction);
-        sourceAction->deleteLater();
-        sourceAction = newAction;
-    }
-
     // Add a Menu to a QAction.
     void addMenuToAction(QAction* action) {
         QToolButton* toolBtn = qobject_cast<QToolButton*>(ui->toolBar->widgetForAction(action));
@@ -582,6 +558,7 @@ private:
         // Setup the Help widget.
         createHelpWidget();
 
+        // Setup configured executables.
         for (QAction* action : ui->toolBar->actions()) {
             if (action->isSeparator()) {
                 // Insert spacers
