@@ -622,16 +622,10 @@ private slots:
     void helpTriggered() { QWhatsThis::enterWhatsThisMode(); }
 
     // Open the Mod Organizer Wiki Page.
-    void wikiTriggered() {
-        ::ShellExecuteW(nullptr, L"open", L"http://wiki.step-project.com/Guide:Mod_Organizer", nullptr, nullptr,
-                        SW_SHOWNORMAL);
-    }
+    void wikiTriggered() { common::open_url("http://wiki.step-project.com/Guide:Mod_Organizer"); }
 
     // Open the Mod Organizer Issues Page.
-    void issueTriggered() {
-        ::ShellExecuteW(nullptr, L"open", L"https://github.com/ModOrganizer/modorganizer/issues", nullptr, nullptr,
-                        SW_SHOWNORMAL);
-    }
+    void issueTriggered() { common::open_url("https://github.com/ModOrganizer/modorganizer/issues"); }
 
     // When the Tutorial is triggered.
     void tutorialTriggered() {
