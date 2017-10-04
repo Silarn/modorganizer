@@ -406,17 +406,250 @@ namespace Ui {
 class MainWindow;
 }
 #include "ui_mainwindow.h"
+#include <QDirIterator>
+#include <QMenu>
+#include <QToolButton>
+#include <QWhatsThis>
 class MyOrganizerCore {
     //
 };
 class MyMainWindow : public QMainWindow {
     Q_OBJECT
 public:
-    MyMainWindow() : QMainWindow(nullptr), ui(new Ui::MainWindow) { ui->setupUi(this); }
+    MyMainWindow() : QMainWindow(nullptr), ui(new Ui::MainWindow) {
+        // Setup UI
+        ui->setupUi(this);
+        // Hide status bar
+        statusBar()->clearMessage();
+        statusBar()->hide();
+        // Hide MO Endorse button
+        ui->actionEndorseMO->setVisible(false);
+        // Update the Problems UI and Toolbar
+        updateProblemsButton();
+        updateToolBar();
+    }
     ~MyMainWindow() {}
 
 private:
+    size_t checkForProblems() {
+        size_t numProblems = 0;
+        // for (IPluginDiagnose* diagnose : m_PluginContainer.plugins<IPluginDiagnose>()) {
+        //    numProblems += diagnose->activeProblems().size();
+        //}
+        return numProblems;
+    }
+    // Update the Problems button with new problems.
+    void updateProblemsButton() {
+        size_t numProblems = checkForProblems();
+        if (numProblems > 0) {
+            ui->actionProblems->setEnabled(true);
+            ui->actionProblems->setIconText(tr("Problems"));
+            ui->actionProblems->setToolTip(tr("There are potential problems with your setup"));
+
+            QPixmap mergedIcon = QPixmap(":/MO/gui/warning").scaled(64, 64);
+            {
+                QPainter painter(&mergedIcon);
+                std::string badgeName =
+                    std::string(":/MO/gui/badge_") +
+                    (numProblems < 10 ? std::to_string(static_cast<long long>(numProblems)) : "more");
+                painter.drawPixmap(32, 32, 32, 32, QPixmap(badgeName.c_str()));
+            }
+            ui->actionProblems->setIcon(QIcon(mergedIcon));
+        } else {
+            ui->actionProblems->setEnabled(false);
+            ui->actionProblems->setIconText(tr("No Problems"));
+            ui->actionProblems->setToolTip(tr("Everything seems to be in order"));
+            ui->actionProblems->setIcon(QIcon(":/MO/gui/warning"));
+        }
+    }
+
+    // Replace an Action with an identical Tool Button
+    void actionToToolButton(QAction*& sourceAction) {
+        // Create the new tool button, from the Action.
+        QToolButton* button = new QToolButton(ui->toolBar);
+        button->setObjectName(sourceAction->objectName());
+        button->setIcon(sourceAction->icon());
+        button->setText(sourceAction->text());
+        button->setPopupMode(QToolButton::InstantPopup);
+        button->setToolButtonStyle(ui->toolBar->toolButtonStyle());
+        button->setToolTip(sourceAction->toolTip());
+        button->setShortcut(sourceAction->shortcut());
+        QMenu* buttonMenu = new QMenu(sourceAction->text(), button);
+        button->setMenu(buttonMenu);
+        QAction* newAction = ui->toolBar->insertWidget(sourceAction, button);
+        newAction->setObjectName(sourceAction->objectName());
+        newAction->setIcon(sourceAction->icon());
+        newAction->setText(sourceAction->text());
+        newAction->setToolTip(sourceAction->toolTip());
+        newAction->setShortcut(sourceAction->shortcut());
+        ui->toolBar->removeAction(sourceAction);
+        sourceAction->deleteLater();
+        sourceAction = newAction;
+    }
+
+    // Add a Menu to a QAction.
+    void addMenuToAction(QAction* action) {
+        QToolButton* toolBtn = qobject_cast<QToolButton*>(ui->toolBar->widgetForAction(action));
+        assert(toolBtn);
+        toolBtn->setPopupMode(QToolButton::InstantPopup);
+        QMenu* menu = new QMenu(action->text(), toolBtn);
+        toolBtn->setMenu(menu);
+    }
+
+    // Create the Help widget.
+    void createHelpWidget() {
+        QToolButton* toolBtn = qobject_cast<QToolButton*>(ui->toolBar->widgetForAction(ui->actionHelp));
+        QMenu* buttonMenu = ui->actionHelp->menu();
+        if (!buttonMenu) {
+            buttonMenu = toolBtn->menu();
+        }
+        assert(buttonMenu);
+
+        // Add actions to the Help Menu.
+        QAction* helpAction = new QAction(tr("Help on UI"), buttonMenu);
+        connect(helpAction, SIGNAL(triggered()), this, SLOT(helpTriggered()));
+        buttonMenu->addAction(helpAction);
+
+        QAction* wikiAction = new QAction(tr("Documentation Wiki"), buttonMenu);
+        connect(wikiAction, SIGNAL(triggered()), this, SLOT(wikiTriggered()));
+        buttonMenu->addAction(wikiAction);
+
+        QAction* issueAction = new QAction(tr("Report Issue"), buttonMenu);
+        connect(issueAction, SIGNAL(triggered()), this, SLOT(issueTriggered()));
+        buttonMenu->addAction(issueAction);
+
+        // Setup the Tutorial action.
+        QMenu* tutorialMenu = new QMenu(tr("Tutorials"), buttonMenu);
+
+        using ActionList = std::vector<std::pair<int, QAction*>>;
+
+        ActionList tutorials;
+
+        // QDirIterator dirIter(QApplication::applicationDirPath() + "/tutorials", QStringList("*.js"), QDir::Files);
+        // while (dirIter.hasNext()) {
+        //    dirIter.next();
+        //    QString fileName = dirIter.fileName();
+
+        //    QFile file(dirIter.filePath());
+        //    if (!file.open(QIODevice::ReadOnly)) {
+        //        qCritical() << "Failed to open " << fileName;
+        //        continue;
+        //    }
+        //    QString firstLine = QString::fromUtf8(file.readLine());
+        //    if (firstLine.startsWith("//TL")) {
+        //        QStringList params = firstLine.mid(4).trimmed().split('#');
+        //        if (params.size() != 2) {
+        //            qCritical() << "invalid header line for tutorial " << fileName << " expected 2 parameters";
+        //            continue;
+        //        }
+        //        QAction* tutAction = new QAction(params.at(0), tutorialMenu);
+        //        tutAction->setData(fileName);
+        //        tutorials.push_back(std::make_pair(params.at(1).toInt(), tutAction));
+        //    }
+        //}
+
+        std::sort(
+            tutorials.begin(), tutorials.end(),
+            [](const ActionList::value_type& LHS, const ActionList::value_type& RHS) { return LHS.first < RHS.first; });
+
+        for (auto iter = tutorials.begin(); iter != tutorials.end(); ++iter) {
+            connect(iter->second, SIGNAL(triggered()), this, SLOT(tutorialTriggered()));
+            tutorialMenu->addAction(iter->second);
+        }
+
+        buttonMenu->addMenu(tutorialMenu);
+        buttonMenu->addAction(tr("About"), this, SLOT(about()));
+        buttonMenu->addAction(tr("About Qt"), qApp, SLOT(aboutQt()));
+    }
+
+    // Update the toolbar.
+    void updateToolBar() {
+        // Remove any already existing custom__ objects.
+        for (QAction* action : ui->toolBar->actions()) {
+            if (action->objectName().startsWith("custom__")) {
+                ui->toolBar->removeAction(action);
+            }
+        }
+
+        // Create a custom__spacer
+        QWidget* spacer = new QWidget(ui->toolBar);
+        spacer->setObjectName("custom__spacer");
+        spacer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
+
+        // Add dropdown menus to the Tool and Help menu actions.
+        addMenuToAction(ui->actionTool);
+        addMenuToAction(ui->actionHelp);
+        // Setup the Help widget.
+        createHelpWidget();
+
+        for (QAction* action : ui->toolBar->actions()) {
+            if (action->isSeparator()) {
+                // Insert spacers
+                ui->toolBar->insertWidget(action, spacer);
+
+                std::vector<Executable>::iterator begin;
+                std::vector<Executable>::iterator end;
+                // m_OrganizerCore.executablesList()->getExecutables(begin, end);
+                for (auto iter = begin; iter != end; ++iter) {
+                    if (iter->isShownOnToolbar()) {
+                        // QAction* exeAction =
+                        //    new QAction(iconForExecutable(iter->m_BinaryInfo.filePath()), iter->m_Title, ui->toolBar);
+                        // exeAction->setObjectName(QString("custom__") + iter->m_Title);
+                        // if (!connect(exeAction, SIGNAL(triggered()), this, SLOT(startExeAction()))) {
+                        //    qDebug("failed to connect trigger?");
+                        //}
+                        // ui->toolBar->insertAction(action, exeAction);
+                    }
+                }
+            }
+        }
+    }
+
+private slots:
+    // void on_actionHelp_triggered() {
+    //    ui->actionHelp->setChecked(true);
+    //    QWidget* w = ui->toolBar->widgetForAction(ui->actionHelp);
+    //    ui->actionHelp->menu()->popup(w->mapToGlobal(QPoint(0, w->height())));
+    //}
+
+    // Show the About MO window.
+    void about() {
+        // AboutDialog dialog(m_OrganizerCore.getVersion().displayString(), this);
+        // dialog.exec();
+    }
+
+    // Show in-application Help.
+    void helpTriggered() { QWhatsThis::enterWhatsThisMode(); }
+
+    // Open the Mod Organizer Wiki Page.
+    void wikiTriggered() {
+        ::ShellExecuteW(nullptr, L"open", L"http://wiki.step-project.com/Guide:Mod_Organizer", nullptr, nullptr,
+                        SW_SHOWNORMAL);
+    }
+
+    // Open the Mod Organizer Issues Page.
+    void issueTriggered() {
+        ::ShellExecuteW(nullptr, L"open", L"https://github.com/ModOrganizer/modorganizer/issues", nullptr, nullptr,
+                        SW_SHOWNORMAL);
+    }
+
+    // When the Tutorial is triggered.
+    void tutorialTriggered() {
+        QAction* tutorialAction = qobject_cast<QAction*>(sender());
+        if (tutorialAction != nullptr) {
+            if (QMessageBox::question(
+                    this, tr("Start Tutorial?"),
+                    tr("You're about to start a tutorial. For technical reasons it's not possible to end "
+                       "the tutorial early. Continue?"),
+                    QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes) {
+                // TutorialManager::instance().activateTutorial("MainWindow", tutorialAction->data().toString());
+            }
+        }
+    }
+
+private:
     Ui::MainWindow* ui;
+    // PluginContainer& m_pluginContainer;
 };
 #include "main.moc"
 #pragma endregion
