@@ -171,8 +171,6 @@ OrganizerCore::~OrganizerCore() {
     ModInfo::clear();
     m_ModList.setProfile(nullptr);
     // NexusInterface::instance()->cleanup();
-
-    delete m_DirectoryStructure;
 }
 
 QString OrganizerCore::commitSettings(const QString& iniFile) {
@@ -333,8 +331,8 @@ void OrganizerCore::updateExecutablesList(QSettings& settings) {
     settings.endArray();
 
     // TODO this has nothing to do with executables list move to an appropriate function!
-    ModInfo::updateFromDisc(m_Settings.getModDirectory(), &m_DirectoryStructure, m_Settings.displayForeign(),
-                            managedGame());
+    auto tmp = m_DirectoryStructure.get();
+    ModInfo::updateFromDisc(m_Settings.getModDirectory(), &tmp, m_Settings.displayForeign(), managedGame());
 }
 
 void OrganizerCore::setUserInterface(IUserInterface* userInterface, QWidget* widget) {
@@ -598,7 +596,8 @@ MOBase::IModInterface* OrganizerCore::createMod(GuessedValue<QString>& name) {
         settingsFile.endArray();
     }
 
-    return ModInfo::createFrom(QDir(targetDirectory), &m_DirectoryStructure).data();
+    auto tmp = m_DirectoryStructure.get();
+    return ModInfo::createFrom(QDir(targetDirectory), &tmp).data();
 }
 
 bool OrganizerCore::removeMod(MOBase::IModInterface* mod) {
@@ -1087,8 +1086,8 @@ void OrganizerCore::refreshModList(bool saveChanges) {
     if (saveChanges) {
         m_CurrentProfile->modlistWriter().writeImmediately(true);
     }
-    ModInfo::updateFromDisc(m_Settings.getModDirectory(), &m_DirectoryStructure, m_Settings.displayForeign(),
-                            managedGame());
+    auto tmp = m_DirectoryStructure.get();
+    ModInfo::updateFromDisc(m_Settings.getModDirectory(), &tmp, m_Settings.displayForeign(), managedGame());
 
     m_CurrentProfile->refreshModStatus();
 
@@ -1179,10 +1178,10 @@ void OrganizerCore::updateModActiveState(int index, bool active) {
 
 void OrganizerCore::updateModInDirectoryStructure(unsigned int index, ModInfo::Ptr modInfo) {
     // add files of the bsa to the directory structure
-    m_DirectoryRefresher.addModFilesToStructure(m_DirectoryStructure, modInfo->name(),
+    m_DirectoryRefresher.addModFilesToStructure(m_DirectoryStructure.get(), modInfo->name(),
                                                 m_CurrentProfile->getModPriority(index), modInfo->absolutePath(),
                                                 modInfo->stealFiles());
-    DirectoryRefresher::cleanStructure(m_DirectoryStructure);
+    DirectoryRefresher::cleanStructure(m_DirectoryStructure.get());
     // need to refresh plugin list now so we can activate esps
     refreshESPList();
     // activate all esps of the specified mod so the bsas get activated along with it
@@ -1195,7 +1194,7 @@ void OrganizerCore::updateModInDirectoryStructure(unsigned int index, ModInfo::P
                                  std::set<QString>(archives.begin(), archives.end()));
 
     // finally also add files from bsas to the directory structure
-    m_DirectoryRefresher.addModBSAToStructure(m_DirectoryStructure, modInfo->name(),
+    m_DirectoryRefresher.addModBSAToStructure(m_DirectoryStructure.get(), modInfo->name(),
                                               m_CurrentProfile->getModPriority(index), modInfo->absolutePath(),
                                               modInfo->archives());
 }
@@ -1277,14 +1276,15 @@ void OrganizerCore::refreshDirectoryStructure() {
 }
 
 void OrganizerCore::directory_refreshed() {
-    DirectoryEntry* newStructure = m_DirectoryRefresher.getDirectoryStructure();
-    Q_ASSERT(newStructure != m_DirectoryStructure);
-    if (newStructure != nullptr) {
-        std::swap(m_DirectoryStructure, newStructure);
-        delete newStructure;
-    } else {
-        // TODO: don't know why this happens, this slot seems to get called twice with only one emit
-        return;
+    {
+        DirectoryEntry* newStructure = m_DirectoryRefresher.getDirectoryStructure();
+        assert(newStructure != m_DirectoryStructure.get());
+        if (newStructure) {
+            m_DirectoryStructure.reset(newStructure);
+        } else {
+            // TODO: don't know why this happens, this slot seems to get called twice with only one emit
+            return;
+        }
     }
     m_DirectoryUpdate = false;
     if (m_CurrentProfile != nullptr) {
@@ -1307,8 +1307,8 @@ void OrganizerCore::directory_refreshed() {
 
 void OrganizerCore::profileRefresh() {
     // have to refresh mods twice (again in refreshModList), otherwise the refresh isn't complete. Not sure why
-    ModInfo::updateFromDisc(m_Settings.getModDirectory(), &m_DirectoryStructure, m_Settings.displayForeign(),
-                            managedGame());
+    auto tmp = m_DirectoryStructure.get();
+    ModInfo::updateFromDisc(m_Settings.getModDirectory(), &tmp, m_Settings.displayForeign(), managedGame());
     m_CurrentProfile->refreshModStatus();
 
     refreshModList();
@@ -1402,7 +1402,7 @@ void OrganizerCore::syncOverwrite() {
     });
 
     ModInfo::Ptr modInfo = ModInfo::getByIndex(overwriteIndex);
-    SyncOverwriteDialog syncDialog(modInfo->absolutePath(), m_DirectoryStructure, qApp->activeWindow());
+    SyncOverwriteDialog syncDialog(modInfo->absolutePath(), m_DirectoryStructure.get(), qApp->activeWindow());
     if (syncDialog.exec() == QDialog::Accepted) {
         syncDialog.apply(QDir::fromNativeSeparators(m_Settings.getModDirectory()));
         modInfo->testValid();

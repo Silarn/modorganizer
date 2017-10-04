@@ -111,7 +111,7 @@ public:
     Settings& settings();
     SelfUpdater* updater() { return &m_Updater; }
     InstallationManager* installationManager();
-    MOShared::DirectoryEntry* directoryStructure() { return m_DirectoryStructure; }
+    MOShared::DirectoryEntry* directoryStructure() { return m_DirectoryStructure.get(); }
     DirectoryRefresher* directoryRefresher() { return &m_DirectoryRefresher; }
     ExecutablesList* executablesList() { return &m_ExecutablesList; }
     void setExecutablesList(const ExecutablesList& executablesList) { m_ExecutablesList = executablesList; }
@@ -300,7 +300,7 @@ private:
     QStringList m_ActiveArchives;
 
     DirectoryRefresher m_DirectoryRefresher;
-    MOShared::DirectoryEntry* m_DirectoryStructure = nullptr;
+    std::unique_ptr<MOShared::DirectoryEntry> m_DirectoryStructure;
 
     DownloadManager m_DownloadManager;
     InstallationManager m_InstallationManager;
