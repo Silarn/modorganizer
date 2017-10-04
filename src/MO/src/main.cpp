@@ -425,10 +425,6 @@ static int runApplication(MOApplication& application, SingleInstance& instance, 
     // WIP BELOW
     // Bootstrap OrganizerCore
     OrganizerCore organizer(settings);
-    if (!organizer.bootstrap()) {
-        MOBase::reportError("failed to set up data paths");
-        return 1;
-    }
     moLog.info("Initialize plugins");
     PluginContainer pluginContainer(&organizer);
     pluginContainer.loadPlugins();
@@ -632,6 +628,7 @@ int main(int argc, char* argv[]) {
         moLog.error("Mod Organizer crashed...");
         auto msg = e.what();
         moLog.error(msg);
+        moLog.flush();
         MOBase::reportError(msg);
     } catch (...) {
         moLog.error("Mod Organizer crashed...");
