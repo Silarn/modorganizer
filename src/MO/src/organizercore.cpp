@@ -102,12 +102,24 @@ static void startSteam(QWidget* widget) {
 }
 
 template <typename InputIterator>
-QStringList toStringList(InputIterator current, InputIterator end) {
+static QStringList toStringList(InputIterator current, InputIterator end) {
     QStringList result;
     for (; current != end; ++current) {
         result.append(*current);
     }
     return result;
+}
+
+// Helper function to create a directory.
+static bool createDirectory(const QString& path) {
+    if (!QDir(path).exists() && !QDir().mkpath(path)) {
+        QMessageBox::critical(nullptr, QObject::tr("Error"),
+                              QObject::tr("Failed to create \"%1\". Your user "
+                                          "account probably lacks permission.")
+                                  .arg(QDir::toNativeSeparators(path)));
+        return false;
+    }
+    return true;
 }
 
 OrganizerCore::OrganizerCore(const QSettings& initSettings)
@@ -157,6 +169,12 @@ OrganizerCore::OrganizerCore(const QSettings& initSettings)
     m_DirectoryRefresher.moveToThread(&m_RefresherThread);
 
     m_AskForNexusPW = initSettings.value("ask_for_nexuspw", true).toBool();
+
+    // Create required directories.
+    createDirectory(m_Settings.getProfileDirectory());
+    createDirectory(m_Settings.getModDirectory());
+    createDirectory(m_Settings.getDownloadDirectory());
+    createDirectory(m_Settings.getOverwriteDirectory());
 }
 
 OrganizerCore::~OrganizerCore() {
@@ -483,23 +501,6 @@ void OrganizerCore::downloadSpeed(const QString& serverName, int bytesPerSecond)
 }
 
 InstallationManager* OrganizerCore::installationManager() { return &m_InstallationManager; }
-
-bool OrganizerCore::createDirectory(const QString& path) {
-    if (!QDir(path).exists() && !QDir().mkpath(path)) {
-        QMessageBox::critical(nullptr, QObject::tr("Error"),
-                              QObject::tr("Failed to create \"%1\". Your user "
-                                          "account probably lacks permission.")
-                                  .arg(QDir::toNativeSeparators(path)));
-        return false;
-    } else {
-        return true;
-    }
-}
-
-bool OrganizerCore::bootstrap() {
-    return createDirectory(m_Settings.getProfileDirectory()) && createDirectory(m_Settings.getModDirectory()) &&
-           createDirectory(m_Settings.getDownloadDirectory()) && createDirectory(m_Settings.getOverwriteDirectory());
-}
 
 void OrganizerCore::createDefaultProfile() {
     QString profilesPath = settings().getProfileDirectory();
