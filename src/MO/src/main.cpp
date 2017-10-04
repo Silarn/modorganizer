@@ -431,6 +431,7 @@ public:
     ~MyMainWindow() {}
 
 private:
+    // Check for problems.
     size_t checkForProblems() {
         size_t numProblems = 0;
         // for (IPluginDiagnose* diagnose : m_PluginContainer.plugins<IPluginDiagnose>()) {
@@ -547,7 +548,7 @@ private:
             }
         }
 
-        // Create a custom__spacer
+        // Create Spacers
         QWidget* spacer = new QWidget(ui->toolBar);
         spacer->setObjectName("custom__spacer");
         spacer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
@@ -558,12 +559,13 @@ private:
         // Setup the Help widget.
         createHelpWidget();
 
-        // Setup configured executables.
+        // Setup configured toolbar icons and Spacers
         for (QAction* action : ui->toolBar->actions()) {
             if (action->isSeparator()) {
                 // Insert spacers
                 ui->toolBar->insertWidget(action, spacer);
 
+                // Setup custom toolbar buttons.
                 std::vector<Executable>::iterator begin;
                 std::vector<Executable>::iterator end;
                 // m_OrganizerCore.executablesList()->getExecutables(begin, end);
