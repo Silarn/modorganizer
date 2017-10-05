@@ -64,10 +64,6 @@ using namespace std::string_literals;
 
 #pragma comment(linker, "/manifestdependency:\"name='dlls' version='1.0.0.0' type='win32'\"")
 
-// Initlization log, only used here.
-// Next to the EXE and debugs startup.
-static Log::Logger moLog("mo_init", common::get_exe_dir() / "Logs");
-
 //
 #pragma region "Error / external log handling."
 // Callback to filter information from the Minidump.
@@ -215,7 +211,7 @@ void myMessageOutput(QtMsgType type, const QMessageLogContext& context, const QS
 
 // Extend the PATH enviroment variable for this process to include the dlls subdirectory.
 // This way plugins don't need a manifest.
-static void setupPath() {
+static void setupPath(Log::Logger& moLog) {
     // TODO: Possibly use SetDllDirectory?
     // May need to turn it off when loading other processes?
     // FIXME: This doesnt seem to be working.
@@ -402,11 +398,10 @@ static QString determineProfile(QStringList& arguments, const QSettings& setting
 }
 
 #pragma region WIP
-namespace Ui {
-class MainWindow;
-}
 #include "ui_mainwindow.h"
 #include <QDirIterator>
+#include <QLocalServer>
+#include <QLocalSocket>
 #include <QMenu>
 #include <QToolButton>
 #include <QWhatsThis>
@@ -420,6 +415,97 @@ class MainWindow;
 #include <uibase/ipluginproxy.h>
 #include <uibase/iplugintool.h>
 #include <vector>
+// Enforce a single instance of MO.
+class MySingleInstance {
+public:
+    MySingleInstance() {
+        // Attempt to create mutex.
+        m_mutex = CreateMutexA(NULL, FALSE, m_mutexid.data());
+        assert(m_mutex);
+        m_primary = (GetLastError() != ERROR_ALREADY_EXISTS);
+    }
+    ~MySingleInstance() { CloseHandle(m_mutex); }
+
+public:
+    // Return whether this is the primary instance or not.
+    bool primary() { return m_primary; }
+
+private:
+    static const std::string m_mutexid;
+    bool m_primary = false; // True = primary instance. False = secondary instance.
+    HANDLE m_mutex = nullptr;
+};
+const std::string MySingleInstance::m_mutexid = "ModOrganizer";
+
+// Handles Interprocess Communication using a socket.
+// Mainly used for communicating nxm download urls to the primary MO instance.
+class MoIPC : public QObject {
+    Q_OBJECT
+public:
+    // Start the server and listen for messages.
+    // This should only be called for the primary Mod Organizer instance.
+    void listen() {
+        connect(&m_server, SIGNAL(newConnection()), this, SLOT(receiveMessage()));
+        m_server.setSocketOptions(QLocalServer::WorldAccessOption);
+        m_server.listen(QString::fromStdString(m_key));
+    }
+
+    // Send a message to the primary instance.
+    // This can be used to transmit download urls
+    // @param message message to send
+    void sendMessage(const QString& message) {
+        QLocalSocket socket;
+        QString key = QString::fromStdString(m_key);
+
+        // Attempt connection.
+        socket.connectToServer(key, QIODevice::WriteOnly);
+        bool connected = socket.waitForConnected(m_timeout);
+
+        if (!connected) {
+            MOBase::reportError(tr("failed to connect to running instance: %1").arg(socket.errorString()));
+            return;
+        }
+
+        socket.write(message.toUtf8());
+        if (!socket.waitForBytesWritten(m_timeout)) {
+            MOBase::reportError(tr("failed to communicate with running instance: %1").arg(socket.errorString()));
+            return;
+        }
+
+        socket.disconnectFromServer();
+    }
+signals:
+    // @brief emitted when a secondary instance has sent a message (to us)
+    // Should be connected to a slot.
+    // @param message the message we received
+    void messageSent(const QString& message);
+
+private slots:
+    // Receive a message from a secondary process.
+    void receiveMessage() {
+        QLocalSocket* socket = m_server.nextPendingConnection();
+        assert(socket);
+        if (!socket->waitForReadyRead(m_timeout)) {
+            MOBase::reportError(tr("failed to receive data from secondary instance: %1").arg(socket->errorString()));
+            return;
+        }
+
+        QString message = QString::fromUtf8(socket->readAll().constData());
+
+        QMessageBox::information(nullptr, "Mod Organizer", message);
+
+        emit messageSent(message);
+        socket->disconnectFromServer();
+    }
+
+private:
+    static const int m_timeout = 5000;
+    static const std::string m_key;
+
+    QLocalServer m_server;
+};
+const std::string MoIPC::m_key = "mo-43d1a3ad-eeb0-4818-97c9-eda5216c29b5";
+
 // Backend Mod Organizer logic.
 class MyPluginContainer : public MOBase::IPluginDiagnose {
 public:
@@ -862,8 +948,8 @@ private:
 // instance, An instance
 // splashPath, the path to a image file used as a splash screen.
 // dataPath, the MO Application data path.
-static int runApplication(MOApplication& application, SingleInstance& instance, fs::path splashPath, fs::path dataPath,
-                          QStringList arguments) {
+static int runApplication(Log::Logger& moLog, MOApplication& application, SingleInstance& instance, fs::path splashPath,
+                          fs::path dataPath, QStringList arguments) {
     // Display splash screen
     QPixmap pixmap(QString::fromStdWString(splashPath.native()));
     QSplashScreen splash(pixmap);
@@ -980,11 +1066,78 @@ static int runApplication(MOApplication& application, SingleInstance& instance, 
     return 1;
 }
 
+// Handle command-line arguments.
+// These arguments are only valid on a new Mod Organizer Instance.
+// May call std::terminate.
+static void handleArguments(Log::Logger& moLog, QStringList arguments) {
+    // Handle launch argument.
+    // First argument should be launch
+    // Second should be the working directory
+    // third the program to run
+    // Fourth and onwards, arguments to the program.
+    if ((arguments.length() >= 4) && (arguments.at(1) == "launch")) {
+        // All we're supposed to do is launch another process, so do that.
+        moLog.info("Launch argument passed.");
+        auto wdir = QDir::fromNativeSeparators(arguments.at(2));
+        auto prog = QDir::fromNativeSeparators(arguments.at(3));
+        auto args = arguments.mid(4);
+        moLog.info("Launching {} with arguments: '{}' and working directory '{}'", prog.toStdString(),
+                   args.join(" ").toStdString(), wdir.toStdString());
+        QProcess process;
+        process.setWorkingDirectory(wdir);
+        process.setProgram(prog);
+        process.setArguments(args);
+        process.start();
+        process.waitForFinished(-1);
+        //
+        std::terminate();
+    }
+    // Handle update argument.
+    if (arguments.contains("update")) {
+        arguments.removeAll("update");
+        // TODO: Wait for the other instance to finish closing.
+        // Possibly forcefully ending it ourselves.
+    }
+}
+
+// Handle Commandline arguments used for IPC.
+static void handleIpcArgs(QStringList arguments, MoIPC& instance) {
+    if ((arguments.size() == 2) && isNxmLink(arguments.at(1))) {
+        instance.sendMessage(arguments.at(1));
+    } else if (arguments.size() == 1) {
+        QMessageBox::information(nullptr, QObject::tr("Mod Organizer"),
+                                 QObject::tr("An instance of Mod Organizer is already running"));
+    }
+}
+
 int main(int argc, char* argv[]) {
+    Log::Logger* pmoLog = nullptr;
     // This try...catch allows proper cleanup before rethrowing the
     // exception to let MyUnhandledExceptionFilter handle it.
     // This allows, for example, the log to be flushed flushed before the crash.
     try {
+        // Create QApplication
+        MOApplication application(argc, argv);
+        QStringList arguments = application.arguments();
+        // Setup Interprocess Communication
+        MoIPC ipc;
+        // Enforce a single instance of MO.
+        MySingleInstance inst;
+        if (!inst.primary()) {
+            // If not primary instance, assume we have command line arguments
+            // and handle those, and then exit.
+            handleIpcArgs(arguments, ipc);
+            return 1;
+        }
+        // Listen for ipc messages
+        ipc.listen();
+        // Setup startup log.
+        Log::Logger moLog("mo_init", common::get_exe_dir() / "Logs");
+        pmoLog = &moLog;
+        // Start the application
+        application.exec();
+        // ...
+#if 0
         // Setup Logging.
         moLog.info("Mod Organizer started.");
         moLog.info("MO Located At: {}", common::get_exe_dir());
@@ -998,38 +1151,10 @@ int main(int argc, char* argv[]) {
         // Setup application
         moLog.info("Setting up Application and processing commandline");
         MOApplication application(argc, argv);
-        QStringList arguments = application.arguments();
-        // Handle launch argument.
-        // First argument should be launch
-        // Second should be the working directory
-        // third the program to run
-        // Fourth and onwards, arguments to the program.
-        if ((arguments.length() >= 4) && (arguments.at(1) == "launch")) {
-            // All we're supposed to do is launch another process, so do that.
-            moLog.info("Launch argument passed.");
-            auto wdir = QDir::fromNativeSeparators(arguments.at(2));
-            auto prog = QDir::fromNativeSeparators(arguments.at(3));
-            auto args = arguments.mid(4);
-            moLog.info("Launching {} with arguments: '{}' and working directory '{}'", prog.toStdString(),
-                       args.join(" ").toStdString(), wdir.toStdString());
-            QProcess process;
-            process.setWorkingDirectory(wdir);
-            process.setProgram(prog);
-            process.setArguments(args);
-            process.start();
-            process.waitForFinished(-1);
-            return process.exitCode();
-        }
-        // Handle update argument.
-        bool forcePrimary = false;
-        if (arguments.contains("update")) {
-            moLog.info("We updated! Forcing primary instance");
-            arguments.removeAll("update");
-            // Force ourselves to be the primary instance if we're updating.
-            forcePrimary = true;
-        }
+        // Handle arguments.
+        handleArguments(moLog, application.arguments());
         // Setup Paths.
-        setupPath();
+        setupPath(moLog);
 #if !defined(QT_NO_SSL)
         moLog.info("Qt supports SSL: {}", QSslSocket::supportsSsl());
 #else
@@ -1040,29 +1165,15 @@ int main(int argc, char* argv[]) {
         // Handle NXM Downloads
         // FIXME: Won't logging up until this point conflict, since they're writing to the same file.
         // Solution could be to enforce this earlier?
-        SingleInstance instance(forcePrimary);
-        if (!instance.primaryInstance()) {
-            moLog.warn("Not Primary Instance");
-            if ((arguments.size() == 2) && isNxmLink(arguments.at(1))) {
-                moLog.info("Just handling a NXM Link");
-                instance.sendMessage(arguments.at(1));
-                return 0;
-            } else if (arguments.size() == 1) {
-                moLog.error("Duplicate Instance");
-                QMessageBox::information(nullptr, QObject::tr("Mod Organizer"),
-                                         QObject::tr("An instance of Mod Organizer is already running"));
-                return 0;
-            }
-        } // We continue for the Primary Instance only.
+        SingleInstance instance(false);
+
         moLog.info("Primary Instance");
         // Find Mod Organizer data Directory.
         // In previous versions of MO this was the same place as the executable, but
         // Now it can be any location the User desires.
         // This handles the user choosing whether to use portable mode or a custom location or what.
         moLog.info("Getting MO Data Path");
-        // INFO: For testing purposes.
-        InstanceManager::instance().clearCurrentInstance();
-        //
+        // Setup Instance
         fs::path dataPath;
         try {
             dataPath = InstanceManager::instance().determineDataPath();
@@ -1084,19 +1195,26 @@ int main(int argc, char* argv[]) {
         }
         // TESTING
         moLog.info("Start Main Application.");
-        int result = runApplication(application, instance, splash, dataPath, arguments);
-        if (result != INT_MAX) {
-            return result;
-        }
+        // int result = runApplication(moLog, application, instance, splash, dataPath, arguments);
+        // if (result != INT_MAX) {
+        //    return result;
+        //}
+#endif
     } catch (const std::exception& e) {
-        moLog.error("Mod Organizer crashed...");
         auto msg = e.what();
-        moLog.error(msg);
-        moLog.flush();
+        if (pmoLog) {
+            pmoLog->error("Mod Organizer crashed...");
+            pmoLog->error(msg);
+            pmoLog->flush();
+        }
+
         MOBase::reportError(msg);
+        throw;
     } catch (...) {
-        moLog.error("Mod Organizer crashed...");
-        moLog.flush();
+        if (pmoLog) {
+            pmoLog->error("Mod Organizer crashed...");
+            pmoLog->flush();
+        }
         throw;
     }
 }
