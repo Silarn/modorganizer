@@ -798,7 +798,7 @@ private:
         // Setup configured toolbar icons and Spacers
         for (QAction* action : ui->toolBar->actions()) {
             if (action->isSeparator()) {
-                // Insert spacers
+                // Insert spacers directly before the seperator.
                 ui->toolBar->insertWidget(action, spacer);
 
                 // Setup custom toolbar buttons.
@@ -852,7 +852,6 @@ private slots:
 
 private:
     Ui::MainWindow* ui;
-    // PluginContainer& m_pluginContainer;
     MyOrganizerCore& m_organizer;
 };
 #include "main.moc"
