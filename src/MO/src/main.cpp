@@ -426,9 +426,14 @@ public:
     }
     ~MySingleInstance() { CloseHandle(m_mutex); }
 
+    MySingleInstance(const MySingleInstance&) = delete;
+    MySingleInstance(MySingleInstance&&) = delete;
+    MySingleInstance& operator=(const MySingleInstance&) = delete;
+    MySingleInstance& operator=(MySingleInstance&&) = delete;
+
 public:
     // Return whether this is the primary instance or not.
-    bool primary() { return m_primary; }
+    bool primary() const { return m_primary; }
 
 private:
     static const std::string m_mutexid;
