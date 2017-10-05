@@ -410,9 +410,231 @@ class MainWindow;
 #include <QMenu>
 #include <QToolButton>
 #include <QWhatsThis>
-class MyOrganizerCore {
-    //
+#include <tuple>
+#include <uibase/iplugin.h>
+#include <uibase/iplugindiagnose.h>
+#include <uibase/ipluginfilemapper.h>
+#include <uibase/iplugingame.h>
+#include <uibase/iplugininstaller.h>
+#include <uibase/ipluginmodpage.h>
+#include <uibase/ipluginproxy.h>
+#include <uibase/iplugintool.h>
+#include <vector>
+// Backend Mod Organizer logic.
+class MyPluginContainer : public MOBase::IPluginDiagnose {
+public:
+    MyPluginContainer() {}
+
+    // Return loaded plugins of interface T.
+    template <typename T>
+    const std::vector<T*>& plugins() const {
+        return std::get<std::vector<T*>>(m_plugins);
+    }
+
+public:
+    // Load Plugins. Unloads currently loaded plugins.
+    void loadPlugins() {
+        unloadPlugins();
+
+        // Register statically linked Plugins?
+        // Not quite sure what this does. So far no apparant effect.
+        for (QObject* plugin : QPluginLoader::staticInstances()) {
+            registerPlugin(plugin, "");
+        }
+
+        // Check if we failed to load a plugin.
+        // If so, inform the user and ask them whether they want to disable it.
+        QFile loadCheck(qApp->property("dataPath").toString() + "/plugin_loadcheck.tmp");
+        if (loadCheck.exists() && loadCheck.open(QIODevice::ReadOnly)) {
+            // Get the name of the last loaded plugin.
+            QString fileName;
+            while (!loadCheck.atEnd()) {
+                fileName = QString::fromUtf8(loadCheck.readLine().constData()).trimmed();
+            }
+            MOLog::instance().warn("Plugin '{}' failed to load last start.", fileName.toStdString());
+            // if (QMessageBox::question(
+            //        nullptr, QObject::tr("Plugin error"),
+            //        QObject::tr("It appears the plugin \"%1\" failed to load last startup and caused MO "
+            //                    "to crash. Do you want to disable it?\n"
+            //                    "(Please note: If this is the first time you have seen this message for this "
+            //                    "plugin you may want to give it another try. "
+            //                    "The plugin may be able to recover from the problem)")
+            //            .arg(fileName),
+            //        QMessageBox::Yes | QMessageBox::No, QMessageBox::Yes) == QMessageBox::Yes) {
+            //     m_Organizer->settings().addBlacklistPlugin(fileName);
+            //}
+            loadCheck.close();
+        }
+        // Open the loadCheck file for writing.
+        loadCheck.open(QIODevice::WriteOnly);
+
+        // Get the plugins location
+        fs::path pluginPath = common::get_exe_dir() / AppConfig::pluginPath();
+        MOLog::instance().info("Looking for plugins in '{}'", pluginPath);
+
+        // Load plugins from pluginPath
+        for (const auto& plugin : fs::directory_iterator(pluginPath)) {
+            std::string pluginName = plugin.path().filename().u8string();
+            // if (m_Organizer->settings().pluginBlacklisted(pluginName)) {
+            //    MOLog::instance().warn("Plugin '{}' was blacklisted", pluginName);
+            //    continue;
+            //}
+            // Write the Plugin filename to loadCheck
+            loadCheck.write(QByteArray::fromStdString(pluginName));
+            loadCheck.write("\n");
+            loadCheck.flush();
+            // Validate and load plugin
+            QString pluginPath = QString::fromStdWString(plugin.path());
+            if (!QLibrary::isLibrary(pluginPath)) {
+                continue;
+            }
+            std::unique_ptr<QPluginLoader> pluginLoader(new QPluginLoader(pluginPath));
+            auto instance = pluginLoader->instance();
+            if (!instance) {
+                m_failedPlugins.push_back(pluginName);
+                MOLog::instance().error("Failed to load plugin: '{}'.\nReason: '{}'", pluginName,
+                                        pluginLoader->errorString().toStdString());
+            }
+
+            // Register plugin
+            if (registerPlugin(pluginLoader->instance(), pluginPath)) {
+                MOLog::instance().info("Loaded plugin '{}'", pluginName);
+                // m_PluginLoaders.push_back(pluginLoader.release());
+            } else {
+                m_failedPlugins.push_back(pluginName);
+                MOLog::instance().warn("Plugin '{}' failed to load. (Possibly outddated)", pluginName);
+            }
+        }
+        // Remove the load check file on success
+        loadCheck.remove();
+        // Add ourselves
+        this->plugins<IPluginDiagnose>().push_back(this);
+        // m_Organizer->connectPlugins(this);
+    }
+    void unloadPlugins() {
+        // if (m_UserInterface) {
+        //    m_UserInterface->disconnectPlugins();
+        //}
+
+        // disconnect all slots before unloading plugins so plugins don't have to take care of that
+        // m_Organizer->disconnectPlugins();
+
+        // Clear every vector of loaded plugins.
+        common::forTuple([](auto& vec) { vec.clear(); }, m_plugins);
+
+        // for (const boost::signals2::connection& connection : m_DiagnosisConnections) {
+        //    connection.disconnect();
+        //}
+        // m_DiagnosisConnections.clear();
+
+        // while (!m_PluginLoaders.empty()) {
+        //    std::unique_ptr<QPluginLoader> loader(m_PluginLoaders.back());
+        //    m_PluginLoaders.pop_back();
+        //    if (loader && !loader->unload()) {
+        //        qDebug("failed to unload %s: %s", qUtf8Printable(loader->fileName()),
+        //               qUtf8Printable(loader->errorString()));
+        //    }
+        //}
+    }
+
+private:
+    // Verify the dll is a plugin
+    bool verifyIPlugin(QObject* plugin, std::string fileName) {
+        MOBase::IPlugin* pluginObj = qobject_cast<MOBase::IPlugin*>(plugin);
+        if (!pluginObj) {
+            MOLog::instance().warn("Plugin '{}' is not an IPlugin", fileName);
+            return false;
+        }
+        return true;
+    }
+
+    // Register a Plugin.
+    bool registerPlugin(QObject* plugin, const QString& qfileName) {
+        std::string fileName = qfileName.toStdString();
+        if (!plugin) {
+            MOLog::instance().warn("Attempted to register plugin '{}' with a null instance.", fileName);
+            return false;
+        }
+        if (!verifyIPlugin(plugin, fileName)) {
+            return false;
+        }
+        plugin->setProperty("filename", qfileName);
+        // m_Organizer->settings().registerPlugin(qobject_cast<MOBase::IPlugin*>(plugin));
+        return true;
+    }
+
+    // Returned loaded plugins of interface T and allow it to be modified.
+    template <typename T>
+    std::vector<T*>& plugins() {
+        return std::get<std::vector<T*>>(m_plugins);
+    }
+
+public: // IPluginDiagnose interface
+    virtual std::vector<unsigned int> activeProblems() const override {
+        std::vector<unsigned int> problems;
+        if (m_failedPlugins.size()) {
+            problems.push_back(PROBLEM_PLUGINSNOTLOADED);
+        }
+        return problems;
+    }
+
+    QString shortDescription(unsigned int key) const override {
+        assert(key == 1);
+        return QObject::tr("Some plugins could not be loaded");
+    }
+
+    QString fullDescription(unsigned int key) const override {
+        assert(key == 1);
+        QString result = QObject::tr("The following plugins could not be loaded. The reason may be missing "
+                                     "dependencies (i.e. python) or an outdated version:") +
+                         "<ul>";
+        for (const std::string& plugin : m_failedPlugins) {
+            result.append("<li>" + QString::fromStdString(plugin) + "</li>");
+        }
+        result.append("<ul>");
+        return result;
+    }
+
+    bool hasGuidedFix(unsigned int) const override { return false; }
+
+    void startGuidedFix(unsigned int) const override {}
+
+private:
+    // Tuple of all supported Plugin interfaces.
+    // Non owning pointers.
+    using PluginMap = std::tuple<std::vector<MOBase::IPlugin*>, std::vector<MOBase::IPluginDiagnose*>,
+                                 std::vector<MOBase::IPluginGame*>, std::vector<MOBase::IPluginInstaller*>,
+                                 std::vector<MOBase::IPluginModPage*>, std::vector<MOBase::IPluginPreview*>,
+                                 std::vector<MOBase::IPluginTool*>, std::vector<MOBase::IPluginProxy*>,
+                                 std::vector<MOBase::IPluginFileMapper*>>;
+    PluginMap m_plugins;
+    // for IPluginDiagnose
+    static const unsigned int PROBLEM_PLUGINSNOTLOADED = 1;
+    std::vector<std::string> m_failedPlugins;
 };
+// Mod Organizer backend.
+// Ties together various backend systems into one interface provided to the frontend.
+// May also act as a bridge between the different backend systems.
+// Loads Plugins
+class MyOrganizerCore {
+public:
+    MyOrganizerCore() {
+        // Load Mod Organizer Plugins.
+        m_plugins.loadPlugins();
+    }
+
+public: // MyPluginContainer
+    // Return list of loaded plugins of interface T.
+    template <typename T>
+    decltype(auto) plugins() const {
+        return m_plugins.plugins<T>();
+    }
+
+private:
+    MyPluginContainer m_plugins;
+};
+// The Mod Organizer Main Window.
+// Hooks backend logic to frontend.
 class MyMainWindow : public QMainWindow {
     Q_OBJECT
 public:
@@ -446,12 +668,12 @@ private:
         this->setWindowTitle(QString::fromStdString(title));
     }
 
-    // Check for problems.
+    // Check for problems reported by IPluginDiagnose.
     size_t checkForProblems() {
         size_t numProblems = 0;
-        // for (IPluginDiagnose* diagnose : m_PluginContainer.plugins<IPluginDiagnose>()) {
-        //    numProblems += diagnose->activeProblems().size();
-        //}
+        for (MOBase::IPluginDiagnose* diagnose : m_organizer.plugins<MOBase::IPluginDiagnose>()) {
+            numProblems += diagnose->activeProblems().size();
+        }
         return numProblems;
     }
 
