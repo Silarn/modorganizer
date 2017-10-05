@@ -1355,7 +1355,7 @@ WIP Currently empty space.</string>
     <string>No Problems</string>
    </property>
    <property name="whatsThis">
-    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This button will be highlighted if MO discovered potential problems in your setup and provide tips on how to fix them.&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;!!! Work in progress !!!&lt;/p&gt;&lt;p&gt;Right now this has very limited functionality.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This button will be highlighted if MO discovered potential problems in your setup and provide tips on how to fix them.&lt;/p&gt;&lt;p&gt;!!! Work in progress !!!&lt;/p&gt;&lt;p&gt;Right now this has very limited functionality.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
    </property>
   </action>
   <action name="actionHelp">
