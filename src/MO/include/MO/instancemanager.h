@@ -27,6 +27,9 @@ namespace fs = std::experimental::filesystem;
 // Singleton class managing certain non application specific settings and instances.
 // Settings such as where the application settings are and which ones to use?
 // TODO: Isnt there already a Settings class? May need to consoloidate them.
+// Manages Global settings to determine the Instance to use.
+// TODO: Intergate into OrganizerCore? Reduce global state. Only usage seems to be in mainwindow.cpp
+// Which already has an OrganizerCore reference.
 class InstanceManager {
 public:
     // Return the Instance.
