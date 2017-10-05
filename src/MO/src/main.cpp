@@ -459,7 +459,7 @@ public:
 
         // Attempt connection.
         socket.connectToServer(key, QIODevice::WriteOnly);
-        bool connected = socket.waitForConnected(m_timeout);
+        bool connected = socket.waitForConnected(); // Wait the default 30 seconds.
 
         if (!connected) {
             MOBase::reportError(tr("failed to connect to running instance: %1").arg(socket.errorString()));
@@ -1016,28 +1016,7 @@ static int runApplication(Log::Logger& moLog, MOApplication& application, Single
     organizer.updateExecutablesList(settings);
     QString selectedProfileName = determineProfile(arguments, settings);
     organizer.setCurrentProfile(selectedProfileName);
-    // if we have a command line parameter, it is either a nxm link or
-    // a binary to start
-    if (arguments.size() > 1) {
-        auto arg1 = arguments.at(1);
-        if (isNxmLink(arg1)) {
-            moLog.info("Starting download from command line: {}", arg1.toStdString());
-            organizer.externalMessage(arg1);
-        } else {
-            QString exeName = arg1;
-            moLog.info("Starting {} from command line", arg1.toStdString());
-            arguments.removeFirst(); // remove application name (ModOrganizer.exe)
-            arguments.removeFirst(); // remove binary name
-                                     // pass the remaining parameters to the binary
-            try {
-                organizer.startApplication(exeName, arguments, QString(), QString());
-                return 0;
-            } catch (const std::exception& e) {
-                MOBase::reportError(QObject::tr("failed to start application: %1").arg(e.what()));
-                return 1;
-            }
-        }
-    }
+    
     NexusInterface::instance()->getAccessManager()->startLoginCheck();
     moLog.info("Initializing tutorials");
     MOBase::TutorialManager::init(
@@ -1068,14 +1047,22 @@ static int runApplication(Log::Logger& moLog, MOApplication& application, Single
 
 // Handle command-line arguments.
 // These arguments are only valid on a new Mod Organizer Instance.
-// May call std::terminate.
-static void handleArguments(Log::Logger& moLog, QStringList arguments) {
+// Returns true if the program should terminate and false if startup should continue.
+static bool handleArguments(Log::Logger& moLog, QStringList arguments) {
+    // If no arguments, continue program.
+    if (arguments.size() == 1) {
+        return false;
+    }
+    auto arg1 = arguments.at(1);
     // Handle launch argument.
     // First argument should be launch
     // Second should be the working directory
     // third the program to run
     // Fourth and onwards, arguments to the program.
-    if ((arguments.length() >= 4) && (arguments.at(1) == "launch")) {
+    // TODO: What is this paramater even used for? It just launches a proccess?
+    // It does not seem to launch it as if through MO, so whats the point.
+    if ((arguments.length() >= 4) && (arg1 == "launch")) {
+        assert(0); // To find out if anything uses this.
         // All we're supposed to do is launch another process, so do that.
         moLog.info("Launch argument passed.");
         auto wdir = QDir::fromNativeSeparators(arguments.at(2));
@@ -1090,14 +1077,34 @@ static void handleArguments(Log::Logger& moLog, QStringList arguments) {
         process.start();
         process.waitForFinished(-1);
         //
-        std::terminate();
+        return true;
     }
-    // Handle update argument.
-    if (arguments.contains("update")) {
-        arguments.removeAll("update");
-        // TODO: Wait for the other instance to finish closing.
-        // Possibly forcefully ending it ourselves.
+    // Handle nxm links for Primary Instance.
+    if (isNxmLink(arg1)) {
+        moLog.info("Starting download from command line: {}", arg1.toStdString());
+        // Start a secondary MO instance.
+        // The Primary Instance should be listening and dealing with messages within the timeout.
+        QProcess proc;
+        proc.setProgram(QCoreApplication::applicationFilePath());
+        proc.setArguments({arg1});
+        proc.start();
+        return false; // Continue startup.
+    } else {
+        // TODO: Find out what this one is used for.
+        // Probably desktop/startmenu shortcuts?
+        QString exeName = arg1;
+        moLog.info("Starting {} from command line", arg1.toStdString());
+        arguments.removeFirst(); // remove application name (ModOrganizer.exe)
+        arguments.removeFirst(); // remove binary name
+                                 // pass the remaining parameters to the binary
+        try {
+            // organizer.startApplication(exeName, arguments, QString(), QString());
+        } catch (const std::exception& e) {
+            MOBase::reportError(QObject::tr("failed to start application: %1").arg(e.what()));
+        }
+        return true; //
     }
+    return false;
 }
 
 // Handle Commandline arguments used for IPC.
@@ -1134,6 +1141,10 @@ int main(int argc, char* argv[]) {
         // Setup startup log.
         Log::Logger moLog("mo_init", common::get_exe_dir() / "Logs");
         pmoLog = &moLog;
+        // Handle arguments.
+        if (handleArguments(moLog, arguments)) {
+            return 0;
+        }
         // Start the application
         application.exec();
         // ...
