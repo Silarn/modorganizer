@@ -37,4 +37,36 @@ void forTuple(TFn&& mFn, TTpl&& mTpl) {
 
     std::apply([&mFn](auto&&... xs) { forArgs(mFn, std::forward<decltype(xs)>(xs)...); }, std::forward<TTpl>(mTpl));
 }
+
+// Iterate over the range T_begin, T_end non-inclusive.
+// Allows the usage of a range based for loop for simple counting.
+// Ex: `for (int i = 0; i < N; ++i)` can be `for (auto i : range<0, N>)`
+template <int T_begin, int T_end>
+class range {
+public:
+    class range_iterator {
+    public:
+        constexpr range_iterator(int start) : i(start) {}
+
+        constexpr int operator*() const { return i; }
+        constexpr const range_iterator& operator++() {
+            ++i;
+            return *this;
+        }
+        constexpr range_iterator operator++(int) {
+            range_iterator copy(*this);
+            ++i;
+            return copy;
+        }
+        constexpr bool operator==(const range_iterator& other) const { return i == other.i; }
+        constexpr bool operator!=(const range_iterator& other) const { return !(*this == other); }
+
+    private:
+        int i;
+    };
+
+    constexpr range_iterator begin() const { return range_iterator(T_begin); }
+    constexpr range_iterator end() const { return range_iterator(T_end - 1); }
+};
+
 } // namespace common
