@@ -399,6 +399,7 @@ static QString determineProfile(QStringList& arguments, const QSettings& setting
 
 #pragma region WIP
 #include "ui_mainwindow.h"
+#include <MO/aboutdialog.h>
 #include <QDirIterator>
 #include <QLocalServer>
 #include <QLocalSocket>
@@ -914,8 +915,10 @@ private:
 private slots:
     // Show the About MO window.
     void about() {
-        // AboutDialog dialog(m_OrganizerCore.getVersion().displayString(), this);
-        // dialog.exec();
+        // FIXME: Version.
+        // m_OrganizerCore.getVersion().displayString()
+        AboutDialog dialog({}, this);
+        dialog.exec();
     }
 
     // Show in-application Help.
@@ -1162,9 +1165,10 @@ int main(int argc, char* argv[]) {
         // Setup Paths.
         setupPath(moLog);
         // Start the application
+#if 0
         application.exec();
         // ...
-#if 0
+#else
 
 #if !defined(QT_NO_SSL)
         moLog.info("Qt supports SSL: {}", QSslSocket::supportsSsl());
@@ -1206,7 +1210,7 @@ int main(int argc, char* argv[]) {
         }
         // TESTING
         moLog.info("Start Main Application.");
-        // int result = runApplication(moLog, application, instance, splash, dataPath, arguments);
+        int result = runApplication(moLog, application, instance, splash, dataPath, arguments);
         // if (result != INT_MAX) {
         //    return result;
         //}
