@@ -1,4 +1,3 @@
-#ifndef ABOUTDIALOG_H
 /*
 Copyright (C) 2014 Sebastian Herbord. All rights reserved.
 
@@ -17,6 +16,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
+#ifndef ABOUTDIALOG_H
 #define ABOUTDIALOG_H
 
 #include <QDialog>
@@ -32,12 +32,11 @@ class AboutDialog;
 
 class AboutDialog : public QDialog {
     Q_OBJECT
-
-  public:
+public:
     explicit AboutDialog(const QString& version, QWidget* parent = 0);
     ~AboutDialog();
 
-  private:
+private:
     enum Licenses {
         LICENSE_NONE,
         LICENSE_LGPL3,
@@ -49,13 +48,13 @@ class AboutDialog : public QDialog {
         LICENSE_APACHE2
     };
 
-  private:
+private:
     void addLicense(const QString& name, Licenses license);
 
-  private slots:
+private slots:
     void on_creditsList_currentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
 
-  private:
+private:
     Ui::AboutDialog* ui;
 
     std::map<int, QString> m_LicenseFiles;
