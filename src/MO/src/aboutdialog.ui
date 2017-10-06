@@ -100,7 +100,7 @@
          <item>
           <widget class="QLabel" name="revisionLabel">
            <property name="text">
-            <string>Revision:</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Revision: %1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
           </widget>
          </item>

@@ -48,12 +48,10 @@ AboutDialog::AboutDialog(const QString& version, QWidget* parent) : QDialog(pare
     addLicense("LOOT", LICENSE_GPL3);
 
     ui->nameLabel->setText(ui->nameLabel->text().arg(version));
-#if defined(HGID)
-    ui->revisionLabel->setText(ui->revisionLabel->text() + " " + HGID);
-#elif defined(GITID)
-    ui->revisionLabel->setText(ui->revisionLabel->text() + " " + GITID);
+#if defined(GITID)
+    ui->revisionLabel->setText(ui->revisionLabel->text().arg(GITID));
 #else
-    ui->revisionLabel->setText(ui->revisionLabel->text() + " unknown");
+    ui->revisionLabel->setText(ui->revisionLabel->text().arg("unknown"));
 #endif
 }
 
