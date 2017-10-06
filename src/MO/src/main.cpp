@@ -1146,31 +1146,25 @@ int main(int argc, char* argv[]) {
         // Setup startup log.
         Log::Logger moLog("mo_init", common::get_exe_dir() / "Logs");
         pmoLog = &moLog;
-        // Handle arguments.
-        if (handleArguments(moLog, arguments)) {
-            return 0;
-        }
-        // Start the application
-        application.exec();
-        // ...
-#if 0
-        // Setup Logging.
-        moLog.info("Mod Organizer started.");
-        moLog.info("MO Located At: {}", common::get_exe_dir());
-        moLog.info("Setting up Exception Handlers and external logging wrappers.");
         // Exception and error handling.
         // Overwide the default windows crash behaviour.
         SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
         // Handle internal Qt logging.
         qInstallMessageHandler(&myMessageOutput);
-        moLog.success("Handlers and logging successfully setup.");
-        // Setup application
-        moLog.info("Setting up Application and processing commandline");
-        MOApplication application(argc, argv);
+        // Log useful information.
+        moLog.info("Mod Organizer started.");
+        moLog.info("MO Located At: {}", common::get_exe_dir());
         // Handle arguments.
-        handleArguments(moLog, application.arguments());
+        if (handleArguments(moLog, arguments)) {
+            return 0;
+        }
         // Setup Paths.
         setupPath(moLog);
+        // Start the application
+        application.exec();
+        // ...
+#if 0
+        
 #if !defined(QT_NO_SSL)
         moLog.info("Qt supports SSL: {}", QSslSocket::supportsSsl());
 #else
