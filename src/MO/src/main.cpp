@@ -669,12 +669,12 @@ public: // IPluginDiagnose interface
         return problems;
     }
 
-    QString shortDescription(unsigned int key) const override {
+    virtual QString shortDescription(unsigned int key) const override {
         assert(key == 1);
         return QObject::tr("Some plugins could not be loaded");
     }
 
-    QString fullDescription(unsigned int key) const override {
+    virtual QString fullDescription(unsigned int key) const override {
         assert(key == 1);
         QString result = QObject::tr("The following plugins could not be loaded. The reason may be missing "
                                      "dependencies (i.e. python) or an outdated version:") +
@@ -686,9 +686,9 @@ public: // IPluginDiagnose interface
         return result;
     }
 
-    bool hasGuidedFix(unsigned int) const override { return false; }
+    virtual bool hasGuidedFix(unsigned int) const override { return false; }
 
-    void startGuidedFix(unsigned int) const override {}
+    virtual void startGuidedFix(unsigned int) const override {}
 
 private:
     // Tuple of all supported Plugin interfaces.
@@ -1165,7 +1165,7 @@ int main(int argc, char* argv[]) {
         application.exec();
         // ...
 #if 0
-        
+
 #if !defined(QT_NO_SSL)
         moLog.info("Qt supports SSL: {}", QSslSocket::supportsSsl());
 #else
