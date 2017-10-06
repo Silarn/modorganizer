@@ -19,6 +19,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/aboutdialog.h"
 #include "ui_aboutdialog.h"
 
+#include <QListWidgetItem>
+
 #include <uibase/utility.h>
 
 AboutDialog::AboutDialog(const QString& version, QWidget* parent) : QDialog(parent), ui(new Ui::AboutDialog) {
