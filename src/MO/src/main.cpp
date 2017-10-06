@@ -1127,8 +1127,7 @@ const std::string MyInstanceManager::InstanceKey = "CurrentInstance";
 // instance, An instance
 // splashPath, the path to a image file used as a splash screen.
 // dataPath, the MO Application data path.
-static int runApplication(Log::Logger& moLog, MOApplication& application, SingleInstance& instance, fs::path splashPath,
-                          fs::path dataPath, QStringList arguments) {
+static int runApplication(Log::Logger& moLog, MOApplication& application, fs::path splashPath, fs::path dataPath) {
     // Display splash screen
     QPixmap pixmap(QString::fromStdWString(splashPath.native()));
     QSplashScreen splash(pixmap);
@@ -1338,30 +1337,18 @@ int main(int argc, char* argv[]) {
         setupPath(moLog);
         // Setup Mod Organizer Instance.
         MyInstanceManager instmgr;
-        fs::path dataPath = instmgr.determineDataPath();
+        const fs::path dataPath = instmgr.determineDataPath();
         moLog.info("MO Data Path: '{}'", dataPath);
-        // ...
-        // Start the application
-#if 1
-        application.exec();
-#else
-        // Setup logging.
-        moLog.info("Initalizing Application Log.");
-        const fs::path logPath = dataPath / "Logs" / "mo_interface.log";
+        // Setup application wide loggging.
+        const fs::path logPath = dataPath / AppConfig::logPath() / "mo_interface.log";
         MOLog::init(logPath);
-        // Display Splash Screen
+        // Setup custom or default splash screen.
         fs::path splash = dataPath / "splash.png";
-        // If a splash image doesnt exist, use the MO Provided one as part of Qt Resources.
         if (!fs::exists(splash)) {
             splash = ":/MO/gui/splash";
         }
-        // TESTING
-        moLog.info("Start Main Application.");
-        int result = runApplication(moLog, application, instance, splash, dataPath, arguments);
-        // if (result != INT_MAX) {
-        //    return result;
-        //}
-#endif
+        // Start the application
+        return runApplication(moLog, application, splash, dataPath);
     } catch (const std::exception& e) {
         auto msg = e.what();
         if (pmoLog) {
