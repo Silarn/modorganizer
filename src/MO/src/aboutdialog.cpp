@@ -45,9 +45,7 @@ AboutDialog::AboutDialog(const QString& version, QWidget* parent) : QDialog(pare
     addLicense("Castle Core", LICENSE_APACHE2);
     addLicense("LOOT", LICENSE_GPL3);
 
-    ui->nameLabel->setText(QString("<span style=\"font-size:12pt; font-weight:600;\">%1 %2</span>")
-                               .arg(ui->nameLabel->text())
-                               .arg(version));
+    ui->nameLabel->setText(ui->nameLabel->text().arg(version));
 #if defined(HGID)
     ui->revisionLabel->setText(ui->revisionLabel->text() + " " + HGID);
 #elif defined(GITID)
