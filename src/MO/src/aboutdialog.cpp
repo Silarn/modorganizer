@@ -24,6 +24,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 AboutDialog::AboutDialog(const QString& version, QWidget* parent) : QDialog(parent), ui(new Ui::AboutDialog) {
     ui->setupUi(this);
 
+    // Define license files for each license type.
     m_LicenseFiles[LICENSE_LGPL3] = "lgpl-3.0.txt";
     m_LicenseFiles[LICENSE_GPL3] = "gpl-3.0.txt";
     m_LicenseFiles[LICENSE_BSD3] = "bsd3.txt";
@@ -32,6 +33,7 @@ AboutDialog::AboutDialog(const QString& version, QWidget* parent) : QDialog(pare
     m_LicenseFiles[LICENSE_ZLIB] = "zlib.txt";
     m_LicenseFiles[LICENSE_APACHE2] = "apache-license-2.0.txt";
 
+    // Add license information for each software we use.
     addLicense("Qt", LICENSE_LGPL3);
     addLicense("Qt Json", LICENSE_GPL3);
     addLicense("Boost Library", LICENSE_BOOST);

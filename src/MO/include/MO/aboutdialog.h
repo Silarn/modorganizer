@@ -37,6 +37,7 @@ public:
     ~AboutDialog();
 
 private:
+    // Possible licenses to display.
     enum Licenses {
         LICENSE_NONE,
         LICENSE_LGPL3,
@@ -49,14 +50,17 @@ private:
     };
 
 private:
+    // Create a new list item for software `name` with Licenses `license`
     void addLicense(const QString& name, Licenses license);
 
 private slots:
+    // Display the correct license whenever a different item is selected.
     void on_creditsList_currentItemChanged(QListWidgetItem* current, QListWidgetItem* previous);
 
 private:
     Ui::AboutDialog* ui;
 
+    // Map of enum Licenses to their file names.
     std::map<int, QString> m_LicenseFiles;
 };
 
