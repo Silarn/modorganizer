@@ -746,7 +746,7 @@ public:
         // Setup signals and slots.
         // connect(ui->actionHelp, SIGNAL(triggered(bool)), this, SLOT(helpTriggered()));
     }
-    ~MyMainWindow() {}
+    ~MyMainWindow() { delete ui; }
 
 private:
     void updateWindowTitle(std::string accountName = {}) {
@@ -1158,6 +1158,7 @@ int main(int argc, char* argv[]) {
         // Log useful information.
         moLog.info("Mod Organizer started.");
         moLog.info("MO Located At: {}", common::get_exe_dir());
+        moLog.info("Qt supports SSL: {}", QSslSocket::supportsSsl());
         // Handle arguments.
         if (handleArguments(moLog, arguments)) {
             return 0;
@@ -1165,24 +1166,9 @@ int main(int argc, char* argv[]) {
         // Setup Paths.
         setupPath(moLog);
         // Start the application
-#if 0
+#if 1
         application.exec();
-        // ...
 #else
-
-#if !defined(QT_NO_SSL)
-        moLog.info("Qt supports SSL: {}", QSslSocket::supportsSsl());
-#else
-        moLog.info("Qt does not support SSL.");
-#endif
-        moLog.info("Enforcing Single Instance");
-        // Enforce a single Instance of MO.
-        // Handle NXM Downloads
-        // FIXME: Won't logging up until this point conflict, since they're writing to the same file.
-        // Solution could be to enforce this earlier?
-        SingleInstance instance(false);
-
-        moLog.info("Primary Instance");
         // Find Mod Organizer data Directory.
         // In previous versions of MO this was the same place as the executable, but
         // Now it can be any location the User desires.
