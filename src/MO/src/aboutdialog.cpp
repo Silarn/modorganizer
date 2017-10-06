@@ -21,6 +21,8 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QListWidgetItem>
 
+#include <MO/shared/appconfig.h>
+#include <common/util.h>
 #include <uibase/utility.h>
 
 AboutDialog::AboutDialog(const QString& version, QWidget* parent) : QDialog(parent), ui(new Ui::AboutDialog) {
@@ -66,8 +68,8 @@ void AboutDialog::addLicense(const QString& name, Licenses license) {
 void AboutDialog::on_creditsList_currentItemChanged(QListWidgetItem* current, QListWidgetItem*) {
     auto iter = m_LicenseFiles.find(current->data(Qt::UserRole).toInt());
     if (iter != m_LicenseFiles.end()) {
-        QString filePath = qApp->applicationDirPath() + "/license/" + iter->second;
-        QString text = MOBase::readFileText(filePath);
+        auto filePath = common::get_exe_dir() / AppConfig::licenesPath() / iter->second.toStdWString();
+        QString text = MOBase::readFileText(QString::fromStdWString(filePath));
         ui->licenseText->setText(text);
     } else {
         ui->licenseText->setText(tr("No license"));
