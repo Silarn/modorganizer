@@ -1093,6 +1093,7 @@ static bool handleArguments(Log::Logger& moLog, QStringList arguments) {
         proc.setProgram(QCoreApplication::applicationFilePath());
         proc.setArguments({arg1});
         proc.start();
+        proc.waitForFinished(-1);
         return false; // Continue startup.
     } else {
         // TODO: Find out what this one is used for.
