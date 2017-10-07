@@ -704,6 +704,7 @@ private:
     static const unsigned int PROBLEM_PLUGINSNOTLOADED = 1;
     std::vector<std::string> m_failedPlugins;
 };
+
 // Mod Organizer backend.
 // Ties together various backend systems into one interface provided to the frontend.
 // May also act as a bridge between the different backend systems.
@@ -725,6 +726,7 @@ public: // MyPluginContainer
 private:
     MyPluginContainer m_plugins;
 };
+
 // The Mod Organizer Main Window.
 // Hooks backend logic to frontend.
 class MyMainWindow : public QMainWindow {
@@ -948,6 +950,7 @@ private:
     Ui::MainWindow* ui;
     MyOrganizerCore& m_organizer;
 };
+
 // Manages MO instances.
 // A Mod Organizer Instance is a setup of Mod Organizer, profiles, downloads, mods, etc.
 // This can be, for example, one instance per game.
