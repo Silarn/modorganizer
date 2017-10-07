@@ -1124,10 +1124,13 @@ const std::string MyInstanceManager::InstanceKey = "CurrentInstance";
 
 // Run the bulk of the application.
 // application, a reference to our application.
-// instance, An instance
-// splashPath, the path to a image file used as a splash screen.
 // dataPath, the MO Application data path.
-static int runApplication(Log::Logger& moLog, MOApplication& application, fs::path splashPath, fs::path dataPath) {
+static int runApplication(Log::Logger& moLog, MOApplication& application, fs::path dataPath) {
+    // Setup custom or default splash screen.
+    fs::path splashPath = dataPath / "splash.png";
+    if (!fs::exists(splashPath)) {
+        splashPath = ":/MO/gui/splash";
+    }
     // Display splash screen
     QPixmap pixmap(QString::fromStdWString(splashPath.native()));
     QSplashScreen splash(pixmap);
@@ -1150,11 +1153,6 @@ static int runApplication(Log::Logger& moLog, MOApplication& application, fs::pa
     splash.finish(&mainWindow);
     return application.exec();
 #if 0
-    // Bootstrap OrganizerCore
-    OrganizerCore organizer(settings);
-    moLog.info("Initialize plugins");
-    PluginContainer pluginContainer(&organizer);
-    pluginContainer.loadPlugins();
     // Setup MO for game.
     MOBase::IPluginGame* game = determineCurrentGame(application.applicationDirPath(), settings, pluginContainer);
     if (game == nullptr) {
@@ -1342,13 +1340,8 @@ int main(int argc, char* argv[]) {
         // Setup application wide loggging.
         const fs::path logPath = dataPath / AppConfig::logPath() / "mo_interface.log";
         MOLog::init(logPath);
-        // Setup custom or default splash screen.
-        fs::path splash = dataPath / "splash.png";
-        if (!fs::exists(splash)) {
-            splash = ":/MO/gui/splash";
-        }
         // Start the application
-        return runApplication(moLog, application, splash, dataPath);
+        return runApplication(moLog, application, dataPath);
     } catch (const std::exception& e) {
         auto msg = e.what();
         if (pmoLog) {
