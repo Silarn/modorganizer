@@ -1,6 +1,0 @@
-steam.exe
-steamerrorreporter.exe
-chrome.exe
-firefox.exe
-opera.exe
-TSVNCache.exe

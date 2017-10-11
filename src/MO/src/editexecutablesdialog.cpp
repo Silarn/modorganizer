@@ -23,6 +23,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QMessageBox>
 #include <uibase/utility.h>
+#include <shellapi.h>
 
 using namespace MOBase;
 using namespace MOShared;

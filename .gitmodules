@@ -1,0 +1,39 @@
+[submodule "src/archive"]
+	path = src/archive
+	url = git@github.com:Silarn/modorganizer-archive.git
+[submodule "src/bsatk"]
+	path = src/bsatk
+	url = git@github.com:Silarn/modorganizer-bsatk.git
+[submodule "src/game_fallout4"]
+	path = src/game_fallout4
+	url = git@github.com:Silarn/modorganizer-game_fallout4.git
+[submodule "src/game_gamebryo"]
+	path = src/game_gamebryo
+	url = git@github.com:Silarn/modorganizer-game_gamebryo.git
+[submodule "src/gamefeatures"]
+	path = src/gamefeatures
+	url = git@github.com:Silarn/modorganizer-game_features.git
+[submodule "src/github"]
+	path = src/github
+	url = git@github.com:Silarn/githubpp.git
+[submodule "src/helper"]
+	path = src/helper
+	url = git@github.com:Silarn/modorganizer-helper.git
+[submodule "src/hookdll"]
+	path = src/hookdll
+	url = git@github.com:Silarn/modorganizer-hookdll.git
+[submodule "src/lootcli"]
+	path = src/lootcli
+	url = git@github.com:Silarn/modorganizer-lootcli.git
+[submodule "src/nxmhandler"]
+	path = src/nxmhandler
+	url = git@github.com:Silarn/modorganizer-nxmhandler.git
+[submodule "src/esptk"]
+	path = src/esptk
+	url = git@github.com:Silarn/modorganizer-esptk.git
+[submodule "src/uibase"]
+	path = src/uibase
+	url = git@github.com:Silarn/modorganizer-uibase.git
+[submodule "src/usvfs"]
+	path = src/usvfs
+	url = git@github.com:Silarn/usvfs.git

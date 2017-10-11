@@ -42,6 +42,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <uibase/iplugingame.h>
 #include <uibase/questionboxmemory.h>
 #include <uibase/utility.h>
+#include <shellapi.h>
 using namespace MOBase;
 
 template <typename T>

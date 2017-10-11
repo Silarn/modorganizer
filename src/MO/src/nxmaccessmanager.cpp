@@ -27,6 +27,7 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include <QPushButton>
 #include <QThread>
 #include <QUrlQuery>
+#include <QDateTime>
 
 using namespace MOBase;
 
