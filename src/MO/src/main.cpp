@@ -448,6 +448,14 @@ const std::string MySingleInstance::m_mutexid = "ModOrganizer";
 class MoIPC : public QObject {
     Q_OBJECT
 public:
+    MoIPC() = default;
+    ~MoIPC() = default;
+    MoIPC(const MoIPC&) = delete;
+    MoIPC(MoIPC&&) = delete;
+    MoIPC& operator=(const MoIPC&) = delete;
+    MoIPC& operator=(MoIPC&&) = delete;
+
+public:
     // Start the server and listen for messages.
     // This should only be called for the primary Mod Organizer instance.
     void listen() {
@@ -705,13 +713,24 @@ private:
     std::vector<std::string> m_failedPlugins;
 };
 
+// Manages instance specific settings.
+class MySettings {
+public:
+    MySettings(fs::path path) {};
+    ~MySettings() = default;
+
+private:
+    QSettings m_settings;
+};
+
 // Mod Organizer backend.
 // Ties together various backend systems into one interface provided to the frontend.
 // May also act as a bridge between the different backend systems.
 // Loads Plugins
+// Manages Settings
 class MyOrganizerCore {
 public:
-    MyOrganizerCore() {
+    MyOrganizerCore(fs::path dp) : m_dataPath(dp), m_settings(dp) {
         // Load Mod Organizer Plugins.
         m_plugins.loadPlugins();
     }
@@ -725,6 +744,11 @@ public: // MyPluginContainer
 
 private:
     MyPluginContainer m_plugins;
+    // Mod organizer data path.
+    // Where all the instance specific stuff is stored.
+    fs::path m_dataPath;
+    // Instance specific settings
+    MySettings m_settings;
 };
 
 // The Mod Organizer Main Window.
@@ -1149,7 +1173,7 @@ static int runApplication(Log::Logger& moLog, MOApplication& application, fs::pa
     QSettings settings(QString::fromStdWString(settingsPath.native()), QSettings::IniFormat);
     moLog.info("Initializing Core");
     // WIP BELOW
-    MyOrganizerCore organizer;
+    MyOrganizerCore organizer(dataPath);
     MyMainWindow mainWindow(organizer);
     moLog.info("Displaying Main Window");
     mainWindow.show();
