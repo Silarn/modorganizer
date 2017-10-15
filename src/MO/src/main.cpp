@@ -1343,8 +1343,8 @@ int main(int argc, char* argv[]) {
         // Listen for ipc messages
         ipc.listen();
         // Setup startup log.
-        Log::Logger moLog("mo_init", common::get_exe_dir() / "Logs");
-        pmoLog = &moLog;
+        pmoLog = new Log::Logger("mo_init", common::get_exe_dir() / "Logs");
+        Log::Logger& moLog = *pmoLog;
         // Exception and error handling.
         // Overwide the default windows crash behaviour.
         SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
