@@ -239,25 +239,6 @@ static void setupPath(Log::Logger& moLog) {
 // Determines if the string `link` is a nexus link.
 static bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
 
-// Bootstraping code
-// Creates required directories, removes old files, verifies we can start, etc.
-static bool bootstrap(fs::path dataPath) {
-    // Remove the temporary backup directory in case we're restarting after an update
-    fs::path backupDirectory = dataPath / "update_backup";
-    if (fs::exists(backupDirectory)) {
-        fs::remove_all(backupDirectory);
-    }
-
-    // Create required directories.
-    try {
-        fs::create_directories(dataPath / "Logs");
-    } catch (const fs::filesystem_error&) {
-        return false;
-    }
-
-    return true;
-}
-
 static MOBase::IPluginGame* selectGame(QSettings& settings, QDir const& gamePath, MOBase::IPluginGame* game) {
     settings.setValue("gameName", game->gameName());
     // Sadly, hookdll needs gamePath in order to run. So following code block is
@@ -1161,12 +1142,6 @@ static int runApplication(Log::Logger& moLog, MOApplication& application, fs::pa
     // Display splash screen
     QPixmap pixmap(QString::fromStdWString(splashPath.native()));
     QSplashScreen splash(pixmap);
-    // Run bootstrap code.
-    if (!bootstrap(dataPath)) {
-        MOBase::reportError("failed to set up data paths");
-        return 1;
-    }
-    moLog.info("Current Working Directory: '{}'", fs::current_path());
     splash.show();
     // Setup Settings
     fs::path settingsPath = dataPath / AppConfig::iniFileName();
@@ -1356,7 +1331,8 @@ int main(int argc, char* argv[]) {
         qInstallMessageHandler(&myMessageOutput);
         // Log useful information.
         moLog.info("Mod Organizer started.");
-        moLog.info("MO Located At: {}", common::get_exe_dir());
+        moLog.info("MO Located At: '{}'", common::get_exe_dir());
+        moLog.info("MO Working Directory: '{}'", fs::current_path());
         moLog.info("Qt supports SSL: {}", QSslSocket::supportsSsl());
         // Handle arguments.
         if (handleArguments(moLog, arguments)) {
