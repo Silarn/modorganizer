@@ -28,6 +28,7 @@ std::vector<ModInfo::EFlag> ModInfoWithConflictInfo::getFlags() const {
         break;
     case CONFLICT_NONE: // NOP
     default:            // NOP
+        break;
     }
     return result;
 }
