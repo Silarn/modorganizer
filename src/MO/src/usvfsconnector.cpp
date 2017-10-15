@@ -85,6 +85,8 @@ LogLevel logLevel(int level) {
         return LogLevel::Warning;
     case LogLevel::Error:
         return LogLevel::Error;
+    case LogLevel::Debug:
+        return LogLevel::Debug;
     default:
         return LogLevel::Debug;
     }

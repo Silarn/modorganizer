@@ -62,6 +62,8 @@ static spdlog::level::level_enum LogToSpd(Log::Level type) {
         return spdlog::level::err;
     case Log::Level::FATAL:
         return spdlog::level::critical;
+    case Log::Level::NOTSET:
+        // Fallthrough
     default:
         return spdlog::level::debug;
     }

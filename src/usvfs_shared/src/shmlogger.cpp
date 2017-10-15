@@ -170,6 +170,8 @@ void spdlog::sinks::shm_sink::output(level::level_enum lev, const std::string& m
     case level::err: {
         m_LogQueue.send(message.c_str(), static_cast<unsigned int>(count), 0);
     } break;
+    case level::off:
+        break;
     default: {
         boost::posix_time::ptime time = microsec_clock::universal_time() + boost::posix_time::milliseconds(200);
         sent = m_LogQueue.timed_send(message.c_str(), static_cast<unsigned int>(count), 0, time);

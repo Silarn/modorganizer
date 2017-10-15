@@ -362,9 +362,9 @@ static MOBase::IPluginGame* determineCurrentGame(QString const& moPath, QSetting
 
         if (!gamePath.isEmpty()) {
             QDir gameDir(gamePath);
-            for (MOBase::IPluginGame* const game : plugins.plugins<MOBase::IPluginGame>()) {
-                if (game->looksValid(gameDir)) {
-                    return selectGame(settings, gameDir, game);
+            for (MOBase::IPluginGame* const game_ : plugins.plugins<MOBase::IPluginGame>()) {
+                if (game_->looksValid(gameDir)) {
+                    return selectGame(settings, gameDir, game_);
                 }
             }
             MOBase::reportError(QObject::tr("No game identified in \"%1\". The directory is required to contain "
@@ -569,11 +569,11 @@ public:
         loadCheck.open(QIODevice::WriteOnly);
 
         // Get the plugins location
-        fs::path pluginPath = common::get_exe_dir() / AppConfig::pluginPath();
-        MOLog::instance().info("Looking for plugins in '{}'", pluginPath);
+        fs::path pluginDirPath = common::get_exe_dir() / AppConfig::pluginPath();
+        MOLog::instance().info("Looking for plugins in '{}'", pluginDirPath);
 
-        // Load plugins from pluginPath
-        for (const auto& plugin : fs::directory_iterator(pluginPath)) {
+        // Load plugins from pluginDirPath
+        for (const auto& plugin : fs::directory_iterator(pluginDirPath)) {
             std::string pluginName = plugin.path().filename().u8string();
             // if (m_Organizer->settings().pluginBlacklisted(pluginName)) {
             //    MOLog::instance().warn("Plugin '{}' was blacklisted", pluginName);
@@ -716,7 +716,7 @@ private:
 // Manages instance specific settings.
 class MySettings {
 public:
-    MySettings(fs::path path) {};
+    MySettings(fs::path path){};
     ~MySettings() = default;
 
 private:
