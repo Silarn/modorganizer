@@ -1312,13 +1312,13 @@ static bool handleArguments(Log::Logger& moLog, QStringList arguments) {
 }
 
 // Handle Commandline arguments used for IPC.
-static void handleIpcArgs(QStringList arguments, MoIPC& instance) {
+// Returns true if there were arguments to handle, false otherwise
+static bool handleIpcArgs(QStringList arguments, MoIPC& instance) {
     if ((arguments.size() == 2) && isNxmLink(arguments.at(1))) {
         instance.sendMessage(arguments.at(1));
-    } else if (arguments.size() == 1) {
-        QMessageBox::information(nullptr, QObject::tr("Mod Organizer"),
-                                 QObject::tr("An instance of Mod Organizer is already running"));
+        return true;
     }
+    return false;
 }
 
 int main(int argc, char* argv[]) {
@@ -1335,12 +1335,16 @@ int main(int argc, char* argv[]) {
         // Enforce a single instance of MO.
         MySingleInstance inst;
         if (!inst.primary()) {
-            // If not primary instance, assume we have command line arguments
-            // and handle those, and then exit.
-            handleIpcArgs(arguments, ipc);
-            return 1;
+            // If not primary instance, handle possible command line arguments.
+            // If no commandline, display a warning.
+            if (!handleIpcArgs(arguments, ipc)) {
+                QMessageBox::information(nullptr, QObject::tr("Mod Organizer"),
+                                         QObject::tr("An instance of Mod Organizer is already running"));
+            }
+            return 0;
         }
         // Listen for ipc messages
+        // TODO: Start listening only when we're actually ready to handle them?
         ipc.listen();
         // Setup startup log.
         pmoLog = new Log::Logger("mo_init", common::get_exe_dir() / "Logs");
