@@ -1380,7 +1380,6 @@ int main(int argc, char* argv[]) {
             pmoLog->error(msg);
             pmoLog->flush();
         }
-
         MOBase::reportError(msg);
         throw;
     } catch (...) {
