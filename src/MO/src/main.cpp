@@ -697,7 +697,9 @@ private:
 // Manages instance specific settings.
 class MySettings {
 public:
-    MySettings(fs::path path){};
+    // The Path `path` indicates the base directory to store settings.
+    MySettings(fs::path path)
+        : m_settings(QString::fromStdWString(path / AppConfig::iniFileName()), QSettings::IniFormat){};
     ~MySettings() = default;
 
 private:
@@ -1143,9 +1145,6 @@ static int runApplication(Log::Logger& moLog, MOApplication& application, fs::pa
     QPixmap pixmap(QString::fromStdWString(splashPath.native()));
     QSplashScreen splash(pixmap);
     splash.show();
-    // Setup Settings
-    fs::path settingsPath = dataPath / AppConfig::iniFileName();
-    QSettings settings(QString::fromStdWString(settingsPath.native()), QSettings::IniFormat);
     moLog.info("Initializing Core");
     // WIP BELOW
     MyOrganizerCore organizer(dataPath);
