@@ -763,7 +763,7 @@ private:
 
     // Return true if there is a saved current instance
     // Return false if there is not or if there could not plausibly be.
-    // IE, if nothing is returned from instances() then, regardless of any registry values,
+    // IE, if nothing is returned from instances() then, regardless of any saved instance,
     // It is impossible for an instance to exist.
     // This function will create the QSetting object if needed.
     bool hasCurrentInstance() {
@@ -858,14 +858,14 @@ private:
         }
     }
 
-    // Return a list of existing instances.
+    // Returns a vector of instance names.
+    // The orginial path can be obtained as instancePath() / instances()[N]
     std::vector<std::string> instances() const {
         std::vector<std::string> tmp;
         for (const auto& p : fs::directory_iterator(instancePath())) {
-            if (!fs::is_directory(p)) {
-                continue;
+            if (fs::is_directory(p)) {
+                tmp.push_back(p.path().filename().string());
             }
-            tmp.push_back(p.path().filename().string());
         }
         return tmp;
     }
