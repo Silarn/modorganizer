@@ -789,7 +789,13 @@ private:
 
     // Return the base path of the location where Instances are created.
     // This is %LOCALAPPDATA%/ModOrganizer
-    fs::path instancePath() const { return fs::path(std::getenv("LOCALAPPDATA")) / "ModOrganizer"; }
+    fs::path instancePath() const { //
+        auto bufsize = ::GetEnvironmentVariableW(L"LOCALAPPDATA", NULL, 0);
+        std::wstring path;
+        path.resize(bufsize);
+        ::GetEnvironmentVariableW(L"LOCALAPPDATA", path.data(), static_cast<DWORD>(path.size()));
+        return fs::path(path) / "ModOrganizer";
+    }
 
     // Ask the user for the name of their new Instance.
     std::string queryInstanceName() const {
