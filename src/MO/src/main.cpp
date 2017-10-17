@@ -378,6 +378,14 @@ static QString determineProfile(QStringList& arguments, const QSettings& setting
     return selectedProfileName;
 }
 
+#pragma region Custom Exceptions
+// FIXME: Hack. Exceptions are not flow control, and cancelling isnt exceptional.
+class Canceled : std::exception {
+public:
+    Canceled() : std::exception("Canceled") {}
+};
+#pragma endregion
+
 #pragma region WIP
 #include "ui_mainwindow.h"
 #include <MO/aboutdialog.h>
@@ -817,7 +825,7 @@ private:
         dialog.setLabelText(QObject::tr("Name"));
         dialog.resize(dialog.size().width() - 400, dialog.size().height());
         if (dialog.exec() == QDialog::Rejected) {
-            throw MOBase::MyException(QObject::tr("Canceled"));
+            throw Canceled();
         }
         // TODO: Remove Special Characters utility function.
         instanceId = dialog.textValue().replace(QRegExp("[^0-9a-zA-Z ]"), "").toStdString();
@@ -853,7 +861,9 @@ private:
             selection.addChoice(QObject::tr("Portable"), QObject::tr("Use MO folder for data."),
                                 static_cast<uint8_t>(Special::Portable), QIcon(":/MO/gui/package"));
         }
-        selection.exec();
+        if (selection.exec() == QDialog::Rejected) {
+            throw Canceled();
+        }
         // Get the Users Choice.
         QVariant choice = selection.getChoiceData();
         // Existing instance selected and returned.
@@ -863,6 +873,7 @@ private:
         // New Instance, either portable or global.
         switch (static_cast<Special>(choice.value<uint8_t>())) {
         case Special::NewInstance:
+            // TODO: Allow the user to cancel this and go back to the selection menu.
             return chooseNewInstance();
         case Special::Portable:
             return {};
@@ -1371,6 +1382,8 @@ int main(int argc, char* argv[]) {
         setupPath(moLog);
         // Start the application
         return runApplication(moLog, application);
+    } catch (const Canceled& e) {
+        // Ignore cancel.
     } catch (const std::exception& e) {
         auto msg = e.what();
         if (pmoLog) {
