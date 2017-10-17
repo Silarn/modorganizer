@@ -801,7 +801,7 @@ private:
     }
 
     // Ask the user for the name of their new Instance.
-    std::string queryInstanceName() const {
+    std::string chooseNewInstance() const {
         return {};
         //// FIXME: Would be nice to eliminate this entirely and support it in MO itself.
         //// IE, proper seperate profiles rather than seperate instances emulating it.
@@ -839,7 +839,7 @@ private:
         // Disabling cancelling and closing the dialoge.
         selection.disableCancel();
         selection.setWindowFlags(Qt::Dialog | Qt::WindowTitleHint);
-        // Add choices.
+        // Add choices from existing instances
         for (const auto& instance : instances()) {
             auto tmp = QString::fromStdString(instance);
             selection.addChoice(tmp, "", tmp);
@@ -855,16 +855,18 @@ private:
         selection.exec();
         // Get the Users Choice.
         QVariant choice = selection.getChoiceData();
+        // Existing instance selected and returned.
         if (choice.type() == QVariant::String) {
             return choice.toString().toStdString();
-        } else {
-            switch (static_cast<Special>(choice.value<uint8_t>())) {
-            case Special::NewInstance:
-                return queryInstanceName();
-            case Special::Portable:
-                return {};
-            }
         }
+        // New Instance, either portable or global.
+        switch (static_cast<Special>(choice.value<uint8_t>())) {
+        case Special::NewInstance:
+            return chooseNewInstance();
+        case Special::Portable:
+            return {};
+        }
+        assert(0); // Should not get here.
     }
 
     // Returns a vector of instance names.
