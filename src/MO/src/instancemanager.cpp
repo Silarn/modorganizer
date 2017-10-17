@@ -19,46 +19,91 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/instancemanager.h"
 #include "MO/selectiondialog.h"
 
-#include <MO/Shared/appconfig.h>
+#include <MO/shared/appconfig.h>
+#include <common/sane_windows.h>
 #include <common/util.h>
-#include <uibase/utility.h>
 
-#include <QIcon>
+#include <QDialog>
 #include <QInputDialog>
-#include <QMessageBox>
 #include <QObject>
 #include <QRegExp>
+#include <QSettings>
 #include <QString>
 #include <QVariant>
 
+#include <assert.h>
 #include <cstdint>
-#include <stdexcept>
 
-static const char COMPANY_NAME[] = "Tannin";
-static const char APPLICATION_NAME[] = "Mod Organizer";
-static const char INSTANCE_KEY[] = "CurrentInstance";
+const std::string InstanceManager::InstanceKey = "CurrentInstance";
 
-InstanceManager::InstanceManager() : m_AppSettings(COMPANY_NAME, APPLICATION_NAME) {}
+InstanceManager::InstanceManager() {}
+InstanceManager::~InstanceManager() {}
 
-InstanceManager& InstanceManager::instance() {
-    static InstanceManager s_Instance;
-    return s_Instance;
-}
-
-std::string InstanceManager::currentInstance() const {
-    return m_AppSettings.value(INSTANCE_KEY, "").toString().toStdString();
+fs::path InstanceManager::determineInstancePath() {
+    // Return the application directory if we're in Portable mode.
+    if (portableMode()) {
+        return common::get_exe_dir();
+    }
+    // If we have a current instance, good, return that!
+    if (hasCurrentInstance()) {
+        return instancePath() / currentInstance();
+    }
+    // Otherwise, ask the user to pick a new instance.
+    auto instance = chooseInstance();
+    // User selected Portable install.
+    if (instance.empty()) {
+        return common::get_exe_dir();
+    }
+    setCurrentInstance(instance);
+    auto path = instancePath() / instance;
+    fs::create_directories(path);
+    return path;
 }
 
 void InstanceManager::clearCurrentInstance() {
+    if (portableMode()) {
+        return;
+    }
+    createSettings();
     setCurrentInstance("");
-    m_Reset = true;
+}
+
+bool InstanceManager::portableMode() const { return fs::exists(common::get_exe_dir() / AppConfig::iniFileName()); }
+
+void InstanceManager::createSettings() {
+    if (!m_settings) {
+        m_settings.reset(new QSettings("Tannin", "Mod Organizer"));
+    }
+}
+
+bool InstanceManager::hasCurrentInstance() {
+    if (instances().empty()) {
+        return false;
+    }
+    createSettings();
+    return !currentInstance().empty();
+}
+
+std::string InstanceManager::currentInstance() const {
+    assert(m_settings);
+    return m_settings->value(QString::fromStdString(InstanceKey), "").toString().toStdString();
 }
 
 void InstanceManager::setCurrentInstance(const std::string& name) {
-    m_AppSettings.setValue(INSTANCE_KEY, QString::fromStdString(name));
+    assert(m_settings);
+    m_settings->setValue(QString::fromStdString(InstanceKey), QString::fromStdString(name));
 }
 
-std::string InstanceManager::queryInstanceName() const {
+fs::path InstanceManager::instancePath() const { //
+    auto bufsize = ::GetEnvironmentVariableW(L"LOCALAPPDATA", NULL, 0);
+    std::wstring path;
+    path.resize(bufsize);
+    ::GetEnvironmentVariableW(L"LOCALAPPDATA", path.data(), static_cast<DWORD>(path.size()));
+    path.resize(path.size() - 1); // Null terminator.
+    return fs::path(path) / "ModOrganizer";
+}
+
+std::string InstanceManager::chooseNewInstance() const {
     // FIXME: Would be nice to eliminate this entirely and support it in MO itself.
     // IE, proper seperate profiles rather than seperate instances emulating it.
     std::string instanceId;
@@ -66,21 +111,23 @@ std::string InstanceManager::queryInstanceName() const {
     // FIXME: Would be neat if we could take the names from the game plugins but
     // the required initialization order requires the ini file to be
     // available *before* we load plugins
-    dialog.setComboBoxItems({"Oblivion", "Skyrim", "SkyrimSE", "Fallout 3", "Fallout NV", "Fallout 4"});
-    dialog.setComboBoxEditable(true);
+    // dialog.setComboBoxItems({"Oblivion", "Skyrim", "SkyrimSE", "Fallout 3", "Fallout NV", "Fallout 4"});
+    // dialog.setComboBoxEditable(true);
     dialog.setWindowTitle(QObject::tr("Enter Instance Name"));
     dialog.setLabelText(QObject::tr("Name"));
+    dialog.resize(dialog.size().width() - 400, dialog.size().height());
     if (dialog.exec() == QDialog::Rejected) {
-        throw MOBase::MyException(QObject::tr("Canceled"));
+        throw Canceled();
     }
     // TODO: Remove Special Characters utility function.
     instanceId = dialog.textValue().replace(QRegExp("[^0-9a-zA-Z ]"), "").toStdString();
     return instanceId;
 }
 
-std::string InstanceManager::chooseInstance(const std::list<std::string>& instanceList) const {
+std::string InstanceManager::chooseInstance() const {
     enum class Special : uint8_t { NewInstance, Portable };
 
+    // Setup the selection dialog.
     SelectionDialog selection(QString("<h3>%1</h3><br>%2")
                                   .arg(QObject::tr("Choose Instance"))
                                   .arg(QObject::tr("Each Instance is a full set of MO data files (mods, "
@@ -88,10 +135,10 @@ std::string InstanceManager::chooseInstance(const std::list<std::string>& instan
                                                    "instances for different games. If your MO folder is "
                                                    "writable, you can also store a single instance locally (called "
                                                    "a portable install).")));
-    // Disable the cancel button. It's an error to cancel.
+    // Disabling cancelling and closing the dialoge.
     selection.disableCancel();
-    // Add choices.
-    for (const auto& instance : instanceList) {
+    // Add choices from existing instances
+    for (const auto& instance : instances()) {
         auto tmp = QString::fromStdString(instance);
         selection.addChoice(tmp, "", tmp);
     }
@@ -103,79 +150,32 @@ std::string InstanceManager::chooseInstance(const std::list<std::string>& instan
         selection.addChoice(QObject::tr("Portable"), QObject::tr("Use MO folder for data."),
                             static_cast<uint8_t>(Special::Portable), QIcon(":/MO/gui/package"));
     }
-    // Throw an exception if the user exists the dialog.
     if (selection.exec() == QDialog::Rejected) {
-        qDebug("rejected");
-        throw MOBase::MyException(QObject::tr("Canceled"));
+        throw Canceled();
     }
     // Get the Users Choice.
     QVariant choice = selection.getChoiceData();
+    // Existing instance selected and returned.
     if (choice.type() == QVariant::String) {
         return choice.toString().toStdString();
-    } else {
-        switch (static_cast<Special>(choice.value<uint8_t>())) {
-        case Special::NewInstance:
-            return queryInstanceName();
-        case Special::Portable:
-            return {};
-        default:
-            throw std::runtime_error("invalid selection");
-        }
     }
+    // New Instance, either portable or global.
+    switch (static_cast<Special>(choice.value<uint8_t>())) {
+    case Special::NewInstance:
+        // TODO: Allow the user to cancel this and go back to the selection menu.
+        return chooseNewInstance();
+    case Special::Portable:
+        return {};
+    }
+    assert(0); // Should not get here.
 }
 
-fs::path InstanceManager::instancePath() const { return fs::path(std::getenv("LOCALAPPDATA")) / "ModOrganizer"; }
-
-std::list<std::string> InstanceManager::instances() const {
-    std::list<std::string> tmp;
-    for (auto& p : fs::directory_iterator(instancePath())) {
-        if (!fs::is_directory(p)) {
-            continue;
+std::vector<std::string> InstanceManager::instances() const {
+    std::vector<std::string> tmp;
+    for (const auto& p : fs::directory_iterator(instancePath())) {
+        if (fs::is_directory(p)) {
+            tmp.push_back(p.path().filename().string());
         }
-        tmp.push_back(p.path().filename().string());
     }
     return tmp;
-}
-
-bool InstanceManager::portableInstall() const { return fs::exists(common::get_exe_dir() / AppConfig::iniFileName()); }
-
-void InstanceManager::createDataPath(const fs::path& dataPath) const {
-    if (!fs::exists(dataPath)) {
-        if (!fs::create_directories(dataPath)) {
-            throw MOBase::MyException(
-                QObject::tr("failed to create %1").arg(QString::fromStdWString(dataPath.wstring())));
-        } else {
-            QMessageBox::information(nullptr, QObject::tr("Data directory created"),
-                                     QObject::tr("New data directory created at %1. If you don't want to "
-                                                 "store a lot of data there, reconfigure the storage "
-                                                 "directories via settings.")
-                                         .arg(QString::fromStdWString(dataPath.wstring())));
-        }
-    }
-}
-
-fs::path InstanceManager::determineDataPath() {
-    std::string instanceId = currentInstance();
-    if (instanceId.empty() && portableInstall() && !m_Reset) {
-        // startup, apparently using portable mode before
-        return common::get_exe_dir();
-    }
-    fs::path dataPath = instancePath() / instanceId;
-
-    // Choose an instance if saved one does not exist or missing.
-    if (instanceId.empty() || !fs::exists(dataPath)) {
-        instanceId = chooseInstance(instances());
-        if (!instanceId.empty()) {
-            dataPath = instancePath() / instanceId;
-        }
-    }
-
-    if (instanceId.empty()) {
-        return common::get_exe_dir();
-    }
-    // Save the current Instance and create the required folders.
-    setCurrentInstance(instanceId);
-    createDataPath(dataPath);
-
-    return dataPath;
 }

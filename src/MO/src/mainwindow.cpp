@@ -3591,7 +3591,7 @@ void MainWindow::on_actionProblems_triggered() {
 void MainWindow::on_actionChange_Game_triggered() {
     if (QMessageBox::question(this, tr("Are you sure?"), tr("This will restart MO, continue?"),
                               QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::Yes) {
-        InstanceManager::instance().clearCurrentInstance();
+        // InstanceManager::instance().clearCurrentInstance();
         qApp->exit(INT_MAX);
     }
 }

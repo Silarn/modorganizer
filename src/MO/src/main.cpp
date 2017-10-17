@@ -378,14 +378,6 @@ static QString determineProfile(QStringList& arguments, const QSettings& setting
     return selectedProfileName;
 }
 
-#pragma region Custom Exceptions
-// FIXME: Hack. Exceptions are not flow control, and cancelling isnt exceptional.
-class Canceled : std::exception {
-public:
-    Canceled() : std::exception("Canceled") {}
-};
-#pragma endregion
-
 #pragma region WIP
 #include "ui_mainwindow.h"
 #include <MO/aboutdialog.h>
@@ -716,191 +708,6 @@ private:
     QSettings m_settings;
 };
 
-// Manages MO instances.
-// A Mod Organizer Instance is a setup of Mod Organizer, profiles, downloads, mods, etc.
-// This can be, for example, one instance per game.
-// The currently selected Instance is stored in a system-wide configuration.
-// UNLESS this Mod Organizer instance is being used in Portable mode, in which case
-// No system-wide changes are to happen.
-class MyInstanceManager {
-public:
-    MyInstanceManager() = default;
-    ~MyInstanceManager() = default;
-
-    // Determine the directory for the current instance.
-    // Checks if MO is operating in portable mode.
-    // Checks if a current instance exists, and prompts the user to create one if one does not.
-    fs::path determineInstancePath() {
-        // Return the application directory if we're in Portable mode.
-        if (portableMode()) {
-            return common::get_exe_dir();
-        }
-        // If we have a current instance, good, return that!
-        if (hasCurrentInstance()) {
-            return instancePath() / currentInstance();
-        }
-        // Otherwise, ask the user to pick a new instance.
-        auto instance = chooseInstance();
-        // User selected Portable install.
-        if (instance.empty()) {
-            return common::get_exe_dir();
-        }
-        setCurrentInstance(instance);
-        auto path = instancePath() / instance;
-        fs::create_directories(path);
-        return path;
-    }
-
-    // Clear the saved current instance.
-    // This is a noop for a portable install.
-    void clearCurrentInstance() {
-        if (portableMode()) {
-            return;
-        }
-        createSettings();
-        setCurrentInstance("");
-    }
-
-private:
-    // Return whether MO is being used in Portable mode.
-    // Portable mode is determined by the existence of an Ini file in the application directory.
-    bool portableMode() const { return fs::exists(common::get_exe_dir() / AppConfig::iniFileName()); }
-
-    // Create the settings object if it does not already exist.
-    void createSettings() {
-        if (!m_settings) {
-            m_settings.reset(new QSettings("Tannin", "Mod Organizer"));
-        }
-    }
-
-    // Return true if there is a saved current instance
-    // Return false if there is not or if there could not plausibly be.
-    // IE, if nothing is returned from instances() then, regardless of any saved instance,
-    // It is impossible for an instance to exist.
-    // This function will create the QSetting object if needed.
-    bool hasCurrentInstance() {
-        if (instances().empty()) {
-            return false;
-        }
-        createSettings();
-        return !currentInstance().empty();
-    }
-
-    // Return the name of the Instance currently in use.
-    // Returns an empty string if none exists.
-    std::string currentInstance() const {
-        assert(m_settings);
-        return m_settings->value(QString::fromStdString(InstanceKey), "").toString().toStdString();
-    }
-
-    // Set the current instance.
-    void setCurrentInstance(const std::string& name) {
-        assert(m_settings);
-        m_settings->setValue(QString::fromStdString(InstanceKey), QString::fromStdString(name));
-    }
-
-    // Return the base path of the location where Instances are created.
-    // This is %LOCALAPPDATA%/ModOrganizer
-    fs::path instancePath() const { //
-        auto bufsize = ::GetEnvironmentVariableW(L"LOCALAPPDATA", NULL, 0);
-        std::wstring path;
-        path.resize(bufsize);
-        ::GetEnvironmentVariableW(L"LOCALAPPDATA", path.data(), static_cast<DWORD>(path.size()));
-        path.resize(path.size() - 1); // Null terminator.
-        return fs::path(path) / "ModOrganizer";
-    }
-
-    // Ask the user for the name of their new Instance.
-    std::string chooseNewInstance() const {
-        // FIXME: Would be nice to eliminate this entirely and support it in MO itself.
-        // IE, proper seperate profiles rather than seperate instances emulating it.
-        std::string instanceId;
-        QInputDialog dialog;
-        // FIXME: Would be neat if we could take the names from the game plugins but
-        // the required initialization order requires the ini file to be
-        // available *before* we load plugins
-        // dialog.setComboBoxItems({"Oblivion", "Skyrim", "SkyrimSE", "Fallout 3", "Fallout NV", "Fallout 4"});
-        // dialog.setComboBoxEditable(true);
-        dialog.setWindowTitle(QObject::tr("Enter Instance Name"));
-        dialog.setLabelText(QObject::tr("Name"));
-        dialog.resize(dialog.size().width() - 400, dialog.size().height());
-        if (dialog.exec() == QDialog::Rejected) {
-            throw Canceled();
-        }
-        // TODO: Remove Special Characters utility function.
-        instanceId = dialog.textValue().replace(QRegExp("[^0-9a-zA-Z ]"), "").toStdString();
-        return instanceId;
-    }
-
-    // Choose either an existing instance or create a new one.
-    // Returns the name of the selected instance
-    // Returns an empty string if the user selects a Portable Install.
-    std::string chooseInstance() const {
-        enum class Special : uint8_t { NewInstance, Portable };
-
-        // Setup the selection dialog.
-        SelectionDialog selection(QString("<h3>%1</h3><br>%2")
-                                      .arg(QObject::tr("Choose Instance"))
-                                      .arg(QObject::tr("Each Instance is a full set of MO data files (mods, "
-                                                       "downloads, profiles, configuration, ...). Use multiple "
-                                                       "instances for different games. If your MO folder is "
-                                                       "writable, you can also store a single instance locally (called "
-                                                       "a portable install).")));
-        // Disabling cancelling and closing the dialoge.
-        selection.disableCancel();
-        // Add choices from existing instances
-        for (const auto& instance : instances()) {
-            auto tmp = QString::fromStdString(instance);
-            selection.addChoice(tmp, "", tmp);
-        }
-        // Add the New option.
-        selection.addChoice(QObject::tr("New"), QObject::tr("Create a new instance."),
-                            static_cast<uint8_t>(Special::NewInstance), QIcon(":/MO/gui/add"));
-        // Add the Portable option, if the MO directory is writeable.
-        if (common::is_writeable(common::get_exe_dir())) {
-            selection.addChoice(QObject::tr("Portable"), QObject::tr("Use MO folder for data."),
-                                static_cast<uint8_t>(Special::Portable), QIcon(":/MO/gui/package"));
-        }
-        if (selection.exec() == QDialog::Rejected) {
-            throw Canceled();
-        }
-        // Get the Users Choice.
-        QVariant choice = selection.getChoiceData();
-        // Existing instance selected and returned.
-        if (choice.type() == QVariant::String) {
-            return choice.toString().toStdString();
-        }
-        // New Instance, either portable or global.
-        switch (static_cast<Special>(choice.value<uint8_t>())) {
-        case Special::NewInstance:
-            // TODO: Allow the user to cancel this and go back to the selection menu.
-            return chooseNewInstance();
-        case Special::Portable:
-            return {};
-        }
-        assert(0); // Should not get here.
-    }
-
-    // Returns a vector of instance names.
-    // The orginial path can be obtained as instancePath() / instances()[N]
-    std::vector<std::string> instances() const {
-        std::vector<std::string> tmp;
-        for (const auto& p : fs::directory_iterator(instancePath())) {
-            if (fs::is_directory(p)) {
-                tmp.push_back(p.path().filename().string());
-            }
-        }
-        return tmp;
-    }
-
-private:
-    // Settings key for the Current Instance.
-    static const std::string InstanceKey;
-    // This will only be created if we're not in portable mode.
-    std::unique_ptr<QSettings> m_settings;
-};
-const std::string MyInstanceManager::InstanceKey = "CurrentInstance";
-
 // Mod Organizer backend.
 // Ties together various backend systems into one interface provided to the frontend.
 // May also act as a bridge between the different backend systems.
@@ -931,7 +738,7 @@ public: // MyPluginContainer
 private:
     MyPluginContainer m_plugins;
     // Manage which instance we're using.
-    MyInstanceManager m_instance;
+    InstanceManager m_instance;
     // Mod organizer data path.
     // Where all the instance specific stuff is stored.
     fs::path m_dataPath;
