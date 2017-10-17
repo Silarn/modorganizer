@@ -31,7 +31,7 @@ SelectionDialog::SelectionDialog(const QString& description, QWidget* parent, co
     ui->descriptionLabel->setText(description);
 }
 
-SelectionDialog::~SelectionDialog() { delete ui; }
+SelectionDialog::~SelectionDialog() {}
 
 void SelectionDialog::addChoice(const QString& buttonText, const QString& description, const QVariant& data_,
                                 const QIcon& icon) {
