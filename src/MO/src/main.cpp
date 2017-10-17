@@ -382,9 +382,11 @@ static QString determineProfile(QStringList& arguments, const QSettings& setting
 #include "ui_mainwindow.h"
 #include <MO/aboutdialog.h>
 #include <QDirIterator>
+#include <QInputDialog>
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QMenu>
+#include <QSizePolicy>
 #include <QToolButton>
 #include <QWhatsThis>
 #include <tuple>
@@ -802,24 +804,24 @@ private:
 
     // Ask the user for the name of their new Instance.
     std::string chooseNewInstance() const {
-        return {};
-        //// FIXME: Would be nice to eliminate this entirely and support it in MO itself.
-        //// IE, proper seperate profiles rather than seperate instances emulating it.
-        // std::string instanceId;
-        // QInputDialog dialog;
-        //// FIXME: Would be neat if we could take the names from the game plugins but
-        //// the required initialization order requires the ini file to be
-        //// available *before* we load plugins
+        // FIXME: Would be nice to eliminate this entirely and support it in MO itself.
+        // IE, proper seperate profiles rather than seperate instances emulating it.
+        std::string instanceId;
+        QInputDialog dialog;
+        // FIXME: Would be neat if we could take the names from the game plugins but
+        // the required initialization order requires the ini file to be
+        // available *before* we load plugins
         // dialog.setComboBoxItems({"Oblivion", "Skyrim", "SkyrimSE", "Fallout 3", "Fallout NV", "Fallout 4"});
         // dialog.setComboBoxEditable(true);
-        // dialog.setWindowTitle(QObject::tr("Enter Instance Name"));
-        // dialog.setLabelText(QObject::tr("Name"));
-        // if (dialog.exec() == QDialog::Rejected) {
-        //    throw MOBase::MyException(QObject::tr("Canceled"));
-        //}
-        //// TODO: Remove Special Characters utility function.
-        // instanceId = dialog.textValue().replace(QRegExp("[^0-9a-zA-Z ]"), "").toStdString();
-        // return instanceId;
+        dialog.setWindowTitle(QObject::tr("Enter Instance Name"));
+        dialog.setLabelText(QObject::tr("Name"));
+        dialog.resize(dialog.size().width() - 400, dialog.size().height());
+        if (dialog.exec() == QDialog::Rejected) {
+            throw MOBase::MyException(QObject::tr("Canceled"));
+        }
+        // TODO: Remove Special Characters utility function.
+        instanceId = dialog.textValue().replace(QRegExp("[^0-9a-zA-Z ]"), "").toStdString();
+        return instanceId;
     }
 
     // Choose either an existing instance or create a new one.
@@ -838,7 +840,6 @@ private:
                                                        "a portable install).")));
         // Disabling cancelling and closing the dialoge.
         selection.disableCancel();
-        selection.setWindowFlags(Qt::Dialog | Qt::WindowTitleHint);
         // Add choices from existing instances
         for (const auto& instance : instances()) {
             auto tmp = QString::fromStdString(instance);
