@@ -20,8 +20,13 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SELECTIONDIALOG_H
 #define SELECTIONDIALOG_H
 
-#include <QAbstractButton>
 #include <QDialog>
+#include <QIcon>
+#include <QSize>
+#include <QString>
+#include <QVariant>
+class QAbstractButton;
+class QWidget;
 
 namespace Ui {
 class SelectionDialog;
@@ -32,7 +37,7 @@ class SelectionDialog;
 class SelectionDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit SelectionDialog(const QString& description, QWidget* parent = 0, const QSize& iconSize = QSize());
+    explicit SelectionDialog(const QString& description, QWidget* parent = nullptr, const QSize& iconSize = QSize());
 
     ~SelectionDialog();
 

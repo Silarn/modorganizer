@@ -19,7 +19,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/selectiondialog.h"
 #include "ui_selectiondialog.h"
 
+#include <QAbstractButton>
 #include <QCommandLinkButton>
+#include <QDialogButtonBox>
+#include <QWidget>
 
 SelectionDialog::SelectionDialog(const QString& description, QWidget* parent, const QSize& iconSize)
     : QDialog(parent), ui(new Ui::SelectionDialog), m_IconSize(iconSize) {
