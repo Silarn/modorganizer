@@ -717,8 +717,10 @@ public:
     MyInstanceManager() = default;
     ~MyInstanceManager() = default;
 
-    // Determine the data directory for the current instance.
-    fs::path determineDataPath() {
+    // Determine the directory for the current instance.
+    // Checks if MO is operating in portable mode.
+    // Checks if a current instance exists, and prompts the user to create one if one does not.
+    fs::path determineInstancePath() {
         // Return the application directory if we're in Portable mode.
         if (portableMode()) {
             return common::get_exe_dir();
@@ -893,7 +895,7 @@ class MyOrganizerCore {
 public:
     // Create OrganizerCore instance.
     // init method must be called afterwards. Two Stage Initlization.
-    MyOrganizerCore() : m_dataPath(m_instance.determineDataPath()), m_settings(m_dataPath) {}
+    MyOrganizerCore() : m_dataPath(m_instance.determineInstancePath()), m_settings(m_dataPath) {}
 
     // Initalize OrganizerCore.
     void init() {
