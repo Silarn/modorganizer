@@ -72,7 +72,6 @@ private slots:
 private:
     std::unique_ptr<Ui::SelectionDialog> ui;
     QAbstractButton* m_Choice = nullptr;
-    bool m_ValidateByData = false;
     QSize m_IconSize;
 };
 

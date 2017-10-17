@@ -44,9 +44,6 @@ void SelectionDialog::addChoice(const QString& buttonText, const QString& descri
     }
     button->setProperty("data", data_);
     ui->buttonBox->addButton(button, QDialogButtonBox::AcceptRole);
-    if (data_.isValid()) {
-        m_ValidateByData = true;
-    }
 }
 
 int SelectionDialog::numChoices() const { return ui->buttonBox->findChildren<QCommandLinkButton*>(QString()).count(); }
@@ -59,7 +56,7 @@ QVariant SelectionDialog::getChoiceData() {
 }
 
 QString SelectionDialog::getChoiceString() {
-    if (!m_Choice || (m_ValidateByData && !m_Choice->property("data").isValid())) {
+    if (!m_Choice) {
         return QString();
     }
     return m_Choice->text();
@@ -72,7 +69,7 @@ void SelectionDialog::disableCancel() {
 
 void SelectionDialog::on_buttonBox_clicked(QAbstractButton* button) {
     m_Choice = button;
-    if (!m_ValidateByData || m_Choice->property("data").isValid()) {
+    if (m_Choice->property("data").isValid()) {
         this->accept();
         return;
     }
