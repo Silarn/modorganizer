@@ -796,6 +796,7 @@ private:
         std::wstring path;
         path.resize(bufsize);
         ::GetEnvironmentVariableW(L"LOCALAPPDATA", path.data(), static_cast<DWORD>(path.size()));
+        path.resize(path.size() - 1); // Null terminator.
         return fs::path(path) / "ModOrganizer";
     }
 
