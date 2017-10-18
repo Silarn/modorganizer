@@ -54,6 +54,8 @@ fs::path InstanceManager::determineInstancePath() {
     if (instance.empty()) {
         return common::get_exe_dir();
     }
+    // User did not select Portable Install
+    createSettings();
     setCurrentInstance(instance);
     auto path = instancePath() / instance;
     fs::create_directories(path);
