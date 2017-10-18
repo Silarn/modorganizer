@@ -37,6 +37,9 @@ public:
 // The currently selected Instance is stored in a system-wide configuration.
 // UNLESS this Mod Organizer instance is being used in Portable mode, in which case
 // No system-wide changes are to happen.
+// FIXME: This is a glorified picker dialog.
+// It does nothing of real substance beyond the global application settings.
+// Candiate for removal?
 class InstanceManager {
 public:
     InstanceManager();
