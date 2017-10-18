@@ -1163,7 +1163,7 @@ int main(int argc, char* argv[]) {
         setupPath(moLog);
         // Start the application
         return runApplication(moLog, application);
-    } catch (const Canceled& e) {
+    } catch (const Canceled&) {
         // Ignore cancel.
     } catch (const std::exception& e) {
         auto msg = e.what();
