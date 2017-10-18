@@ -16,52 +16,26 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 */
-#ifndef SINGLEINSTANCE_H
-#define SINGLEINSTANCE_H
+#pragma once
+#include <string>
 
-#include <QLocalServer>
-#include <QObject>
-#include <QSharedMemory>
-class QString;
-
-// used to ensure only a single instance of Mod Organizer is started and to
-// allow secondary instances to send messages to the primary (visible) one.
-// This way, secondary instances can start a download in the primary one
-// TODO: Seems to only use Shared Memory as a marker for a socket. That seems a bit dumb.
-class SingleInstance : public QObject {
-    Q_OBJECT
+// Uses a win32 mutex to determine if there are multiple instances of MO currently open.
+class SingleInstance {
 public:
-    // @brief constructor
-    //
-    // @param forcePrimary if true, this will be treated as the primary instance even
-    //                     if another instance is running. This is used after an update since
-    //                     the other instance is assumed to be in the process of quitting
-    // TODO: the forcePrimary parameter makes no sense. The second instance after an update
-    //       needs to delete the files from before the update so the first instance needs to quit
-    //       first anyway
-    explicit SingleInstance(bool forcePrimary);
+    SingleInstance();
+    ~SingleInstance();
 
-    // @return true if this is the primary instance (the one that gets to display a UI)
-    bool primaryInstance() const { return m_PrimaryInstance; }
+    SingleInstance(const SingleInstance&) = delete;
+    SingleInstance(SingleInstance&&) = delete;
+    SingleInstance& operator=(const SingleInstance&) = delete;
+    SingleInstance& operator=(SingleInstance&&) = delete;
 
-    // send a message to the primary instance. This can be used to transmit download urls
-    //
-    // @param message message to send
-    void sendMessage(const QString& message);
-
-signals:
-    // @brief emitted when a secondary instance has sent a message (to us)
-    //
-    // @param message the message we received
-    void messageSent(const QString& message);
-
-private slots:
-    void receiveMessage();
+public:
+    // Return whether this is the primary instance or not.
+    bool primary() const { return m_primary; }
 
 private:
-    bool m_PrimaryInstance = false;
-    QSharedMemory m_SharedMem;
-    QLocalServer m_Server;
+    static const std::string m_mutexid;
+    bool m_primary = false;  // True = primary instance. False = secondary instance.
+    void* m_mutex = nullptr; // Windows HANDLE is just a void pointer.
 };
-
-#endif // SINGLEINSTANCE_H

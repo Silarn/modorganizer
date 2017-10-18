@@ -399,32 +399,6 @@ static QString determineProfile(QStringList& arguments, const QSettings& setting
 #include <uibase/ipluginproxy.h>
 #include <uibase/iplugintool.h>
 #include <vector>
-// Enforce a single instance of MO.
-class MySingleInstance {
-public:
-    MySingleInstance() {
-        // Attempt to create mutex.
-        m_mutex = CreateMutexA(NULL, FALSE, m_mutexid.data());
-        assert(m_mutex);
-        m_primary = (GetLastError() != ERROR_ALREADY_EXISTS);
-    }
-    ~MySingleInstance() { CloseHandle(m_mutex); }
-
-    MySingleInstance(const MySingleInstance&) = delete;
-    MySingleInstance(MySingleInstance&&) = delete;
-    MySingleInstance& operator=(const MySingleInstance&) = delete;
-    MySingleInstance& operator=(MySingleInstance&&) = delete;
-
-public:
-    // Return whether this is the primary instance or not.
-    bool primary() const { return m_primary; }
-
-private:
-    static const std::string m_mutexid;
-    bool m_primary = false; // True = primary instance. False = secondary instance.
-    HANDLE m_mutex = nullptr;
-};
-const std::string MySingleInstance::m_mutexid = "ModOrganizer";
 
 // Handles Interprocess Communication using a socket.
 // Mainly used for communicating nxm download urls to the primary MO instance.
@@ -1155,7 +1129,7 @@ int main(int argc, char* argv[]) {
         // Setup Interprocess Communication
         MoIPC ipc;
         // Enforce a single instance of MO.
-        MySingleInstance inst;
+        SingleInstance inst;
         if (!inst.primary()) {
             // If not primary instance, handle possible command line arguments.
             // If no commandline, display a warning.
