@@ -26,9 +26,9 @@ namespace fs = std::experimental::filesystem;
 class QSettings;
 
 // FIXME: Hack. Exceptions are not flow control, and cancelling isnt exceptional.
-class Canceled : std::exception {
+class Canceled : public std::exception {
 public:
-    Canceled() : std::exception("Canceled") {}
+    Canceled() : exception("Canceled") {}
 };
 
 // Manages MO instances.
