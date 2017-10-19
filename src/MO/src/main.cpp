@@ -239,25 +239,6 @@ static void setupPath(Log::Logger& moLog) {
 // Determines if the string `link` is a nexus link.
 static bool isNxmLink(const QString& link) { return link.startsWith("nxm://", Qt::CaseInsensitive); }
 
-// Bootstraping code
-// Creates required directories, removes old files, verifies we can start, etc.
-static bool bootstrap(fs::path dataPath) {
-    // Remove the temporary backup directory in case we're restarting after an update
-    fs::path backupDirectory = dataPath / "update_backup";
-    if (fs::exists(backupDirectory)) {
-        fs::remove_all(backupDirectory);
-    }
-
-    // Create required directories.
-    try {
-        fs::create_directories(dataPath / "Logs");
-    } catch (const fs::filesystem_error&) {
-        return false;
-    }
-
-    return true;
-}
-
 static MOBase::IPluginGame* selectGame(QSettings& settings, QDir const& gamePath, MOBase::IPluginGame* game) {
     settings.setValue("gameName", game->gameName());
     // Sadly, hookdll needs gamePath in order to run. So following code block is
@@ -362,9 +343,9 @@ static MOBase::IPluginGame* determineCurrentGame(QString const& moPath, QSetting
 
         if (!gamePath.isEmpty()) {
             QDir gameDir(gamePath);
-            for (MOBase::IPluginGame* const game : plugins.plugins<MOBase::IPluginGame>()) {
-                if (game->looksValid(gameDir)) {
-                    return selectGame(settings, gameDir, game);
+            for (MOBase::IPluginGame* const game_ : plugins.plugins<MOBase::IPluginGame>()) {
+                if (game_->looksValid(gameDir)) {
+                    return selectGame(settings, gameDir, game_);
                 }
             }
             MOBase::reportError(QObject::tr("No game identified in \"%1\". The directory is required to contain "
@@ -401,9 +382,11 @@ static QString determineProfile(QStringList& arguments, const QSettings& setting
 #include "ui_mainwindow.h"
 #include <MO/aboutdialog.h>
 #include <QDirIterator>
+#include <QInputDialog>
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QMenu>
+#include <QSizePolicy>
 #include <QToolButton>
 #include <QWhatsThis>
 #include <tuple>
@@ -416,37 +399,19 @@ static QString determineProfile(QStringList& arguments, const QSettings& setting
 #include <uibase/ipluginproxy.h>
 #include <uibase/iplugintool.h>
 #include <vector>
-// Enforce a single instance of MO.
-class MySingleInstance {
-public:
-    MySingleInstance() {
-        // Attempt to create mutex.
-        m_mutex = CreateMutexA(NULL, FALSE, m_mutexid.data());
-        assert(m_mutex);
-        m_primary = (GetLastError() != ERROR_ALREADY_EXISTS);
-    }
-    ~MySingleInstance() { CloseHandle(m_mutex); }
-
-    MySingleInstance(const MySingleInstance&) = delete;
-    MySingleInstance(MySingleInstance&&) = delete;
-    MySingleInstance& operator=(const MySingleInstance&) = delete;
-    MySingleInstance& operator=(MySingleInstance&&) = delete;
-
-public:
-    // Return whether this is the primary instance or not.
-    bool primary() const { return m_primary; }
-
-private:
-    static const std::string m_mutexid;
-    bool m_primary = false; // True = primary instance. False = secondary instance.
-    HANDLE m_mutex = nullptr;
-};
-const std::string MySingleInstance::m_mutexid = "ModOrganizer";
 
 // Handles Interprocess Communication using a socket.
 // Mainly used for communicating nxm download urls to the primary MO instance.
 class MoIPC : public QObject {
     Q_OBJECT
+public:
+    MoIPC() = default;
+    ~MoIPC() = default;
+    MoIPC(const MoIPC&) = delete;
+    MoIPC(MoIPC&&) = delete;
+    MoIPC& operator=(const MoIPC&) = delete;
+    MoIPC& operator=(MoIPC&&) = delete;
+
 public:
     // Start the server and listen for messages.
     // This should only be called for the primary Mod Organizer instance.
@@ -561,11 +526,11 @@ public:
         loadCheck.open(QIODevice::WriteOnly);
 
         // Get the plugins location
-        fs::path pluginPath = common::get_exe_dir() / AppConfig::pluginPath();
-        MOLog::instance().info("Looking for plugins in '{}'", pluginPath);
+        fs::path pluginDirPath = common::get_exe_dir() / AppConfig::pluginPath();
+        MOLog::instance().info("Looking for plugins in '{}'", pluginDirPath);
 
-        // Load plugins from pluginPath
-        for (const auto& plugin : fs::directory_iterator(pluginPath)) {
+        // Load plugins from pluginDirPath
+        for (const auto& plugin : fs::directory_iterator(pluginDirPath)) {
             std::string pluginName = plugin.path().filename().u8string();
             // if (m_Organizer->settings().pluginBlacklisted(pluginName)) {
             //    MOLog::instance().warn("Plugin '{}' was blacklisted", pluginName);
@@ -704,13 +669,32 @@ private:
     static const unsigned int PROBLEM_PLUGINSNOTLOADED = 1;
     std::vector<std::string> m_failedPlugins;
 };
+
+// Manages instance specific settings.
+class MySettings {
+public:
+    // The Path `path` indicates the base directory to store settings.
+    MySettings(fs::path path)
+        : m_settings(QString::fromStdWString(path / AppConfig::iniFileName()), QSettings::IniFormat){};
+    ~MySettings() = default;
+
+private:
+    QSettings m_settings;
+};
+
 // Mod Organizer backend.
 // Ties together various backend systems into one interface provided to the frontend.
 // May also act as a bridge between the different backend systems.
 // Loads Plugins
+// Manages Settings
 class MyOrganizerCore {
 public:
-    MyOrganizerCore() {
+    // Create OrganizerCore instance.
+    // init method must be called afterwards. Two Stage Initlization.
+    MyOrganizerCore() : m_dataPath(m_instance.determineInstancePath()), m_settings(m_dataPath) {}
+
+    // Initalize OrganizerCore.
+    void init() {
         // Load Mod Organizer Plugins.
         m_plugins.loadPlugins();
     }
@@ -722,9 +706,20 @@ public: // MyPluginContainer
         return m_plugins.plugins<T>();
     }
 
+    // Return the current dataPath.
+    fs::path dataPath() { return m_dataPath; }
+
 private:
     MyPluginContainer m_plugins;
+    // Manage which instance we're using.
+    InstanceManager m_instance;
+    // Mod organizer data path.
+    // Where all the instance specific stuff is stored.
+    fs::path m_dataPath;
+    // Instance specific settings
+    MySettings m_settings;
 };
+
 // The Mod Organizer Main Window.
 // Hooks backend logic to frontend.
 class MyMainWindow : public QMainWindow {
@@ -948,213 +943,39 @@ private:
     Ui::MainWindow* ui;
     MyOrganizerCore& m_organizer;
 };
-// Manages MO instances.
-// A Mod Organizer Instance is a setup of Mod Organizer, profiles, downloads, mods, etc.
-// This can be, for example, one instance per game.
-// The currently selected Instance is stored in a system-wide configuration.
-// UNLESS this Mod Organizer instance is being used in Portable mode, in which case
-// No system-wide changes are to happen.
-class MyInstanceManager {
-public:
-    MyInstanceManager() = default;
-    ~MyInstanceManager() = default;
-
-    // Determine the data directory for the current instance.
-    fs::path determineDataPath() {
-        // Return the application directory if we're in Portable mode.
-        if (portableMode()) {
-            return common::get_exe_dir();
-        }
-        // If we have a current instance, good, return that!
-        if (hasCurrentInstance()) {
-            return instancePath() / currentInstance();
-        }
-        // Otherwise, ask the user to pick a new instance.
-        auto instance = chooseInstance();
-        // User selected Portable install.
-        if (instance.empty()) {
-            return common::get_exe_dir();
-        }
-        setCurrentInstance(instance);
-        auto path = instancePath() / instance;
-        fs::create_directories(path);
-        return path;
-    }
-
-    // Clear the saved current instance.
-    // This is a noop for a portable install.
-    void clearCurrentInstance() {
-        if (portableMode()) {
-            return;
-        }
-        createSettings();
-        setCurrentInstance("");
-    }
-
-private:
-    // Return whether MO is being used in Portable mode.
-    // Portable mode is determined by the existence of an Ini file in the application directory.
-    bool portableMode() const { return fs::exists(common::get_exe_dir() / AppConfig::iniFileName()); }
-
-    // Create the settings object if it does not already exist.
-    void createSettings() {
-        if (!m_settings) {
-            m_settings.reset(new QSettings("Tannin", "Mod Organizer"));
-        }
-    }
-
-    // Return true if there is a saved current instance
-    // Return false if there is not or if there could not plausibly be.
-    // IE, if nothing is returned from instances() then, regardless of any registry values,
-    // It is impossible for an instance to exist.
-    // This function will create the QSetting object if needed.
-    bool hasCurrentInstance() {
-        if (instances().empty()) {
-            return false;
-        }
-        createSettings();
-        return !currentInstance().empty();
-    }
-
-    // Return the name of the Instance currently in use.
-    // Returns an empty string if none exists.
-    std::string currentInstance() const {
-        assert(m_settings);
-        return m_settings->value(QString::fromStdString(InstanceKey), "").toString().toStdString();
-    }
-
-    // Set the current instance.
-    void setCurrentInstance(const std::string& name) {
-        assert(m_settings);
-        m_settings->setValue(QString::fromStdString(InstanceKey), QString::fromStdString(name));
-    }
-
-    // Return the base path of the location where Instances are created.
-    // This is %LOCALAPPDATA%/ModOrganizer
-    fs::path instancePath() const { return fs::path(std::getenv("LOCALAPPDATA")) / "ModOrganizer"; }
-
-    // Ask the user for the name of their new Instance.
-    std::string queryInstanceName() const {
-        return {};
-        //// FIXME: Would be nice to eliminate this entirely and support it in MO itself.
-        //// IE, proper seperate profiles rather than seperate instances emulating it.
-        // std::string instanceId;
-        // QInputDialog dialog;
-        //// FIXME: Would be neat if we could take the names from the game plugins but
-        //// the required initialization order requires the ini file to be
-        //// available *before* we load plugins
-        // dialog.setComboBoxItems({"Oblivion", "Skyrim", "SkyrimSE", "Fallout 3", "Fallout NV", "Fallout 4"});
-        // dialog.setComboBoxEditable(true);
-        // dialog.setWindowTitle(QObject::tr("Enter Instance Name"));
-        // dialog.setLabelText(QObject::tr("Name"));
-        // if (dialog.exec() == QDialog::Rejected) {
-        //    throw MOBase::MyException(QObject::tr("Canceled"));
-        //}
-        //// TODO: Remove Special Characters utility function.
-        // instanceId = dialog.textValue().replace(QRegExp("[^0-9a-zA-Z ]"), "").toStdString();
-        // return instanceId;
-    }
-
-    // Choose either an existing instance or create a new one.
-    // Returns the name of the selected instance
-    // Returns an empty string if the user selects a Portable Install.
-    std::string chooseInstance() const {
-        enum class Special : uint8_t { NewInstance, Portable };
-
-        // Setup the selection dialog.
-        SelectionDialog selection(QString("<h3>%1</h3><br>%2")
-                                      .arg(QObject::tr("Choose Instance"))
-                                      .arg(QObject::tr("Each Instance is a full set of MO data files (mods, "
-                                                       "downloads, profiles, configuration, ...). Use multiple "
-                                                       "instances for different games. If your MO folder is "
-                                                       "writable, you can also store a single instance locally (called "
-                                                       "a portable install).")));
-        // Disabling cancelling and closing the dialoge.
-        selection.disableCancel();
-        selection.setWindowFlags(Qt::Dialog | Qt::WindowTitleHint);
-        // Add choices.
-        for (const auto& instance : instances()) {
-            auto tmp = QString::fromStdString(instance);
-            selection.addChoice(tmp, "", tmp);
-        }
-        // Add the New option.
-        selection.addChoice(QObject::tr("New"), QObject::tr("Create a new instance."),
-                            static_cast<uint8_t>(Special::NewInstance), QIcon(":/MO/gui/add"));
-        // Add the Portable option, if the MO directory is writeable.
-        if (common::is_writeable(common::get_exe_dir())) {
-            selection.addChoice(QObject::tr("Portable"), QObject::tr("Use MO folder for data."),
-                                static_cast<uint8_t>(Special::Portable), QIcon(":/MO/gui/package"));
-        }
-        selection.exec();
-        // Get the Users Choice.
-        QVariant choice = selection.getChoiceData();
-        if (choice.type() == QVariant::String) {
-            return choice.toString().toStdString();
-        } else {
-            switch (static_cast<Special>(choice.value<uint8_t>())) {
-            case Special::NewInstance:
-                return queryInstanceName();
-            case Special::Portable:
-                return {};
-            }
-        }
-    }
-
-    // Return a list of existing instances.
-    std::vector<std::string> instances() const {
-        std::vector<std::string> tmp;
-        for (const auto& p : fs::directory_iterator(instancePath())) {
-            if (!fs::is_directory(p)) {
-                continue;
-            }
-            tmp.push_back(p.path().filename().string());
-        }
-        return tmp;
-    }
-
-private:
-    // Settings key for the Current Instance.
-    static const std::string InstanceKey;
-    // This will only be created if we're not in portable mode.
-    std::unique_ptr<QSettings> m_settings;
-};
-const std::string MyInstanceManager::InstanceKey = "CurrentInstance";
 #include "main.moc"
 #pragma endregion
 
 // Run the bulk of the application.
 // application, a reference to our application.
-// instance, An instance
-// splashPath, the path to a image file used as a splash screen.
 // dataPath, the MO Application data path.
-static int runApplication(Log::Logger& moLog, MOApplication& application, fs::path splashPath, fs::path dataPath) {
+static int runApplication(Log::Logger& moLog, MOApplication& application) {
+    MyOrganizerCore organizer;
+    auto dataPath = organizer.dataPath();
+    moLog.info("MO Data Path: '{}'", dataPath);
+    // Setup application wide loggging.
+    const fs::path logPath = dataPath / AppConfig::logPath() / "mo_interface.log";
+    MOLog::init(logPath);
+
+    // Setup custom or default splash screen.
+    fs::path splashPath = dataPath / "splash.png";
+    if (!fs::exists(splashPath)) {
+        splashPath = ":/MO/gui/splash";
+    }
     // Display splash screen
     QPixmap pixmap(QString::fromStdWString(splashPath.native()));
     QSplashScreen splash(pixmap);
-    // Run bootstrap code.
-    if (!bootstrap(dataPath)) {
-        MOBase::reportError("failed to set up data paths");
-        return 1;
-    }
-    moLog.info("Current Working Directory: '{}'", fs::current_path());
     splash.show();
-    // Setup Settings
-    fs::path settingsPath = dataPath / AppConfig::iniFileName();
-    QSettings settings(QString::fromStdWString(settingsPath.native()), QSettings::IniFormat);
     moLog.info("Initializing Core");
-    // WIP BELOW
-    MyOrganizerCore organizer;
+    // Initalize OrganizerCore.
+    // This is down here so that we can create and display the Splash Screen before the hard work.
+    organizer.init();
     MyMainWindow mainWindow(organizer);
     moLog.info("Displaying Main Window");
     mainWindow.show();
     splash.finish(&mainWindow);
     return application.exec();
 #if 0
-    // Bootstrap OrganizerCore
-    OrganizerCore organizer(settings);
-    moLog.info("Initialize plugins");
-    PluginContainer pluginContainer(&organizer);
-    pluginContainer.loadPlugins();
     // Setup MO for game.
     MOBase::IPluginGame* game = determineCurrentGame(application.applicationDirPath(), settings, pluginContainer);
     if (game == nullptr) {
@@ -1287,13 +1108,13 @@ static bool handleArguments(Log::Logger& moLog, QStringList arguments) {
 }
 
 // Handle Commandline arguments used for IPC.
-static void handleIpcArgs(QStringList arguments, MoIPC& instance) {
+// Returns true if there were arguments to handle, false otherwise
+static bool handleIpcArgs(QStringList arguments, MoIPC& instance) {
     if ((arguments.size() == 2) && isNxmLink(arguments.at(1))) {
         instance.sendMessage(arguments.at(1));
-    } else if (arguments.size() == 1) {
-        QMessageBox::information(nullptr, QObject::tr("Mod Organizer"),
-                                 QObject::tr("An instance of Mod Organizer is already running"));
+        return true;
     }
+    return false;
 }
 
 int main(int argc, char* argv[]) {
@@ -1308,18 +1129,22 @@ int main(int argc, char* argv[]) {
         // Setup Interprocess Communication
         MoIPC ipc;
         // Enforce a single instance of MO.
-        MySingleInstance inst;
+        SingleInstance inst;
         if (!inst.primary()) {
-            // If not primary instance, assume we have command line arguments
-            // and handle those, and then exit.
-            handleIpcArgs(arguments, ipc);
-            return 1;
+            // If not primary instance, handle possible command line arguments.
+            // If no commandline, display a warning.
+            if (!handleIpcArgs(arguments, ipc)) {
+                QMessageBox::information(nullptr, QObject::tr("Mod Organizer"),
+                                         QObject::tr("An instance of Mod Organizer is already running"));
+            }
+            return 0;
         }
         // Listen for ipc messages
+        // TODO: Start listening only when we're actually ready to handle them?
         ipc.listen();
         // Setup startup log.
-        Log::Logger moLog("mo_init", common::get_exe_dir() / "Logs");
-        pmoLog = &moLog;
+        pmoLog = new Log::Logger("mo_init", common::get_exe_dir() / "Logs");
+        Log::Logger& moLog = *pmoLog;
         // Exception and error handling.
         // Overwide the default windows crash behaviour.
         SetUnhandledExceptionFilter(MyUnhandledExceptionFilter);
@@ -1327,7 +1152,8 @@ int main(int argc, char* argv[]) {
         qInstallMessageHandler(&myMessageOutput);
         // Log useful information.
         moLog.info("Mod Organizer started.");
-        moLog.info("MO Located At: {}", common::get_exe_dir());
+        moLog.info("MO Located At: '{}'", common::get_exe_dir());
+        moLog.info("MO Working Directory: '{}'", fs::current_path());
         moLog.info("Qt supports SSL: {}", QSslSocket::supportsSsl());
         // Handle arguments.
         if (handleArguments(moLog, arguments)) {
@@ -1335,20 +1161,10 @@ int main(int argc, char* argv[]) {
         }
         // Setup PATH.
         setupPath(moLog);
-        // Setup Mod Organizer Instance.
-        MyInstanceManager instmgr;
-        const fs::path dataPath = instmgr.determineDataPath();
-        moLog.info("MO Data Path: '{}'", dataPath);
-        // Setup application wide loggging.
-        const fs::path logPath = dataPath / AppConfig::logPath() / "mo_interface.log";
-        MOLog::init(logPath);
-        // Setup custom or default splash screen.
-        fs::path splash = dataPath / "splash.png";
-        if (!fs::exists(splash)) {
-            splash = ":/MO/gui/splash";
-        }
         // Start the application
-        return runApplication(moLog, application, splash, dataPath);
+        return runApplication(moLog, application);
+    } catch (const Canceled&) {
+        // Ignore cancel.
     } catch (const std::exception& e) {
         auto msg = e.what();
         if (pmoLog) {
@@ -1356,7 +1172,6 @@ int main(int argc, char* argv[]) {
             pmoLog->error(msg);
             pmoLog->flush();
         }
-
         MOBase::reportError(msg);
         throw;
     } catch (...) {

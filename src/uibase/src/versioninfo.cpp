@@ -85,9 +85,11 @@ QString VersionInfo::canonicalString() const {
     case RELEASE_CANDIDATE: {
         result.append("rc");
     } break;
-    default: {
+    case RELEASE_FINAL:
+        break;
+    default:
         // nop
-    } break;
+        break;
     }
 
     if (!m_Rest.isEmpty()) {
@@ -135,9 +137,11 @@ QString VersionInfo::displayString() const {
     case RELEASE_CANDIDATE: {
         result.append("rc");
     } break;
-    default: {
+    case RELEASE_FINAL:
+        break;
+    default:
         // nop
-    } break;
+        break;
     }
 
     if (!m_Rest.isEmpty()) {

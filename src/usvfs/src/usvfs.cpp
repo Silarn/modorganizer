@@ -25,6 +25,7 @@ along with usvfs. If not, see <http://www.gnu.org/licenses/>.
 #include "usvfs/loghelpers.h"
 #include "usvfs/redirectiontree.h"
 
+#include <common/predef.h>
 #include <common/stringutils.h>
 #include <fmt/format.h>
 #include <fmt/ostream.h>
@@ -59,7 +60,7 @@ namespace spdlog {
 namespace sinks {
 class null_sink : public sink {
 
-  public:
+public:
     null_sink() {}
     virtual void log(const details::log_msg&) override {}
     virtual void flush() override {}
@@ -172,7 +173,7 @@ void createMiniDump(PEXCEPTION_POINTERS exceptionPtrs) {
         if (funcDump) {
             // std::wstring dmpPath = winapi::wide::getModuleFileName(dllModule) +
             // L"_" + std::to_wstring(time(nullptr)) + L".dmp";
-#if IS_X64
+#if COMMON_IS_64
             std::wstring dmpPath = winapi::wide::getKnownFolderPath(FOLDERID_LocalAppData) + L"\\usvfs\\uvsfs_x64.dmp";
 #else
             std::wstring dmpPath = winapi::wide::getKnownFolderPath(FOLDERID_LocalAppData) + L"\\usvfs\\uvsfs_x86.dmp";

@@ -23,10 +23,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/queryoverwritedialog.h"
 #include "MO/settings.h"
 
+#include <QCoreApplication>
 #include <QDebug>
 #include <QInputDialog>
 #include <QLibrary>
-#include <QCoreApplication>
 #include <QTextDocument>
 #include <uibase/installationtester.h>
 #include <uibase/iplugininstallercustom.h>
@@ -722,34 +722,29 @@ bool InstallationManager::install(const QString& fileName, GuessedValue<QString>
 
 QString InstallationManager::getErrorString(Archive::Error errorCode) {
     switch (errorCode) {
-    case Archive::ERROR_NONE: {
+    case Archive::ERROR_NONE:
         return tr("no error");
-    } break;
-    case Archive::ERROR_LIBRARY_NOT_FOUND: {
+    case Archive::ERROR_LIBRARY_NOT_FOUND:
         return tr("7z.dll not found");
-    } break;
-    case Archive::ERROR_LIBRARY_INVALID: {
+    case Archive::ERROR_LIBRARY_INVALID:
         return tr("7z.dll isn't valid");
-    } break;
-    case Archive::ERROR_ARCHIVE_NOT_FOUND: {
+    case Archive::ERROR_ARCHIVE_NOT_FOUND:
         return tr("archive not found");
-    } break;
-    case Archive::ERROR_FAILED_TO_OPEN_ARCHIVE: {
+    case Archive::ERROR_FAILED_TO_OPEN_ARCHIVE:
         return tr("failed to open archive");
-    } break;
-    case Archive::ERROR_INVALID_ARCHIVE_FORMAT: {
+    case Archive::ERROR_INVALID_ARCHIVE_FORMAT:
         return tr("unsupported archive type");
-    } break;
-    case Archive::ERROR_LIBRARY_ERROR: {
+    case Archive::ERROR_LIBRARY_ERROR:
         return tr("internal library error");
-    } break;
-    case Archive::ERROR_ARCHIVE_INVALID: {
+    case Archive::ERROR_EXTRACT_CANCELLED:
+        return tr("cancelled");
+    case Archive::ERROR_OUT_OF_MEMORY:
+        return tr("out of memory");
+    case Archive::ERROR_ARCHIVE_INVALID:
         return tr("archive invalid");
-    } break;
-    default: {
+    default:
         // this probably means the archiver.dll is newer than this
         return tr("unknown archive error");
-    } break;
     }
 }
 

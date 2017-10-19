@@ -20,8 +20,16 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef SELECTIONDIALOG_H
 #define SELECTIONDIALOG_H
 
-#include <QAbstractButton>
 #include <QDialog>
+#include <QIcon>
+#include <QSize>
+#include <QString>
+#include <QVariant>
+
+#include <memory>
+
+class QAbstractButton;
+class QWidget;
 
 namespace Ui {
 class SelectionDialog;
@@ -32,7 +40,7 @@ class SelectionDialog;
 class SelectionDialog : public QDialog {
     Q_OBJECT
 public:
-    explicit SelectionDialog(const QString& description, QWidget* parent = 0, const QSize& iconSize = QSize());
+    explicit SelectionDialog(const QString& description, QWidget* parent = nullptr, const QSize& iconSize = QSize());
 
     ~SelectionDialog();
 
@@ -62,9 +70,8 @@ private slots:
     void on_cancelButton_clicked();
 
 private:
-    Ui::SelectionDialog* ui = nullptr;
+    std::unique_ptr<Ui::SelectionDialog> ui;
     QAbstractButton* m_Choice = nullptr;
-    bool m_ValidateByData = false;
     QSize m_IconSize;
 };
 

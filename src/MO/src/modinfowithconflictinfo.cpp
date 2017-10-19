@@ -14,20 +14,21 @@ void ModInfoWithConflictInfo::clearCaches() { m_LastConflictCheck = QTime(); }
 std::vector<ModInfo::EFlag> ModInfoWithConflictInfo::getFlags() const {
     std::vector<ModInfo::EFlag> result;
     switch (isConflicted()) {
-    case CONFLICT_MIXED: {
+    case CONFLICT_MIXED:
         result.push_back(ModInfo::FLAG_CONFLICT_MIXED);
-    } break;
-    case CONFLICT_OVERWRITE: {
+        break;
+    case CONFLICT_OVERWRITE:
         result.push_back(ModInfo::FLAG_CONFLICT_OVERWRITE);
-    } break;
-    case CONFLICT_OVERWRITTEN: {
+        break;
+    case CONFLICT_OVERWRITTEN:
         result.push_back(ModInfo::FLAG_CONFLICT_OVERWRITTEN);
-    } break;
-    case CONFLICT_REDUNDANT: {
+        break;
+    case CONFLICT_REDUNDANT:
         result.push_back(ModInfo::FLAG_CONFLICT_REDUNDANT);
-    } break;
-    default: { /* NOP */
-    }
+        break;
+    case CONFLICT_NONE: // NOP
+    default:            // NOP
+        break;
     }
     return result;
 }

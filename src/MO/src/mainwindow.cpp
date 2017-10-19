@@ -2690,21 +2690,29 @@ void MainWindow::on_modList_customContextMenuRequested(const QPoint& pos) {
                 menu->addAction(tr("Reinstall Mod"), this, SLOT(reinstallMod_clicked()));
                 if (info->getNexusID() > 0) {
                     switch (info->endorsedState()) {
-                    case ModInfo::ENDORSED_TRUE: {
+                    case ModInfo::ENDORSED_TRUE:
                         menu->addAction(tr("Un-Endorse"), this, SLOT(unendorse_clicked()));
-                    } break;
-                    case ModInfo::ENDORSED_FALSE: {
+                        break;
+                    case ModInfo::ENDORSED_FALSE:
                         menu->addAction(tr("Endorse"), this, SLOT(endorse_clicked()));
                         menu->addAction(tr("Won't endorse"), this, SLOT(dontendorse_clicked()));
-                    } break;
-                    case ModInfo::ENDORSED_NEVER: {
+                        break;
+                    case ModInfo::ENDORSED_NEVER:
                         menu->addAction(tr("Endorse"), this, SLOT(endorse_clicked()));
-                    } break;
-                    default: {
+                        break;
+                    case ModInfo::ENDORSED_UNKNOWN: {
                         QAction* action = new QAction(tr("Endorsement state unknown"), menu);
                         action->setEnabled(false);
                         menu->addAction(action);
-                    } break;
+                        break;
+                    }
+                    default: {
+                        QAction* action =
+                            new QAction(tr("Endorsement state Internal Error line 2710 test pls ignore"), menu);
+                        action->setEnabled(false);
+                        menu->addAction(action);
+                        break;
+                    }
                     }
                 }
 
@@ -3583,7 +3591,7 @@ void MainWindow::on_actionProblems_triggered() {
 void MainWindow::on_actionChange_Game_triggered() {
     if (QMessageBox::question(this, tr("Are you sure?"), tr("This will restart MO, continue?"),
                               QMessageBox::Yes | QMessageBox::Cancel) == QMessageBox::Yes) {
-        InstanceManager::instance().clearCurrentInstance();
+        // InstanceManager::instance().clearCurrentInstance();
         qApp->exit(INT_MAX);
     }
 }

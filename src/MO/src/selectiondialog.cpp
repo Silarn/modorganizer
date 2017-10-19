@@ -19,7 +19,10 @@ along with Mod Organizer.  If not, see <http://www.gnu.org/licenses/>.
 #include "MO/selectiondialog.h"
 #include "ui_selectiondialog.h"
 
+#include <QAbstractButton>
 #include <QCommandLinkButton>
+#include <QDialogButtonBox>
+#include <QWidget>
 
 SelectionDialog::SelectionDialog(const QString& description, QWidget* parent, const QSize& iconSize)
     : QDialog(parent), ui(new Ui::SelectionDialog), m_IconSize(iconSize) {
@@ -28,7 +31,7 @@ SelectionDialog::SelectionDialog(const QString& description, QWidget* parent, co
     ui->descriptionLabel->setText(description);
 }
 
-SelectionDialog::~SelectionDialog() { delete ui; }
+SelectionDialog::~SelectionDialog() {}
 
 void SelectionDialog::addChoice(const QString& buttonText, const QString& description, const QVariant& data_,
                                 const QIcon& icon) {
@@ -41,9 +44,6 @@ void SelectionDialog::addChoice(const QString& buttonText, const QString& descri
     }
     button->setProperty("data", data_);
     ui->buttonBox->addButton(button, QDialogButtonBox::AcceptRole);
-    if (data_.isValid()) {
-        m_ValidateByData = true;
-    }
 }
 
 int SelectionDialog::numChoices() const { return ui->buttonBox->findChildren<QCommandLinkButton*>(QString()).count(); }
@@ -56,7 +56,7 @@ QVariant SelectionDialog::getChoiceData() {
 }
 
 QString SelectionDialog::getChoiceString() {
-    if (!m_Choice || (m_ValidateByData && !m_Choice->property("data").isValid())) {
+    if (!m_Choice) {
         return QString();
     }
     return m_Choice->text();
@@ -69,7 +69,7 @@ void SelectionDialog::disableCancel() {
 
 void SelectionDialog::on_buttonBox_clicked(QAbstractButton* button) {
     m_Choice = button;
-    if (!m_ValidateByData || m_Choice->property("data").isValid()) {
+    if (m_Choice->property("data").isValid()) {
         this->accept();
         return;
     }
